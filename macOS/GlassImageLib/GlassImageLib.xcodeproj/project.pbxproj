@@ -65,6 +65,7 @@
 		E58337AF299C1BCB007192AD /* gls_image_jpeg.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gls_image_jpeg.cpp; path = ../../../src/gls_image_jpeg.cpp; sourceTree = "<group>"; };
 		E58337B0299C1BCB007192AD /* gls_tiff_metadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gls_tiff_metadata.cpp; path = ../../../src/gls_tiff_metadata.cpp; sourceTree = "<group>"; };
 		E58337BA299C1C1F007192AD /* gls_auto_ptr.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gls_auto_ptr.hpp; path = ../../../include/gls_auto_ptr.hpp; sourceTree = "<group>"; };
+		E5C5BE36299C4F7C00AAB593 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,6 +87,7 @@
 		E5833726299C1899007192AD = {
 			isa = PBXGroup;
 			children = (
+				E5C5BE36299C4F7C00AAB593 /* README.md */,
 				E5833731299C1899007192AD /* GlassImageLib */,
 				E5833730299C1899007192AD /* Products */,
 				E583376C299C1AB3007192AD /* Frameworks */,
