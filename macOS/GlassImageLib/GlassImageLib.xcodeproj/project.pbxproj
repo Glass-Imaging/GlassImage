@@ -234,7 +234,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "UNAME=`uname -m`\n\nBREW_PATH=\"\"\n\nif [[ \"$UNAME\" == \"arm64\" ]]; then\n    BREW_PATH=\"/opt/homebrew\"\nelse\n    BREW_PATH=\"/usr/local\"\nfi\n\nln -sf $BREW_PATH/lib/libjpeg.dylib GlassImageLib/lib\nln -sf $BREW_PATH/lib/libpng.dylib GlassImageLib/lib\nln -sf $BREW_PATH/lib/libtiff.dylib GlassImageLib/lib\nln -sf $BREW_PATH/opt/zlib/lib/libz.dylib GlassImageLib/lib\n";
+			shellScript = "UNAME=`uname -m`\n\nBREW_PATH=\"\"\nif [[ \"$UNAME\" == \"arm64\" ]]; then\n    BREW_PATH=\"/opt/homebrew\"\nelse\n    BREW_PATH=\"/usr/local\"\nfi\n\nGLASSIMAGELIB_PATH=\"$SRCROOT\"/GlassImageLib/lib\n\nmkdir -p \"$GLASSIMAGELIB_PATH\"\nln -sf $BREW_PATH/lib/libjpeg.dylib \"$GLASSIMAGELIB_PATH\"/\nln -sf $BREW_PATH/lib/libpng.dylib \"$GLASSIMAGELIB_PATH\"/\nln -sf $BREW_PATH/lib/libtiff.dylib \"$GLASSIMAGELIB_PATH\"/\nln -sf $BREW_PATH/opt/zlib/lib/libz.dylib \"$GLASSIMAGELIB_PATH\"/\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
