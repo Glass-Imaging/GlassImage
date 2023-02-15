@@ -7,12 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E5833784299C1B3C007192AD /* glassImageTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E5833783299C1B3C007192AD /* glassImageTest.cpp */; };
-		E58337C2299C1CBA007192AD /* cl_pipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E58337C1299C1CBA007192AD /* cl_pipeline.cpp */; };
 		E58337C8299C1E0E007192AD /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E58337C7299C1E0D007192AD /* OpenCL.framework */; };
-		E58337CA299C1E5E007192AD /* OpenCL in CopyFiles */ = {isa = PBXBuildFile; fileRef = E58337C9299C1E5E007192AD /* OpenCL */; };
-		E58337CC299C1EC6007192AD /* Assets in CopyFiles */ = {isa = PBXBuildFile; fileRef = E58337CB299C1EC6007192AD /* Assets */; };
 		E58337D3299C224E007192AD /* libGlassImageLib.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E583378F299C1B4B007192AD /* libGlassImageLib.dylib */; };
+		E5C5BE5A299D651800AAB593 /* glassImageTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E5C5BE58299D651800AAB593 /* glassImageTest.cpp */; };
+		E5C5BE5B299D651800AAB593 /* cl_pipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E5C5BE59299D651800AAB593 /* cl_pipeline.cpp */; };
+		E5C5BE5D299D655500AAB593 /* Assets in CopyFiles */ = {isa = PBXBuildFile; fileRef = E5C5BE5C299D655500AAB593 /* Assets */; };
+		E5C5BE5F299D656200AAB593 /* OpenCL in CopyFiles */ = {isa = PBXBuildFile; fileRef = E5C5BE5E299D656100AAB593 /* OpenCL */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,8 +39,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
-				E58337CC299C1EC6007192AD /* Assets in CopyFiles */,
-				E58337CA299C1E5E007192AD /* OpenCL in CopyFiles */,
+				E5C5BE5F299D656200AAB593 /* OpenCL in CopyFiles */,
+				E5C5BE5D299D655500AAB593 /* Assets in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -48,15 +48,15 @@
 
 /* Begin PBXFileReference section */
 		E5833780299C1B3C007192AD /* GlassImageTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = GlassImageTest; sourceTree = BUILT_PRODUCTS_DIR; };
-		E5833783299C1B3C007192AD /* glassImageTest.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = glassImageTest.cpp; sourceTree = "<group>"; };
 		E583378A299C1B4B007192AD /* GlassImageLib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = GlassImageLib.xcodeproj; path = ../GlassImageLib/GlassImageLib.xcodeproj; sourceTree = "<group>"; };
-		E58337BF299C1CBA007192AD /* cl_pipeline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cl_pipeline.h; sourceTree = "<group>"; };
-		E58337C1299C1CBA007192AD /* cl_pipeline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cl_pipeline.cpp; sourceTree = "<group>"; };
 		E58337C7299C1E0D007192AD /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
-		E58337C9299C1E5E007192AD /* OpenCL */ = {isa = PBXFileReference; lastKnownFileType = folder; name = OpenCL; path = GlassImageTest/OpenCL; sourceTree = "<group>"; };
-		E58337CB299C1EC6007192AD /* Assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Assets; path = GlassImageTest/Assets; sourceTree = "<group>"; };
 		E58337CD299C1F03007192AD /* GlassImageTest.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GlassImageTest.entitlements; sourceTree = "<group>"; };
 		E58337D1299C222C007192AD /* libGlassImageLib.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libGlassImageLib.dylib; path = "../../../../Library/Developer/Xcode/DerivedData/GlassImageTest-gpixypersthtfzftxbhorskkxpvi/Build/Products/Release/libGlassImageLib.dylib"; sourceTree = "<group>"; };
+		E5C5BE57299D651800AAB593 /* cl_pipeline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cl_pipeline.h; path = ../../../glsTest/cl_pipeline.h; sourceTree = "<group>"; };
+		E5C5BE58299D651800AAB593 /* glassImageTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = glassImageTest.cpp; path = ../../../glsTest/glassImageTest.cpp; sourceTree = "<group>"; };
+		E5C5BE59299D651800AAB593 /* cl_pipeline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cl_pipeline.cpp; path = ../../../glsTest/cl_pipeline.cpp; sourceTree = "<group>"; };
+		E5C5BE5C299D655500AAB593 /* Assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Assets; path = ../../glsTest/Assets; sourceTree = "<group>"; };
+		E5C5BE5E299D656100AAB593 /* OpenCL */ = {isa = PBXFileReference; lastKnownFileType = folder; name = OpenCL; path = ../../glsTest/OpenCL; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,8 +75,8 @@
 		E5833777299C1B3C007192AD = {
 			isa = PBXGroup;
 			children = (
-				E58337CB299C1EC6007192AD /* Assets */,
-				E58337C9299C1E5E007192AD /* OpenCL */,
+				E5C5BE5E299D656100AAB593 /* OpenCL */,
+				E5C5BE5C299D655500AAB593 /* Assets */,
 				E583378A299C1B4B007192AD /* GlassImageLib.xcodeproj */,
 				E5833782299C1B3C007192AD /* GlassImageTest */,
 				E5833781299C1B3C007192AD /* Products */,
@@ -96,9 +96,9 @@
 			isa = PBXGroup;
 			children = (
 				E58337CD299C1F03007192AD /* GlassImageTest.entitlements */,
-				E58337C1299C1CBA007192AD /* cl_pipeline.cpp */,
-				E58337BF299C1CBA007192AD /* cl_pipeline.h */,
-				E5833783299C1B3C007192AD /* glassImageTest.cpp */,
+				E5C5BE59299D651800AAB593 /* cl_pipeline.cpp */,
+				E5C5BE57299D651800AAB593 /* cl_pipeline.h */,
+				E5C5BE58299D651800AAB593 /* glassImageTest.cpp */,
 			);
 			path = GlassImageTest;
 			sourceTree = "<group>";
@@ -194,8 +194,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E58337C2299C1CBA007192AD /* cl_pipeline.cpp in Sources */,
-				E5833784299C1B3C007192AD /* glassImageTest.cpp in Sources */,
+				E5C5BE5B299D651800AAB593 /* cl_pipeline.cpp in Sources */,
+				E5C5BE5A299D651800AAB593 /* glassImageTest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
