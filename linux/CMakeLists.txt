@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16) 
 
-project("glsimage")
+project("glsImage")
 
 # CL will throw an unknown error on Linux if it is not explicitly linked with pthread, see flags at the bottom
 find_package(Threads REQUIRED)
@@ -31,7 +31,7 @@ set(ROOT_DIR ${CMAKE_SOURCE_DIR}/../)
 ###
 
 add_library(
-    glsimage
+    glsImage
     STATIC
     ${ROOT_DIR}/src/gls_cl.cpp
     ${ROOT_DIR}/src/gls_cl_error.cpp
@@ -44,12 +44,14 @@ add_library(
     ${ROOT_DIR}/src/gls_tiff_metadata.cpp
 )
 
-target_include_directories( glsimage PRIVATE ${ROOT_DIR}/include ${ROOT_DIR}/glsTest )
+target_include_directories( glsImage PRIVATE ${ROOT_DIR}/include ${ROOT_DIR}/glsTest )
 
 target_link_libraries(
-    glsimage
+    glsImage
     libjpeg
     libpng
+    libtiff
+    libtiffxx
     libz
     OpenCL
 )
@@ -59,32 +61,19 @@ target_link_libraries(
 ###
 
 # Copy blur kernel
-file(COPY ${ROOT_DIR}/glsTest/OpenCL/blur.cl DESTINATION ${ROOT_DIR}/build/OpenCL)
+file(COPY ${ROOT_DIR}/glsTest/OpenCL/blur.cl DESTINATION ${ROOT_DIR}/linux/build/OpenCL)
 
 add_executable(
-        glsTest
-        ${ROOT_DIR}/src/gls_cl.cpp
-        ${ROOT_DIR}/src/gls_image_png.cpp
-        ${ROOT_DIR}/src/gls_image_jpeg.cpp
-        ${ROOT_DIR}/src/gls_image_tiff.cpp
-        ${ROOT_DIR}/src/gls_tiff_metadata.cpp
-        ${ROOT_DIR}/src/gls_dng_lossless_jpeg.cpp
-        ${ROOT_DIR}/src/gls_cl_error.cpp
-        ${ROOT_DIR}/src/gls_logging.cpp
-        ${ROOT_DIR}/glsTest/cl_pipeline.cpp
-        ${ROOT_DIR}/glsTest/glassImageTest.cpp
+    glsTest
+    ${ROOT_DIR}/glsTest/cl_pipeline.cpp
+    ${ROOT_DIR}/glsTest/glassImageTest.cpp
 )
 
 target_include_directories( glsTest PRIVATE ${ROOT_DIR}/include ${ROOT_DIR}/glsTest )
 
 target_link_libraries(
     glsTest
-    libjpeg
-    libpng
-    libz
-    libtiff
-    libtiffxx
-    OpenCL
+    glsImage
 )
 
 # Setting pthread flags to prevent silent OpenCL error, works for g++ and Clang
