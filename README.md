@@ -228,12 +228,10 @@ GlassImage can be compiled as a library and test executable on Linux using the f
 - Compile libtiff ourselves with `cmake -Djbig=OFF -Djpeg=OFF -Dzstd=OFF ..` to prevent linker errors
 
 ````
-# From the project root
-mkdir build
-cd build
-cmake -D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ -std=c++20 ../linux/
-make
+# To build the GlassImage library (libglsImage.a):
+cd linux
+./buildGlassImageLib.sh
 
-# To run the test app:
-./glsTest ../glsTest/Assets/baboon.tiff
+# Results will be in the build folder. Optionally to compile and run the test app:
+./glsTest.sh
 ````
