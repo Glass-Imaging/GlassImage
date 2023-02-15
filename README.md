@@ -229,10 +229,11 @@ GlassImage can be compiled as a library and test executable on Linux using the f
 
 ````
 # From the project root
-mkdir build && cd build && mkdir OpenCL
-cmake -D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ -std=c++20 ../linux/ # Clang
+mkdir build
+cd build
+cmake -D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ -std=c++20 ../linux/
 make
 
-# From the build dir
-./
+# To run the test app:
+./glsTest ../glsTest/Assets/baboon.tiff
 ````
