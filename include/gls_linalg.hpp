@@ -22,6 +22,7 @@
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
+#include <cassert>
 
 #define DEBUG_ARRAY_INITIALIZATION false
 
