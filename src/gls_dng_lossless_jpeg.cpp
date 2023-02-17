@@ -56,6 +56,8 @@
 
 #include "gls_dng_lossless_jpeg.hpp"
 
+#include <stdio.h>
+
 /*****************************************************************************/
 
 namespace gls {

@@ -26,14 +26,7 @@
 #include "gls_color_science.hpp"
 
 #include <float.h>
-#include <math.h>
-
-#if defined(__APPLE__) || defined(__ANDROID__)
-/* linear interpolation function, is 'a' when c == 0.0 and 'b' when c == 1.0 */
-inline float lerp(float a, float b, float c) {
-    return (b - a) * c + a;
-}
-#endif
+#include <cmath>
 
 typedef struct UVT {
     float  u;
@@ -42,7 +35,7 @@ typedef struct UVT {
 } UVT;
 
 float rt[31] = {       /* reciprocal temperature (K) */
-    DBL_MIN,  10.0e-6,  20.0e-6,  30.0e-6,  40.0e-6,  50.0e-6,
+    FLT_MIN,  10.0e-6,  20.0e-6,  30.0e-6,  40.0e-6,  50.0e-6,
     60.0e-6,  70.0e-6,  80.0e-6,  90.0e-6, 100.0e-6, 125.0e-6,
     150.0e-6, 175.0e-6, 200.0e-6, 225.0e-6, 250.0e-6, 275.0e-6,
     300.0e-6, 325.0e-6, 350.0e-6, 375.0e-6, 400.0e-6, 425.0e-6,
@@ -116,7 +109,7 @@ float XYZtoCorColorTemp(const float xyz[3]) {
     di = di / sqrt(1.0 + uvt[idx    ].t * uvt[idx    ].t);
     dm = dm / sqrt(1.0 + uvt[idx - 1].t * uvt[idx - 1].t);
     float p = dm / (dm - di);     /* p = interpolation parameter, 0.0 : i-1, 1.0 : i */
-    p = 1.0 / (lerp(rt[idx - 1], rt[idx], p));
+    p = 1.0 / (std::lerp(rt[idx - 1], rt[idx], p));
 
     return p;
 }
