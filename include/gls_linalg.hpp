@@ -344,10 +344,25 @@ inline Vector<N, bool> operator != (const Vector<N, value_type>& a, const Vector
     return !(a == b);
 }
 
+template <size_t N, typename value_type>
+inline Vector<N, bool> isnan(const Vector<N, value_type>& a) {
+    auto ita = a.begin();
+    Vector<N, bool> result;
+    std::for_each(result.begin(), result.end(), [&](bool &r){ r = std::isnan(*ita++); });
+    return result;
+}
+
 template <size_t N>
 inline bool all(const Vector<N, bool>& a) {
     bool result = true;
     std::for_each(a.begin(), a.end(), [&result](const bool &v){ result = result && v; });
+    return result;
+}
+
+template <size_t N>
+inline bool any(const Vector<N, bool>& a) {
+    bool result = false;
+    std::for_each(a.begin(), a.end(), [&result](const bool &v){ result = result || v; });
     return result;
 }
 
