@@ -33,11 +33,13 @@ template<size_t M, size_t N, typename value_type = float> struct Matrix;
 // ---- Vector Type ----
 template <size_t N, typename value_type = float>
 struct Vector : public std::array<value_type, N> {
-    Vector() {
 #if DEBUG_ARRAY_INITIALIZATION
+    Vector() {
         this->fill(0);
-#endif
     }
+#else
+    Vector() = default;
+#endif
 
     Vector(value_type val) {
         this->fill(val);

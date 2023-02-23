@@ -17,7 +17,7 @@
 
 #include <iostream>
 
-#define DEBUG_TIFF_TAGS 1
+// #define DEBUG_TIFF_TAGS 1
 
 namespace gls {
 

@@ -34,6 +34,7 @@
 		E58337B8299C1BCB007192AD /* gls_image_jpeg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E58337AF299C1BCB007192AD /* gls_image_jpeg.cpp */; };
 		E58337B9299C1BCB007192AD /* gls_tiff_metadata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E58337B0299C1BCB007192AD /* gls_tiff_metadata.cpp */; };
 		E58337BB299C1C1F007192AD /* gls_auto_ptr.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E58337BA299C1C1F007192AD /* gls_auto_ptr.hpp */; };
+		E5C5BE6929A3137A00AAB593 /* gls_statistics.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E5C5BE6829A3137A00AAB593 /* gls_statistics.hpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -65,6 +66,7 @@
 		E58337AF299C1BCB007192AD /* gls_image_jpeg.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gls_image_jpeg.cpp; path = ../../src/gls_image_jpeg.cpp; sourceTree = SOURCE_ROOT; };
 		E58337B0299C1BCB007192AD /* gls_tiff_metadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gls_tiff_metadata.cpp; path = ../../src/gls_tiff_metadata.cpp; sourceTree = SOURCE_ROOT; };
 		E58337BA299C1C1F007192AD /* gls_auto_ptr.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gls_auto_ptr.hpp; path = ../../include/gls_auto_ptr.hpp; sourceTree = SOURCE_ROOT; };
+		E5C5BE6829A3137A00AAB593 /* gls_statistics.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = gls_statistics.hpp; path = ../../../include/gls_statistics.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,7 +88,6 @@
 		E5833726299C1899007192AD = {
 			isa = PBXGroup;
 			children = (
-				E5C5BE36299C4F7C00AAB593 /* README.md */,
 				E5833731299C1899007192AD /* GlassImageLib */,
 				E5833730299C1899007192AD /* Products */,
 				E583376C299C1AB3007192AD /* Frameworks */,
@@ -117,6 +118,7 @@
 				E5833797299C1BBC007192AD /* gls_linalg.hpp */,
 				E5833798299C1BBC007192AD /* gls_logging.h */,
 				E5833791299C1BBC007192AD /* gls_tiff_metadata.hpp */,
+				E5C5BE6829A3137A00AAB593 /* gls_statistics.hpp */,
 				E58337AB299C1BCB007192AD /* gls_cl_error.cpp */,
 				E58337AD299C1BCB007192AD /* gls_cl.cpp */,
 				E58337A8299C1BCB007192AD /* gls_color_science.cpp */,
@@ -150,6 +152,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E58337A3299C1BBC007192AD /* gls_linalg.hpp in Headers */,
+				E5C5BE6929A3137A00AAB593 /* gls_statistics.hpp in Headers */,
 				E58337BB299C1C1F007192AD /* gls_auto_ptr.hpp in Headers */,
 				E583379E299C1BBC007192AD /* gls_cl_image.hpp in Headers */,
 				E583379F299C1BBC007192AD /* gls_image_png.h in Headers */,

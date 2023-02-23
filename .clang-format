@@ -1,0 +1,6 @@
+# Run manually to reformat a file:
+# clang-format -i --style=file <file>
+BasedOnStyle: Google
+DerivePointerAlignment: false
+IndentWidth: 4
+ColumnLimit: 100
