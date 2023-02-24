@@ -15,6 +15,14 @@
 
 #include "gls_logging.h"
 
+namespace gls {
+
+log_level currentLogLevel = LOG_LEVEL_ERROR;
+
+NullStream null;
+
+}
+
 #if defined(__ANDROID__) && !defined(USE_IOSTREAM_LOG)
 
 #include <sstream>

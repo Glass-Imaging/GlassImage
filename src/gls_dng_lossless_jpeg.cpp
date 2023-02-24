@@ -58,6 +58,10 @@
 
 #include <stdio.h>
 
+#include "gls_logging.h"
+
+static const char* TAG = "LOSSLESS_JPEG";
+
 /*****************************************************************************/
 
 namespace gls {
@@ -148,9 +152,9 @@ void ThrowProgramError() { throw std::runtime_error("error"); }
 
 void ThrowOverflow(const std::string& error) { throw std::runtime_error(error); }
 
-#define DNG_ASSERT(x, y)             \
-    {                                \
-        if (!(x)) printf("%s\n", y); \
+#define DNG_ASSERT(x, y)                            \
+    {                                               \
+        if (!(x)) LOG_ERROR(TAG) << y << std::endl; \
     }
 
 class dng_memory_data {
@@ -2887,7 +2891,7 @@ void dng_lossless_encoder::GenHuffCoding(HuffmanTable* htbl, uint32_t* freq) {
             // data, so just throw an error if we get here and revert to a
             // default table.     - tknoll 12/1/03.
 
-            printf("Info: Optimal huffman table bigger than 16 bits\n");
+            LOG_INFO(TAG) << "Optimal huffman table bigger than 16 bits" << std::endl;
 
             ThrowProgramError();
 
@@ -2973,7 +2977,7 @@ void dng_lossless_encoder::HuffOptimize() {
         }
 
         catch (...) {
-            printf("Info: Reverting to default huffman table\n");
+            LOG_INFO(TAG) << "Reverting to default huffman table" << std::endl;
 
             for (uint32_t j = 0; j <= 256; j++) {
                 freqCount[channel][j] = (j <= 16 ? 1 : 0);

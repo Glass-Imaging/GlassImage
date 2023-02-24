@@ -16,6 +16,9 @@
 #include "gls_tiff_metadata.hpp"
 
 #include <iostream>
+#include "gls_logging.h"
+
+static const char* TAG = "DEMOSAIC";
 
 // #define DEBUG_TIFF_TAGS 1
 
@@ -61,21 +64,21 @@ bool readMetaDataItem(TIFF* tif, const TIFFField* tf, tiff_metadata* metadata) {
             values[i] = data[i];
         }
 #ifdef DEBUG_TIFF_TAGS
-        std::cout << "New metadata vector (" << values.size() << ") " << getFieldName(tf) << ": ";
+        LOG_INFO(TAG) << "New metadata vector (" << values.size() << ") " << getFieldName(tf) << ": ";
         for (int i = 0; i < values.size() && i < 10; i++) {
             const auto& v = values[i];
             if (sizeof(v) == 1) {
-                std::cout << (int) v;
+                LOG_INFO(TAG) << (int) v;
             } else {
-                std::cout << v;
+                LOG_INFO(TAG) << v;
             }
             if (i < 9 && i < values.size() - 1) {
-                std::cout << ", ";
+                LOG_INFO(TAG) << ", ";
             } else if (i == 9 && i < values.size() - 1) {
-                std::cout << "...";
+                LOG_INFO(TAG) << "...";
             }
         }
-        std::cout << std::endl;
+        LOG_INFO(TAG) << std::endl;
 #endif
         metadata->insert({ field_tag, values });
         return true;
@@ -83,7 +86,7 @@ bool readMetaDataItem(TIFF* tif, const TIFFField* tf, tiff_metadata* metadata) {
         T data;
         TIFFGetField(tif, field_tag, &data);
 #ifdef DEBUG_TIFF_TAGS
-        std::cout << "New metadata scalar " << getFieldName(tf) << ": " << data << std::endl;
+        LOG_INFO(TAG) << "New metadata scalar " << getFieldName(tf) << ": " << data << std::endl;
 #endif
         metadata->insert({ field_tag, data });
         return true;
@@ -106,7 +109,7 @@ bool readMetaDataString(TIFF* tif, const TIFFField* tf, tiff_metadata* metadata)
     }
 
 #ifdef DEBUG_TIFF_TAGS
-    std::cout << "New metadata string " << getFieldName(tf) << ": " << data << std::endl;
+    LOG_INFO(TAG) << "New metadata string " << getFieldName(tf) << ": " << data << std::endl;
 #endif
     metadata->insert({ field_tag, data });
 
@@ -163,7 +166,7 @@ void readMetadataForTag(TIFF* tif, tiff_metadata* metadata, ttag_t field_tag) {
         case TIFF_IFD:
         case TIFF_IFD8:
 #ifdef DEBUG_TIFF_TAGS
-            std::cout << "Skipping offset field: " << getFieldName(tf) << std::endl;
+            LOG_INFO(TAG) << "Skipping offset field: " << getFieldName(tf) << std::endl;
 #endif
             break;
         default:
@@ -190,12 +193,12 @@ void readExifMetaData(TIFF* tif, tiff_metadata* exif_metadata) {
         // Go to the EXIF directory
         toff_t exif_offset;
         if (TIFFGetField(tif, TIFFTAG_EXIFIFD, &exif_offset)) {
-            std::cout << "Reading EXIF metadata..." << std::endl;
+            LOG_INFO(TAG) << "Reading EXIF metadata..." << std::endl;
             TIFFReadEXIFDirectory(tif, exif_offset);
 
             readAllTIFFTags(tif, exif_metadata);
 
-            std::cout << "Read " << exif_metadata->size() << " EXIF metadata entries." << std::endl;
+            LOG_INFO(TAG) << "Read " << exif_metadata->size() << " EXIF metadata entries." << std::endl;
         }
     }
 }
@@ -206,7 +209,7 @@ void writeExifMetadata(TIFF* tif, const tiff_metadata* exif_metadata) {
     if (TIFFCreateEXIFDirectory(tif) != 0) {
         std::cerr << "TIFFCreateEXIFDirectory() failed." << std::endl;
     } else {
-        std::cout << "Saving " << exif_metadata->size() << " EXIF metadata entries." << std::endl;
+        LOG_INFO(TAG) << "Saving " << exif_metadata->size() << " EXIF metadata entries." << std::endl;
         for (auto entry : *exif_metadata) {
             writeMetadataForTag(tif, exif_metadata, entry.first);
         }
@@ -236,7 +239,7 @@ void writeMetadataItem(TIFF* tif, const TIFFField* tf, const tiff_metadata_item&
     if (writeCount == 1) {
         const auto value = std::get<T>(item);
 #ifdef DEBUG_TIFF_TAGS
-        std::cout << "Saving metadata scalar " << getFieldName(tf) << ": " << value << std::endl;
+        LOG_INFO(TAG) << "Saving metadata scalar " << getFieldName(tf) << ": " << value << std::endl;
 #endif
         if (!TIFFSetField(tif, tag, value)) {
             std::cerr << "Can't write TIFF tag " << tag << " with value " << value << std::endl;
@@ -244,21 +247,21 @@ void writeMetadataItem(TIFF* tif, const TIFFField* tf, const tiff_metadata_item&
     } else {
         const auto values = std::get<std::vector<T>>(item);
 #ifdef DEBUG_TIFF_TAGS
-        std::cout << "Saving metadata vector (" << values.size() << ") " << getFieldName(tf) << ": ";
+        LOG_INFO(TAG) << "Saving metadata vector (" << values.size() << ") " << getFieldName(tf) << ": ";
         for (int i = 0; i < values.size() && i < 10; i++) {
             const auto& v = values[i];
             if (sizeof(v) == 1) {
-                std::cout << (int) v;
+                LOG_INFO(TAG) << (int) v;
             } else {
-                std::cout << v;
+                LOG_INFO(TAG) << v;
             }
             if (i < 9 && i < values.size() - 1) {
-                std::cout << ", ";
+                LOG_INFO(TAG) << ", ";
             } else if (i == 9 && i < values.size() - 1) {
-                std::cout << "...";
+                LOG_INFO(TAG) << "...";
             }
         }
-        std::cout << std::endl;
+        LOG_INFO(TAG) << std::endl;
 #endif
         if (writeCount < 0) {
             if (!TIFFSetField(tif, tag, (uint16_t) values.size(), values.data())) {
@@ -278,7 +281,7 @@ void writeMetadataItem(TIFF* tif, const TIFFField* tf, const tiff_metadata_item&
 void writeMetadataString(TIFF* tif, const TIFFField* tf, const tiff_metadata_item& item) {
     const auto string = std::get<std::string>(item);
 #ifdef DEBUG_TIFF_TAGS
-    std::cout << "Saving metadata string " << getFieldName(tf) << ": " << string << std::endl;
+    LOG_INFO(TAG) << "Saving metadata string " << getFieldName(tf) << ": " << string << std::endl;
 #endif
     uint32_t tag = TIFFFieldTag(tf);
     if (!TIFFSetField(tif, tag, string.c_str())) {

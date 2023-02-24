@@ -258,9 +258,9 @@ cl::NDRange OpenCLContext::computeWorkGroupSizes(size_t width, size_t height) {
             }
         }
     }
-//    std::cout << "computeWorkGroupSizes for " << width << ", " << height << ": "
-//              << width_divisor << ", " << height_divisor
-//              << " (" << width_divisor * height_divisor << ") of " <<  max_workgroup_size << std::endl;
+//    LOG_INFO(TAG) << "computeWorkGroupSizes for " << width << ", " << height << ": "
+//                  << width_divisor << ", " << height_divisor
+//                  << " (" << width_divisor * height_divisor << ") of " <<  max_workgroup_size << std::endl;
     return cl::NDRange(width_divisor, height_divisor);
 }
 

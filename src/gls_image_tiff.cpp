@@ -34,6 +34,9 @@
 #include "gls_dng_lossless_jpeg.hpp"
 #include "gls_auto_ptr.hpp"
 #include "gls_tiff_metadata.hpp"
+#include "gls_logging.h"
+
+static const char* TAG = "TIFF";
 
 namespace gls {
 
@@ -41,7 +44,7 @@ inline static uint16_t swapBytes(uint16_t in) {
     return ((in & 0xff) << 8) | (in >> 8);
 }
 
-int findGcd(int a, int b) {
+inline static int findGcd(int a, int b) {
   while ((a % b) > 0) {
     int R = a % b;
     a = b;
@@ -89,12 +92,12 @@ inline static void unpack14BitsInto16Bits(uint16_t *out, const uint16_t *in, siz
 inline static void unpackTo16Bits(uint16_t *out, const uint16_t *in, int bitspersample, size_t in_size) {
     int gcd = findGcd(16, bitspersample);
 
-    std::cout << "gcd: " << gcd << std::endl;
+    LOG_INFO(TAG) << "gcd: " << gcd << std::endl;
 
     int inputWords = bitspersample / gcd;
     int outputWords = 16 / gcd;
 
-    std::cout << "inputWords: " << inputWords << ", outputWords: " << outputWords << std::endl;
+    LOG_INFO(TAG) << "inputWords: " << inputWords << ", outputWords: " << outputWords << std::endl;
 
     uint16_t inputBuffer[inputWords];
     uint16_t outputBuffer[outputWords];
@@ -111,6 +114,7 @@ inline static void unpackTo16Bits(uint16_t *out, const uint16_t *in, int bitsper
     }
 }
 */
+
 static void readTiffImageData(TIFF *tif, int width, int height, int tiff_bitspersample, int tiff_samplesperpixel,
                               tiff_strip_procesor process_tiff_strip) {
     size_t stripSize = TIFFStripSize(tif);
@@ -122,7 +126,7 @@ static void readTiffImageData(TIFF *tif, int width, int height, int tiff_bitsper
                                                          [](uint8_t* buffer) { _TIFFfree(buffer); })
                                     : auto_ptr<uint8_t>(nullptr, [](uint8_t* buffer){ });
 
-    printf("stripSize: %ld, width: %d\n", stripSize, width);
+    LOG_DEBUG(TAG) << "stripSize: " << stripSize << ", width: " << width << std::endl;
 
     if (tiffbuf) {
         uint32_t rowsperstrip = 0;
@@ -161,9 +165,44 @@ static void readTiffImageData(TIFF *tif, int width, int height, int tiff_bitsper
     }
 }
 
+static void GLS_Printf(FILE * __restrict f, const char* tag, const char* a, const char* b, va_list args) {
+    timeval time_now;
+    gettimeofday(&time_now, nullptr);
+    char mbstr[100];
+    std::strftime(mbstr, sizeof(mbstr), "%F %T", std::localtime(&time_now.tv_sec));
+
+    fprintf(f, "%s.%.3d - %s/LIBTIFF %s ", mbstr, time_now.tv_usec / 1000, tag, a);
+    fprintf(f, b, args);
+    fprintf(f, "\n");
+}
+
+static void GLS_TIFFErrorHandler(const char* a, const char* b, va_list args) {
+    if (gls::currentLogLevel >= gls::LOG_LEVEL_ERROR) {
+        GLS_Printf(stderr, "E/LIBTIFF", a, b, args);
+    }
+}
+
+static void GLS_TIFFWarningHandler(const char* a, const char* b, va_list args) {
+    if (gls::currentLogLevel >= gls::LOG_LEVEL_INFO) {
+        GLS_Printf(stdout, "I/LIBTIFF", a, b, args);
+    }
+}
+
+static void setTiffErrorHandler() {
+    static bool first_time = true;
+
+    if (first_time) {
+        TIFFSetErrorHandler(GLS_TIFFErrorHandler);
+        TIFFSetWarningHandler(GLS_TIFFWarningHandler);
+        first_time = false;
+    }
+}
+
 void read_tiff_file(const std::string& filename, int pixel_channels, int pixel_bit_depth, tiff_metadata* metadata,
                     std::function<bool(int width, int height)> image_allocator,
                     tiff_strip_procesor process_tiff_strip) {
+    setTiffErrorHandler();
+
     auto_ptr<TIFF> tif(TIFFOpen(filename.c_str(), "r"),
                        [](TIFF *tif) { TIFFClose(tif); });
 
@@ -201,6 +240,8 @@ void read_tiff_file(const std::string& filename, int pixel_channels, int pixel_b
 template <typename T>
 static void writeTiffImageData(TIFF *tif, int width, int height, int pixel_channels, int pixel_bit_depth,
                         std::function<T*(int row)> row_pointer) {
+    setTiffErrorHandler();
+
     uint32_t rowsperstrip = TIFFDefaultStripSize(tif, -1);
     TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, rowsperstrip);
 
@@ -231,6 +272,8 @@ static void writeTiffImageData(TIFF *tif, int width, int height, int pixel_chann
 template <typename T>
 void write_tiff_file(const std::string& filename, int width, int height, int pixel_channels, int pixel_bit_depth,
                      tiff_compression compression, tiff_metadata* metadata, std::function<T*(int row)> row_pointer) {
+    setTiffErrorHandler();
+
     auto_ptr<TIFF> tif(TIFFOpen(filename.c_str(), "w"),
                        [](TIFF *tif) { TIFFClose(tif); });
     if (tif) {
@@ -255,6 +298,7 @@ void write_tiff_file(const std::string& filename, int width, int height, int pix
 void read_dng_file(const std::string& filename, int pixel_channels, int pixel_bit_depth, gls::tiff_metadata* dng_metadata, gls::tiff_metadata* exif_metadata,
                    std::function<bool(int width, int height)> image_allocator,
                    tiff_strip_procesor process_tiff_strip) {
+    setTiffErrorHandler();
     augment_libtiff_with_custom_tags();
 
     auto_ptr<TIFF> tif(TIFFOpen(filename.c_str(), "r"),
@@ -275,7 +319,7 @@ void read_dng_file(const std::string& filename, int pixel_channels, int pixel_bi
             uint64_t* subIFD;
             TIFFGetField(tif, TIFFTAG_SUBIFD, &subIFDCount, &subIFD);
 
-            printf("SubfileType: %d, subIFDCount: %d\n", subfileType, subIFDCount);
+            LOG_DEBUG(TAG) << "SubfileType: " << subfileType << ", subIFDCount: " << subIFDCount << std::endl;
 
             for (int i = 0; i < subIFDCount; i++) {
                 TIFFSetSubDirectory(tif, subIFD[i]);
@@ -283,7 +327,7 @@ void read_dng_file(const std::string& filename, int pixel_channels, int pixel_bi
                 uint32_t subfileType = 0;
                 TIFFGetField(tif, TIFFTAG_SUBFILETYPE, &subfileType);
 
-                printf("Switched to subfile %d, subfileType: %d\n", i, subfileType);
+                LOG_DEBUG(TAG) << "Switched to subfile: " << i << ", subfileType: " << subfileType << std::endl;
 
                 if ((subfileType & 1) == 0) {
                     if (dng_metadata) {
@@ -296,7 +340,7 @@ void read_dng_file(const std::string& filename, int pixel_channels, int pixel_bi
 
         uint16_t tiff_samplesperpixel = 0;
         TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &tiff_samplesperpixel);
-        printf("tiff_samplesperpixel: %d\n", tiff_samplesperpixel);
+        LOG_DEBUG(TAG) << "tiff_samplesperpixel: " << tiff_samplesperpixel << std::endl;
 
         uint16_t tiff_sampleformat = SAMPLEFORMAT_UINT;
         TIFFGetFieldDefaulted(tif, TIFFTAG_SAMPLEFORMAT, &tiff_sampleformat);
@@ -306,16 +350,17 @@ void read_dng_file(const std::string& filename, int pixel_channels, int pixel_bi
 
         uint16_t tiff_bitspersample = 0;
         TIFFGetFieldDefaulted(tif, TIFFTAG_BITSPERSAMPLE, &tiff_bitspersample);
-        printf("tiff_bitspersample: %d\n", tiff_bitspersample);
+        LOG_DEBUG(TAG) << "tiff_bitspersample: " << tiff_bitspersample << std::endl;
 
         uint16_t compression = 0;
         TIFFGetFieldDefaulted(tif, TIFFTAG_COMPRESSION, &compression);
-        printf("compression: %d\n", compression);
+        LOG_DEBUG(TAG) << "compression: " << compression << std::endl;
 
         uint32_t width = 0, height = 0;
         TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
         TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
-        printf("width: %d, height: %d\n", width, height);
+        LOG_DEBUG(TAG) << "width: " << width << ", height: " << height << std::endl;
+
         uint32_t image_width = width;
         uint32_t image_height = height;
 
@@ -340,22 +385,21 @@ void read_dng_file(const std::string& filename, int pixel_channels, int pixel_bi
 
         uint16_t orientation;
         TIFFGetField(tif, TIFFTAG_ORIENTATION, &orientation);
-        printf("orientation: %d\n", orientation);
+        LOG_DEBUG(TAG) << "orientation: " << orientation << std::endl;
         if (dng_metadata) {
             dng_metadata->insert({ TIFFTAG_ORIENTATION, orientation });
         }
 
         auto allocation_successful = image_allocator(image_width, image_height);
         if (allocation_successful) {
-            printf("TIFFIsTiled: %d\n", TIFFIsTiled(tif));
+            LOG_DEBUG(TAG) << "TIFFIsTiled: " << TIFFIsTiled(tif) << std::endl;
 
             if (TIFFIsTiled(tif)) {
                 uint32_t maxTileWidth, maxTileHeight;
 
                 TIFFGetField(tif, TIFFTAG_TILEWIDTH, &maxTileWidth);
                 TIFFGetField(tif, TIFFTAG_TILELENGTH, &maxTileHeight);
-
-                printf("tileWidth: %d, tileHeight: %d\n", maxTileWidth, maxTileHeight);
+                LOG_DEBUG(TAG) << "tileWidth: " << maxTileWidth << ", tileHeight: " << maxTileHeight << std::endl;
 
                 tmsize_t tileSize = TIFFTileSize(tif);
                 uint32_t tileCount = TIFFNumberOfTiles(tif);
@@ -413,7 +457,7 @@ void read_dng_file(const std::string& filename, int pixel_channels, int pixel_bi
 
                     uint32_t* stripbytecounts = 0;
                     TIFFGetField(tif, TIFFTAG_STRIPBYTECOUNTS, &stripbytecounts);
-                    printf("stripbytecounts: %d\n", stripbytecounts[0]);
+                    LOG_DEBUG(TAG) << "stripbytecounts: " << stripbytecounts[0] << std::endl;
 
                     // We only expect one single big strip, but you never know
                     uint32_t stripsize = stripbytecounts[0];
@@ -466,13 +510,14 @@ void read_dng_file(const std::string& filename, int pixel_channels, int pixel_bi
 void write_dng_file(const std::string& filename, int width, int height, int pixel_channels, int pixel_bit_depth,
                     tiff_compression compression, const tiff_metadata* dng_metadata, const tiff_metadata* exif_metadata,
                     std::function<uint16_t*(int row)> row_pointer) {
+    setTiffErrorHandler();
+    augment_libtiff_with_custom_tags();
+
     if (compression != COMPRESSION_NONE &&
         compression != COMPRESSION_JPEG &&
         compression != COMPRESSION_ADOBE_DEFLATE) {
         throw std::runtime_error("Only lossles JPEG and ADOBE_DEFLATE compression schemes are supported for DNG files. (" + std::to_string(compression) + ")");
     }
-
-    augment_libtiff_with_custom_tags();
 
     auto_ptr<TIFF> tif(TIFFOpen(filename.c_str(), "w"),
                        [](TIFF *tif) { TIFFClose(tif); });
@@ -548,7 +593,7 @@ void write_dng_file(const std::string& filename, int width, int height, int pixe
             if (TIFFWriteRawStrip(tif, 0, outputBuffer.data(), out_stream.Position()) < 0) {
                 throw std::runtime_error("Failed to write TIFF data.");
             }
-            std::cout << "Wrote " << out_stream.Position() << " compressed image bytes." << std::endl;
+            LOG_INFO(TAG) << "Wrote " << out_stream.Position() << " compressed image bytes." << std::endl;
         } else {
             writeTiffImageData(tif, width, height, pixel_channels, pixel_bit_depth, row_pointer);
         }
