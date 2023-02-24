@@ -44,15 +44,6 @@ inline static uint16_t swapBytes(uint16_t in) {
     return ((in & 0xff) << 8) | (in >> 8);
 }
 
-inline static int findGcd(int a, int b) {
-  while ((a % b) > 0) {
-    int R = a % b;
-    a = b;
-    b = R;
-  }
-  return b;
-}
-
 inline static void unpack12BitsInto16Bits(uint16_t *out, const uint16_t *in, size_t in_size) {
     for (int i = 0; i < in_size; i += 3) {
         uint16_t in0 = swapBytes(in[i]);
@@ -171,7 +162,7 @@ static void GLS_Printf(FILE * __restrict f, const char* tag, const char* a, cons
     char mbstr[100];
     std::strftime(mbstr, sizeof(mbstr), "%F %T", std::localtime(&time_now.tv_sec));
 
-    fprintf(f, "%s.%.3d - %s/LIBTIFF %s ", mbstr, time_now.tv_usec / 1000, tag, a);
+    fprintf(f, "%s.%.3ld - %s/LIBTIFF %s ", mbstr, time_now.tv_usec / 1000, tag, a);
     fprintf(f, b, args);
     fprintf(f, "\n");
 }
