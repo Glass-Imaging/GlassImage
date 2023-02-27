@@ -148,8 +148,7 @@ extern cl_api_clEnqueueFillImage clEnqueueFillImage;
 extern cl_api_clEnqueueMigrateMemObjects clEnqueueMigrateMemObjects;
 extern cl_api_clEnqueueMarkerWithWaitList clEnqueueMarkerWithWaitList;
 extern cl_api_clEnqueueBarrierWithWaitList clEnqueueBarrierWithWaitList;
-extern cl_api_clGetExtensionFunctionAddressForPlatform
-        clGetExtensionFunctionAddressForPlatform;
+extern cl_api_clGetExtensionFunctionAddressForPlatform clGetExtensionFunctionAddressForPlatform;
 extern cl_api_clCreateFromGLTexture clCreateFromGLTexture;
 
 /* cl_khr_d3d11_sharing */
@@ -162,12 +161,9 @@ extern cl_api_clEnqueueAcquireD3D11ObjectsKHR clEnqueueAcquireD3D11ObjectsKHR;
 extern cl_api_clEnqueueReleaseD3D11ObjectsKHR clEnqueueReleaseD3D11ObjectsKHR;
 
 /* cl_khr_dx9_media_sharing */
-extern cl_api_clGetDeviceIDsFromDX9MediaAdapterKHR
-        clGetDeviceIDsFromDX9MediaAdapterKHR;
-extern cl_api_clEnqueueAcquireDX9MediaSurfacesKHR
-        clEnqueueAcquireDX9MediaSurfacesKHR;
-extern cl_api_clEnqueueReleaseDX9MediaSurfacesKHR
-        clEnqueueReleaseDX9MediaSurfacesKHR;
+extern cl_api_clGetDeviceIDsFromDX9MediaAdapterKHR clGetDeviceIDsFromDX9MediaAdapterKHR;
+extern cl_api_clEnqueueAcquireDX9MediaSurfacesKHR clEnqueueAcquireDX9MediaSurfacesKHR;
+extern cl_api_clEnqueueReleaseDX9MediaSurfacesKHR clEnqueueReleaseDX9MediaSurfacesKHR;
 
 /* cl_khr_egl_image */
 extern cl_api_clCreateFromEGLImageKHR clCreateFromEGLImageKHR;
@@ -215,5 +211,5 @@ extern cl_api_clSetContextDestructorCallback clSetContextDestructorCallback;
 
 #pragma clang diagnostic pop
 
-}
+}  // namespace CL_WRAPPER_NS
 #endif  // GLS_ICD_WRAPPER_H

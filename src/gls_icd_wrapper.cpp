@@ -30,7 +30,7 @@ namespace CL_WRAPPER_NS {
 
 static std::string TAG = "OpenCLWrapper";
 
-static void bindOpenClAPIEntries(void *libopencl);
+static void bindOpenClAPIEntries(void* libopencl);
 
 int bindOpenCLLibrary() {
     static bool opencl_loaded = false;
@@ -40,9 +40,9 @@ int bindOpenCLLibrary() {
         return 0;
     }
 
-    static const char *kClLibName = "libOpenCL.so";
+    static const char* kClLibName = "libOpenCL.so";
 
-    void *libopencl = dlopen(kClLibName, RTLD_NOW | RTLD_LOCAL);
+    void* libopencl = dlopen(kClLibName, RTLD_NOW | RTLD_LOCAL);
     if (libopencl) {
         bindOpenClAPIEntries(libopencl);
         opencl_loaded = true;
@@ -54,17 +54,17 @@ int bindOpenCLLibrary() {
     return -1;
 }
 
-#define bindEntry(name)                                                         \
-  {                                                                             \
-    name = reinterpret_cast<cl_api_##name>(dlsym(libopencl, #name));            \
-    if (!name) {                                                                \
-        LOG_INFO(TAG) << "Couldn't bind OpenCL API entry: " #name << std::endl; \
-    }                                                                           \
-  }                                                                             \
+#define bindEntry(name)                                                             \
+    {                                                                               \
+        name = reinterpret_cast<cl_api_##name>(dlsym(libopencl, #name));            \
+        if (!name) {                                                                \
+            LOG_INFO(TAG) << "Couldn't bind OpenCL API entry: " #name << std::endl; \
+        }                                                                           \
+    }
 
 // Bind up to OpenCL 2.0 by default
 
-static void bindOpenClAPIEntries(void *libopencl) {
+static void bindOpenClAPIEntries(void* libopencl) {
     /* OpenCL 1.0 */
     bindEntry(clGetPlatformIDs);
     bindEntry(clGetPlatformInfo);
@@ -371,8 +371,7 @@ cl_api_clEnqueueFillImage clEnqueueFillImage = nullptr;
 cl_api_clEnqueueMigrateMemObjects clEnqueueMigrateMemObjects = nullptr;
 cl_api_clEnqueueMarkerWithWaitList clEnqueueMarkerWithWaitList = nullptr;
 cl_api_clEnqueueBarrierWithWaitList clEnqueueBarrierWithWaitList = nullptr;
-cl_api_clGetExtensionFunctionAddressForPlatform
-        clGetExtensionFunctionAddressForPlatform = nullptr;
+cl_api_clGetExtensionFunctionAddressForPlatform clGetExtensionFunctionAddressForPlatform = nullptr;
 cl_api_clCreateFromGLTexture clCreateFromGLTexture = nullptr;
 
 /* cl_khr_d3d11_sharing */
@@ -385,12 +384,9 @@ cl_api_clEnqueueAcquireD3D11ObjectsKHR clEnqueueAcquireD3D11ObjectsKHR = nullptr
 cl_api_clEnqueueReleaseD3D11ObjectsKHR clEnqueueReleaseD3D11ObjectsKHR = nullptr;
 
 /* cl_khr_dx9_media_sharing */
-cl_api_clGetDeviceIDsFromDX9MediaAdapterKHR
-        clGetDeviceIDsFromDX9MediaAdapterKHR = nullptr;
-cl_api_clEnqueueAcquireDX9MediaSurfacesKHR
-        clEnqueueAcquireDX9MediaSurfacesKHR = nullptr;
-cl_api_clEnqueueReleaseDX9MediaSurfacesKHR
-        clEnqueueReleaseDX9MediaSurfacesKHR = nullptr;
+cl_api_clGetDeviceIDsFromDX9MediaAdapterKHR clGetDeviceIDsFromDX9MediaAdapterKHR = nullptr;
+cl_api_clEnqueueAcquireDX9MediaSurfacesKHR clEnqueueAcquireDX9MediaSurfacesKHR = nullptr;
+cl_api_clEnqueueReleaseDX9MediaSurfacesKHR clEnqueueReleaseDX9MediaSurfacesKHR = nullptr;
 
 /* cl_khr_egl_image */
 cl_api_clCreateFromEGLImageKHR clCreateFromEGLImageKHR = nullptr;
@@ -435,6 +431,6 @@ cl_api_clSetProgramSpecializationConstant clSetProgramSpecializationConstant = n
 cl_api_clCreateBufferWithProperties clCreateBufferWithProperties = nullptr;
 cl_api_clCreateImageWithProperties clCreateImageWithProperties = nullptr;
 cl_api_clSetContextDestructorCallback clSetContextDestructorCallback = nullptr;
-}
+}  // namespace CL_WRAPPER_NS
 
 #pragma clang diagnostic pop
