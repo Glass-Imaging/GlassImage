@@ -22,8 +22,7 @@ namespace gls {
 template <typename T>
 struct auto_ptr : std::unique_ptr<T, std::function<void(T*)>> {
    public:
-    auto_ptr(T* val, std::function<void(T*)> destroyer)
-        : std::unique_ptr<T, std::function<void(T*)>>(val, destroyer) {}
+    auto_ptr(T* val, std::function<void(T*)> destroyer) : std::unique_ptr<T, std::function<void(T*)>>(val, destroyer) {}
 
     // Allow the auto_ptr to be implicitly converted to the underlying pointer type
     operator T*() const { return this->get(); }

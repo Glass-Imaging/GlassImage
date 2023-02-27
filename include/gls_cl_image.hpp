@@ -44,12 +44,13 @@ class cl_image : public basic_image<T> {
         cl_channel_order order = T::channels == 1 ? CL_R : T::channels == 2 ? CL_RG : CL_RGBA;
         cl_channel_type type = std::is_same<typename T::value_type, float>::value ? CL_FLOAT :
 #if USE_FP16_FLOATS && !(__APPLE__ && __x86_64__)
-                               std::is_same<typename T::value_type, gls::float16_t>::value ? CL_HALF_FLOAT :
+                               std::is_same<typename T::value_type, gls::float16_t>::value ? CL_HALF_FLOAT
+                               :
 #endif
-                               std::is_same<typename T::value_type, uint8_t>::value ? CL_UNORM_INT8 :
-                               std::is_same<typename T::value_type, uint16_t>::value ? CL_UNORM_INT16 :
-                               std::is_same<typename T::value_type, uint32_t>::value ? CL_UNSIGNED_INT32 :
-                               /* std::is_same<typename T::value_type, int32_t>::value ? */ CL_SIGNED_INT32;
+                               std::is_same<typename T::value_type, uint8_t>::value    ? CL_UNORM_INT8
+                               : std::is_same<typename T::value_type, uint16_t>::value ? CL_UNORM_INT16
+                               : std::is_same<typename T::value_type, uint32_t>::value ? CL_UNSIGNED_INT32
+                                                                                       : CL_SIGNED_INT32;
 
         return cl::ImageFormat(order, type);
     }
@@ -118,9 +119,7 @@ class cl_image_2d : public cl_image<T> {
         : cl_image<T>(_width, _height), _payload(buildPayload(context, _width, _height)) {}
 
     cl_image_2d(cl::Context context, const gls::image<T>& other)
-        : cl_image<T>(other.width, other.height),
-          _payload(buildPayload(context, other.width, other.height))
-    {
+        : cl_image<T>(other.width, other.height), _payload(buildPayload(context, other.width, other.height)) {
         copyPixelsFrom(other);
     }
 
@@ -128,7 +127,8 @@ class cl_image_2d : public cl_image<T> {
 
     static inline std::unique_ptr<payload> buildPayload(cl::Context context, int width, int height) {
         cl_mem_flags mem_flags = CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR;
-        return std::make_unique<payload>( payload{cl::Image2D(context, mem_flags, cl_image<T>::ImageFormat(), width, height) });
+        return std::make_unique<payload>(
+            payload{cl::Image2D(context, mem_flags, cl_image<T>::ImageFormat(), width, height)});
     }
 
     static inline unique_ptr fromImage(cl::Context context, const gls::image<T>& other) {
@@ -158,14 +158,14 @@ class cl_image_2d : public cl_image<T> {
     virtual image<T> mapImage(cl_map_flags map_flags = CL_MAP_READ | CL_MAP_WRITE) const {
         size_t row_pitch;
         cl::CommandQueue queue = cl::CommandQueue::getDefault();
-        T* image_data =
-            (T*)queue.enqueueMapImage(_payload->image, CL_TRUE, map_flags, {0, 0, 0},
-                                      {(size_t) image<T>::width, (size_t) image<T>::height, 1}, &row_pitch, /*slice_pitch=*/ nullptr);
+        T* image_data = (T*)queue.enqueueMapImage(_payload->image, CL_TRUE, map_flags, {0, 0, 0},
+                                                  {(size_t)image<T>::width, (size_t)image<T>::height, 1}, &row_pitch,
+                                                  /*slice_pitch=*/nullptr);
         assert(image_data != nullptr);
 
         size_t stride = row_pitch / image<T>::pixel_size;
         size_t data_size = stride * image<T>::height;
-        return gls::image(image<T>::width, image<T>::height, (int) stride, std::span<T>(image_data, data_size));
+        return gls::image(image<T>::width, image<T>::height, (int)stride, std::span<T>(image_data, data_size));
     }
 
     virtual void unmapImage(const image<T>& mappedImage) const {
@@ -222,13 +222,14 @@ class cl_image_buffer_2d : public cl_image_2d<T> {
 
     image<T> mapImage(cl_map_flags map_flags = CL_MAP_READ | CL_MAP_WRITE) const override {
         size_t pixel_count = stride * image<T>::height;
-        T* image_data =
-            (T *) cl::enqueueMapBuffer(getBuffer(), true, map_flags, 0, image<T>::pixel_size * pixel_count);
+        T* image_data = (T*)cl::enqueueMapBuffer(getBuffer(), true, map_flags, 0, image<T>::pixel_size * pixel_count);
 
         return gls::image(image<T>::width, image<T>::height, stride, std::span<T>(image_data, pixel_count));
     }
 
-    void unmapImage(const image<T>& mappedImage) const override { cl::enqueueUnmapMemObject(getBuffer(), (void*)mappedImage[0]); }
+    void unmapImage(const image<T>& mappedImage) const override {
+        cl::enqueueUnmapMemObject(getBuffer(), (void*)mappedImage[0]);
+    }
 
     cl::Buffer getBuffer() const { return static_cast<const payload*>(this->_payload.get())->buffer; }
 };
@@ -245,7 +246,8 @@ class cl_image_2d_array : public cl_image<T> {
     cl_image_2d_array(cl::Context context, int _width, int _height, int _depth)
         : cl_image<T>(_width, _height), depth(_depth), _image(buildImage(context, _width, _height, _depth)) {}
 
-    cl_image_2d_array(cl::Context context, const gls::image<T>& other, int _depth) : cl_image_2d_array(other.width, other.height / _depth, _depth) {
+    cl_image_2d_array(cl::Context context, const gls::image<T>& other, int _depth)
+        : cl_image_2d_array(other.width, other.height / _depth, _depth) {
         copyPixelsFrom(other);
     }
 
@@ -257,20 +259,23 @@ class cl_image_2d_array : public cl_image<T> {
 
     void copyPixelsFrom(const image<T>& other) const {
         assert(other.width == image<T>::width && other.height == image<T>::height * depth);
-        cl::enqueueWriteImage(_image, true, {0, 0, 0}, {(size_t)image<T>::width, (size_t)image<T>::height, static_cast<size_t>(depth)},
+        cl::enqueueWriteImage(_image, true, {0, 0, 0},
+                              {(size_t)image<T>::width, (size_t)image<T>::height, static_cast<size_t>(depth)},
                               image<T>::pixel_size * image<T>::width,
                               image<T>::width * image<T>::height * image<T>::pixel_size, other.pixels().data());
     }
 
     void copyPixelsTo(image<T>* other) const {
         assert(other->width == image<T>::width && other->height == image<T>::height * depth);
-        cl::enqueueReadImage(_image, true, {0, 0, 0}, {(size_t)image<T>::width, (size_t)image<T>::height, static_cast<size_t>(depth)},
+        cl::enqueueReadImage(_image, true, {0, 0, 0},
+                             {(size_t)image<T>::width, (size_t)image<T>::height, static_cast<size_t>(depth)},
                              image<T>::pixel_size * image<T>::width,
                              image<T>::width * image<T>::height * image<T>::pixel_size, other->pixels().data());
     }
 
     static inline cl::Image2DArray buildImage(cl::Context context, int width, int height, int depth) {
-        return cl::Image2DArray(context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, cl_image<T>::ImageFormat(), depth, width, height, width, width * height);
+        return cl::Image2DArray(context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, cl_image<T>::ImageFormat(), depth,
+                                width, height, width, width * height);
     }
 
     cl::Image2DArray getImage2DArray() const { return _image; }
@@ -314,7 +319,8 @@ class cl_image_3d : public cl_image<T> {
 
     static inline cl::Image3D buildImage(cl::Context context, int width, int height) {
         size_t depth = height / width;
-        return cl::Image3D(context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, cl_image<T>::ImageFormat(), width, width, depth);
+        return cl::Image3D(context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, cl_image<T>::ImageFormat(), width, width,
+                           depth);
     }
 
     cl::Image3D getImage3D() const { return _image; }

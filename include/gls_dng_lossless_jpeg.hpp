@@ -18,6 +18,7 @@
 
 #if defined(__linux__) && !defined(__ANDROID__)
 #include <stdint.h>
+
 #include <cstring>
 #include <stdexcept>
 #endif
@@ -82,11 +83,10 @@ class dng_spooler {
     size_t size() { return _storage.size(); }
 };
 
-void DecodeLosslessJPEG(dng_stream& stream, dng_spooler& spooler, uint32_t minDecodedSize,
-                        uint32_t maxDecodedSize, bool bug16, uint64_t endOfData);
+void DecodeLosslessJPEG(dng_stream& stream, dng_spooler& spooler, uint32_t minDecodedSize, uint32_t maxDecodedSize,
+                        bool bug16, uint64_t endOfData);
 
-void EncodeLosslessJPEG(const uint16_t* srcData, uint32_t srcRows, uint32_t srcCols,
-                        uint32_t srcChannels, uint32_t srcBitDepth, int32_t srcRowStep,
-                        int32_t srcColStep, dng_stream& stream);
+void EncodeLosslessJPEG(const uint16_t* srcData, uint32_t srcRows, uint32_t srcCols, uint32_t srcChannels,
+                        uint32_t srcBitDepth, int32_t srcRowStep, int32_t srcColStep, dng_stream& stream);
 
 }  // namespace gls

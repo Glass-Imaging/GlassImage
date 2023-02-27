@@ -13,12 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gls_image_png.h"
-
 #include <assert.h>
-
 #include <png.h>
 #include <zlib.h>
+
+#include "gls_image_png.h"
 
 namespace gls {
 

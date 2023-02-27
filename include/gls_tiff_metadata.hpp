@@ -16,21 +16,21 @@
 #ifndef TiffMetadata_hpp
 #define TiffMetadata_hpp
 
+#include <tiffio.h>
+
 #include <string>
+#include <unordered_map>
 #include <variant>
 #include <vector>
-#include <unordered_map>
-
-#include <tiffio.h>
 
 namespace gls {
 
-typedef std::variant<uint8_t, uint16_t, uint32_t, int8_t, int16_t, int32_t, float, double,
-                     std::vector<uint8_t>, std::vector<uint16_t>, std::vector<uint32_t>,
-                     std::vector<int8_t>, std::vector<int16_t>, std::vector<int32_t>,
-                     std::vector<float>, std::vector<double>, std::string> tiff_metadata_item;
+typedef std::variant<uint8_t, uint16_t, uint32_t, int8_t, int16_t, int32_t, float, double, std::vector<uint8_t>,
+                     std::vector<uint16_t>, std::vector<uint32_t>, std::vector<int8_t>, std::vector<int16_t>,
+                     std::vector<int32_t>, std::vector<float>, std::vector<double>, std::string>
+    tiff_metadata_item;
 
-class tiff_metadata: public std::unordered_map<ttag_t, tiff_metadata_item> { };
+class tiff_metadata : public std::unordered_map<ttag_t, tiff_metadata_item> {};
 
 void readExifMetaData(TIFF* tif, tiff_metadata* metadata);
 
@@ -120,6 +120,6 @@ bool getValue(const gls::tiff_metadata& metadata, ttag_t key, T* value) {
 #define TIFFTAG_PREVIEWSETTINGSDIGEST 50969
 #define TIFFTAG_PREVIEWDATETIME 50971
 
-} // namespace gls
+}  // namespace gls
 
 #endif /* TiffMetadata_hpp */

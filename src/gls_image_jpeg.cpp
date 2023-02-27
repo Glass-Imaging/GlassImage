@@ -13,11 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gls_image_jpeg.h"
+// clang-format off
 
+#include <stdio.h>
 #include <jpeglib.h>
 
+// clang-format on
+
 #include <cassert>
+
+#include "gls_image_jpeg.h"
 
 namespace gls {
 

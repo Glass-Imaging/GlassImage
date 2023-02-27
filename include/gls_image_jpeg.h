@@ -21,8 +21,8 @@
 #include <string>
 
 #if defined(__linux__) && !defined(__ANDROID__)
-#include <stdexcept>
 #include <memory>
+#include <stdexcept>
 #endif
 
 namespace gls {

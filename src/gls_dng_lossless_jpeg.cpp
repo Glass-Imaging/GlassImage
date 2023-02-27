@@ -54,10 +54,9 @@
 
 /*****************************************************************************/
 
-#include "gls_dng_lossless_jpeg.hpp"
-
 #include <stdio.h>
 
+#include "gls_dng_lossless_jpeg.hpp"
 #include "gls_logging.h"
 
 static const char* TAG = "LOSSLESS_JPEG";
@@ -207,12 +206,11 @@ static void FixHuffTbl(HuffmanTable* htbl) {
     int32_t l;
     int32_t i;
 
-    const uint32_t bitMask[] = {
-        0xffffffff, 0x7fffffff, 0x3fffffff, 0x1fffffff, 0x0fffffff, 0x07ffffff, 0x03ffffff,
-        0x01ffffff, 0x00ffffff, 0x007fffff, 0x003fffff, 0x001fffff, 0x000fffff, 0x0007ffff,
-        0x0003ffff, 0x0001ffff, 0x0000ffff, 0x00007fff, 0x00003fff, 0x00001fff, 0x00000fff,
-        0x000007ff, 0x000003ff, 0x000001ff, 0x000000ff, 0x0000007f, 0x0000003f, 0x0000001f,
-        0x0000000f, 0x00000007, 0x00000003, 0x00000001};
+    const uint32_t bitMask[] = {0xffffffff, 0x7fffffff, 0x3fffffff, 0x1fffffff, 0x0fffffff, 0x07ffffff, 0x03ffffff,
+                                0x01ffffff, 0x00ffffff, 0x007fffff, 0x003fffff, 0x001fffff, 0x000fffff, 0x0007ffff,
+                                0x0003ffff, 0x0001ffff, 0x0000ffff, 0x00007fff, 0x00003fff, 0x00001fff, 0x00000fff,
+                                0x000007ff, 0x000003ff, 0x000001ff, 0x000000ff, 0x0000007f, 0x0000003f, 0x0000001f,
+                                0x0000000f, 0x00000007, 0x00000003, 0x00000001};
 
     // Figure C.1: make table of Huffman code length for each symbol
     // Note that this is in code-length order.
@@ -1261,8 +1259,7 @@ void dng_lossless_decoder::ProcessRestart() {
  *--------------------------------------------------------------
  */
 
-inline int32_t dng_lossless_decoder::QuickPredict(int32_t col, int32_t curComp, MCU* curRowBuf,
-                                                  MCU* prevRowBuf) {
+inline int32_t dng_lossless_decoder::QuickPredict(int32_t col, int32_t curComp, MCU* curRowBuf, MCU* prevRowBuf) {
     int32_t diag = prevRowBuf[col - 1][curComp];
     int32_t upper = prevRowBuf[col][curComp];
     int32_t left = curRowBuf[col - 1][curComp];
@@ -1374,10 +1371,9 @@ inline void dng_lossless_decoder::flush_bits(int32_t nbits) { bitsLeft -= nbits;
 
 #if qOptGetBitsMath
 #define MASK_ME(nbits) (0x0FFFF >> (16 - nbits))
-static const int32_t get_bits_mask[17] = {
-    MASK_ME(0),  MASK_ME(1),  MASK_ME(2),  MASK_ME(3),  MASK_ME(4),  MASK_ME(5),
-    MASK_ME(6),  MASK_ME(7),  MASK_ME(8),  MASK_ME(9),  MASK_ME(10), MASK_ME(11),
-    MASK_ME(12), MASK_ME(13), MASK_ME(14), MASK_ME(15), MASK_ME(16)};
+static const int32_t get_bits_mask[17] = {MASK_ME(0),  MASK_ME(1),  MASK_ME(2),  MASK_ME(3),  MASK_ME(4),  MASK_ME(5),
+                                          MASK_ME(6),  MASK_ME(7),  MASK_ME(8),  MASK_ME(9),  MASK_ME(10), MASK_ME(11),
+                                          MASK_ME(12), MASK_ME(13), MASK_ME(14), MASK_ME(15), MASK_ME(16)};
 #endif
 
 /*****************************************************************************/
@@ -1505,8 +1501,7 @@ inline void dng_lossless_decoder::HuffExtend(int32_t& x, int32_t s) {
 
 // Called from DecodeImage () to write one row.
 
-inline void dng_lossless_decoder::PmPutRow(MCU* buf, int32_t numComp, int32_t numCol,
-                                           int32_t /* row */) {
+inline void dng_lossless_decoder::PmPutRow(MCU* buf, int32_t numComp, int32_t numCol, int32_t /* row */) {
     uint16_t* sPtr = &buf[0][0];
 
     uint32_t pixels = numCol * numComp;
@@ -2131,8 +2126,7 @@ void dng_lossless_decoder::DecodeImage() {
 
 /*****************************************************************************/
 
-void dng_lossless_decoder::StartRead(uint32_t& imageWidth, uint32_t& imageHeight,
-                                     uint32_t& imageChannels) {
+void dng_lossless_decoder::StartRead(uint32_t& imageWidth, uint32_t& imageHeight, uint32_t& imageChannels) {
     ReadFileHeader();
     ReadScanHeader();
     DecoderStructInit();
@@ -2180,9 +2174,8 @@ class dng_lossless_encoder {
     size_t streamBufferOffset;
 
    public:
-    dng_lossless_encoder(const uint16_t* srcData, uint32_t srcRows, uint32_t srcCols,
-                         uint32_t srcChannels, uint32_t srcBitDepth, int32_t srcRowStep,
-                         int32_t srcColStep, dng_stream& stream);
+    dng_lossless_encoder(const uint16_t* srcData, uint32_t srcRows, uint32_t srcCols, uint32_t srcChannels,
+                         uint32_t srcBitDepth, int32_t srcRowStep, int32_t srcColStep, dng_stream& stream);
 
     void Encode();
 
@@ -2199,8 +2192,7 @@ class dng_lossless_encoder {
 
     int EmitBitsToBuffer(int buffered_bits, uint64_t bit_buffer);
 
-    int EncodeOneDiffToBuffer(int diff, HuffmanTable* dctbl, int buffered_bits,
-                              uint64_t& bit_buffer);
+    int EncodeOneDiffToBuffer(int diff, HuffmanTable* dctbl, int buffered_bits, uint64_t& bit_buffer);
 
     void CountOneDiff(int diff, uint32_t* countTable);
 
@@ -2233,9 +2225,8 @@ class dng_lossless_encoder {
 
 /*****************************************************************************/
 
-dng_lossless_encoder::dng_lossless_encoder(const uint16_t* srcData, uint32_t srcRows,
-                                           uint32_t srcCols, uint32_t srcChannels,
-                                           uint32_t srcBitDepth, int32_t srcRowStep,
+dng_lossless_encoder::dng_lossless_encoder(const uint16_t* srcData, uint32_t srcRows, uint32_t srcCols,
+                                           uint32_t srcChannels, uint32_t srcBitDepth, int32_t srcRowStep,
                                            int32_t srcColStep, dng_stream& stream)
 
     : fSrcData(srcData),
@@ -2295,9 +2286,7 @@ dng_lossless_encoder::dng_lossless_encoder(const uint16_t* srcData, uint32_t src
 
 /*****************************************************************************/
 
-inline void dng_lossless_encoder::EmitByte(uint8_t value) {
-    streamBuffer[streamBufferOffset++] = value;
-}
+inline void dng_lossless_encoder::EmitByte(uint8_t value) { streamBuffer[streamBufferOffset++] = value; }
 
 /*****************************************************************************/
 
@@ -2516,8 +2505,8 @@ inline int dng_lossless_encoder::EmitBitsToBuffer(int buffered_bits, uint64_t bi
 
 /*****************************************************************************/
 
-inline int dng_lossless_encoder::EncodeOneDiffToBuffer(int diff, HuffmanTable* dctbl,
-                                                       int buffered_bits, uint64_t& bit_buffer) {
+inline int dng_lossless_encoder::EncodeOneDiffToBuffer(int diff, HuffmanTable* dctbl, int buffered_bits,
+                                                       uint64_t& bit_buffer) {
     DNG_ASSERT(buffered_bits < 64, "buffered_bits too big(1)");
 
     if (buffered_bits > 32) {
@@ -2711,10 +2700,8 @@ void dng_lossless_encoder::HuffEncode() {
                 int16_t diff0 = (int16_t)(pixel0 - pred0);
                 int16_t diff1 = (int16_t)(pixel1 - pred1);
 
-                buffered_bits =
-                    EncodeOneDiffToBuffer(diff0, &huffTable[0], buffered_bits, bit_buffer);
-                buffered_bits =
-                    EncodeOneDiffToBuffer(diff1, &huffTable[1], buffered_bits, bit_buffer);
+                buffered_bits = EncodeOneDiffToBuffer(diff0, &huffTable[0], buffered_bits, bit_buffer);
+                buffered_bits = EncodeOneDiffToBuffer(diff1, &huffTable[1], buffered_bits, bit_buffer);
 
                 pred0 = pixel0;
                 pred1 = pixel1;
@@ -3256,8 +3243,8 @@ void dng_lossless_encoder::Encode() {
 
 /*****************************************************************************/
 
-void DecodeLosslessJPEG(dng_stream& stream, dng_spooler& spooler, uint32_t minDecodedSize,
-                        uint32_t maxDecodedSize, bool bug16, uint64_t endOfData) {
+void DecodeLosslessJPEG(dng_stream& stream, dng_spooler& spooler, uint32_t minDecodedSize, uint32_t maxDecodedSize,
+                        bool bug16, uint64_t endOfData) {
     dng_lossless_decoder decoder(&stream, &spooler, bug16);
 
     uint32_t imageWidth;
@@ -3283,11 +3270,9 @@ void DecodeLosslessJPEG(dng_stream& stream, dng_spooler& spooler, uint32_t minDe
 
 /*****************************************************************************/
 
-void EncodeLosslessJPEG(const uint16_t* srcData, uint32_t srcRows, uint32_t srcCols,
-                        uint32_t srcChannels, uint32_t srcBitDepth, int32_t srcRowStep,
-                        int32_t srcColStep, dng_stream& stream) {
-    dng_lossless_encoder encoder(srcData, srcRows, srcCols, srcChannels, srcBitDepth, srcRowStep,
-                                 srcColStep, stream);
+void EncodeLosslessJPEG(const uint16_t* srcData, uint32_t srcRows, uint32_t srcCols, uint32_t srcChannels,
+                        uint32_t srcBitDepth, int32_t srcRowStep, int32_t srcColStep, dng_stream& stream) {
+    dng_lossless_encoder encoder(srcData, srcRows, srcCols, srcChannels, srcBitDepth, srcRowStep, srcColStep, stream);
 
     encoder.Encode();
 }

@@ -112,9 +112,14 @@ struct basic_pixel : public T {
     typedef typename T::pixel_type::value_type value_type;
 
     constexpr basic_pixel() {}
-    constexpr basic_pixel(value_type value) { static_assert(channels == 1); this->v[0] = value; }
+    constexpr basic_pixel(value_type value) {
+        static_assert(channels == 1);
+        this->v[0] = value;
+    }
     constexpr basic_pixel(value_type _v[channels]) { std::copy(&_v[0], &_v[channels], this->v.begin()); }
-    constexpr basic_pixel(const std::array<value_type, channels>& _v) { std::copy(_v.begin(), _v.end(), this->v.begin()); }
+    constexpr basic_pixel(const std::array<value_type, channels>& _v) {
+        std::copy(_v.begin(), _v.end(), this->v.begin());
+    }
 
     template <typename T2>
     constexpr basic_pixel(const std::array<T2, channels>& _v) {
@@ -136,7 +141,7 @@ template <typename T>
 constexpr basic_pixel<T> lerp(const basic_pixel<T>& p1, const basic_pixel<T>& p2, float alpha) {
     basic_pixel<T> result;
     for (int c = 0; c < T::pixel_type::channels; c++) {
-        result[c] = (typename T::pixel_type::value_type) (p1[c] + alpha * (p2[c] - p1[c]));
+        result[c] = (typename T::pixel_type::value_type)(p1[c] + alpha * (p2[c] - p1[c]));
     }
     return result;
 }
@@ -192,9 +197,7 @@ class basic_image {
     const int width;
     const int height;
 
-    constexpr gls::size size() const {
-        return { width, height };
-    }
+    constexpr gls::size size() const { return {width, height}; }
 
     typedef T pixel_type;
     typedef std::unique_ptr<basic_image<T>> unique_ptr;
@@ -231,14 +234,14 @@ class image : public basic_image<T> {
           stride(_stride),
 #if USE_STD_VECTOR_ALLOCATION
           _data_store(std::make_unique<std::vector<T>>(_stride * _height)),
-          _data(_data_store->data(), _data_store->size()) {}
+          _data(_data_store->data(), _data_store->size()) {
+    }
 #else
           _data_store(new T[_stride * _height]),
-          _data(_data_store, _stride * _height) {}
-
-    virtual ~image() {
-        delete _data_store;
+          _data(_data_store, _stride * _height) {
     }
+
+    virtual ~image() { delete _data_store; }
 #endif
 
     constexpr image(int _width, int _height) : image(_width, _height, _width) {}
@@ -253,17 +256,22 @@ class image : public basic_image<T> {
 
     constexpr image(int _width, int _height, std::span<T> data) : image<T>(_width, _height, _width, data) {}
 
-    constexpr image(image *_base, int _x, int _y, int _width, int _height) : image<T>(_width, _height, _base->stride, std::span(_base->_data.data() + _y * _base->stride + _x, _base->stride * _height)) {
+    constexpr image(image* _base, int _x, int _y, int _width, int _height)
+        : image<T>(_width, _height, _base->stride,
+                   std::span(_base->_data.data() + _y * _base->stride + _x, _base->stride * _height)) {
         assert(_x + _width <= _base->width && _y + _height <= _base->height);
     }
 
-    constexpr image(image *_base, const rectangle& _crop) : image(_base, _crop.x, _crop.y, _crop.width, _crop.height) {}
+    constexpr image(image* _base, const rectangle& _crop) : image(_base, _crop.x, _crop.y, _crop.width, _crop.height) {}
 
-    constexpr image(const image& _base, int _x, int _y, int _width, int _height) : image<T>(_width, _height, _base.stride, std::span(_base._data.data() + _y * _base.stride + _x, _base.stride * _height)) {
+    constexpr image(const image& _base, int _x, int _y, int _width, int _height)
+        : image<T>(_width, _height, _base.stride,
+                   std::span(_base._data.data() + _y * _base.stride + _x, _base.stride * _height)) {
         assert(_x + _width <= _base.width && _y + _height <= _base.height);
     }
 
-    constexpr image(const image& _base, const rectangle& _crop) : image(_base, _crop.x, _crop.y, _crop.width, _crop.height) {}
+    constexpr image(const image& _base, const rectangle& _crop)
+        : image(_base, _crop.x, _crop.y, _crop.width, _crop.height) {}
 
     // row access
     constexpr T* operator[](int row) { return &_data[stride * row]; }
@@ -318,11 +326,12 @@ class image : public basic_image<T> {
     }
 
     // Write image to PNG file
-    // compression_level range: [0-9], 0 -> no compression (default), 1 -> *fast* compression, otherwise useful range: [3-6]
+    // compression_level range: [0-9], 0 -> no compression (default), 1 -> *fast* compression, otherwise useful range:
+    // [3-6]
     constexpr void write_png_file(const std::string& filename, int compression_level = 0) const {
         auto row_pointer = [this](int row) -> uint8_t* { return (uint8_t*)(*this)[row]; };
-        gls::write_png_file(filename, basic_image<T>::width, basic_image<T>::height, T::channels, T::bit_depth,
-                            false, compression_level, row_pointer);
+        gls::write_png_file(filename, basic_image<T>::width, basic_image<T>::height, T::channels, T::bit_depth, false,
+                            compression_level, row_pointer);
     }
 
     constexpr void write_png_file(const std::string& filename, bool skip_alpha, int compression_level = 0) const {
@@ -364,33 +373,32 @@ class image : public basic_image<T> {
 
     // Helper function for read_tiff_file and read_dng_file
     constexpr static bool process_tiff_strip(image* destination, int tiff_bitspersample, int tiff_samplesperpixel,
-                                             int destination_row, int strip_width, int strip_height,
-                                             int crop_x, int crop_y, uint8_t *tiff_buffer) {
+                                             int destination_row, int strip_width, int strip_height, int crop_x,
+                                             int crop_y, uint8_t* tiff_buffer) {
         typedef typename T::value_type value_type;
 
         std::function<value_type()> nextTiffPixelSame = [&tiff_buffer]() -> value_type {
-            value_type pixelValue = *((value_type *) tiff_buffer);
+            value_type pixelValue = *((value_type*)tiff_buffer);
             tiff_buffer += sizeof(value_type);
             return pixelValue;
         };
         std::function<value_type()> nextTiffPixel8to16 = [&tiff_buffer]() -> value_type {
-            return (value_type) *(tiff_buffer++) << 8;;
+            return (value_type) * (tiff_buffer++) << 8;
+            ;
         };
         std::function<value_type()> nextTiffPixel16to8 = [&tiff_buffer]() -> value_type {
-            value_type pixelValue = (value_type) (*((uint16_t *) tiff_buffer) >> 8);
+            value_type pixelValue = (value_type)(*((uint16_t*)tiff_buffer) >> 8);
             tiff_buffer += sizeof(uint16_t);
             return pixelValue;
         };
 
-        auto nextTiffPixel = tiff_bitspersample == T::bit_depth
-            ? nextTiffPixelSame
-            : (tiff_bitspersample == 8)
-                ? nextTiffPixel8to16
-                : nextTiffPixel16to8;
+        auto nextTiffPixel = tiff_bitspersample == T::bit_depth ? nextTiffPixelSame
+                             : (tiff_bitspersample == 8)        ? nextTiffPixel8to16
+                                                                : nextTiffPixel16to8;
 
         for (int y = 0; y < strip_height && y + destination_row - crop_y < destination->height; y++) {
             for (int x = 0; x < strip_width; x++) {
-                for (int c = 0; c < std::min((int) tiff_samplesperpixel, (int) T::channels); c++) {
+                for (int c = 0; c < std::min((int)tiff_samplesperpixel, (int)T::channels); c++) {
                     if (x >= crop_x && y + destination_row >= crop_y && x - crop_x < destination->width) {
                         (*destination)[y + destination_row - crop_y][x - crop_x][c] = nextTiffPixel();
                     } else {
@@ -405,48 +413,51 @@ class image : public basic_image<T> {
     // Image factory from TIFF file
     constexpr static unique_ptr read_tiff_file(const std::string& filename, tiff_metadata* metadata = nullptr) {
         unique_ptr image = nullptr;
-        gls::read_tiff_file(filename, T::channels, T::bit_depth, metadata,
-                            [&image](int width, int height) -> bool {
-                                return (image = std::make_unique<gls::image<T>>(width, height)) != nullptr;
-                            },
-                            [&image](int tiff_bitspersample, int tiff_samplesperpixel,
-                                     int row, int strip_width, int strip_height,
-                                     int crop_x, int crop_y, uint8_t *tiff_buffer) -> bool {
-                                return process_tiff_strip(image.get(), tiff_bitspersample, tiff_samplesperpixel,
-                                                          row, /*strip_width=*/ image->width, strip_height,
-                                                          /*crop_x=*/ 0, /*crop_y=*/ 0, tiff_buffer);
-                            });
+        gls::read_tiff_file(
+            filename, T::channels, T::bit_depth, metadata,
+            [&image](int width, int height) -> bool {
+                return (image = std::make_unique<gls::image<T>>(width, height)) != nullptr;
+            },
+            [&image](int tiff_bitspersample, int tiff_samplesperpixel, int row, int strip_width, int strip_height,
+                     int crop_x, int crop_y, uint8_t* tiff_buffer) -> bool {
+                return process_tiff_strip(image.get(), tiff_bitspersample, tiff_samplesperpixel, row,
+                                          /*strip_width=*/image->width, strip_height,
+                                          /*crop_x=*/0, /*crop_y=*/0, tiff_buffer);
+            });
         return image;
     }
 
     // Write image to TIFF file
-    constexpr void write_tiff_file(const std::string& filename, tiff_compression compression = tiff_compression::NONE, tiff_metadata* metadata = nullptr) const {
+    constexpr void write_tiff_file(const std::string& filename, tiff_compression compression = tiff_compression::NONE,
+                                   tiff_metadata* metadata = nullptr) const {
         typedef typename T::value_type value_type;
         auto row_pointer = [this](int row) -> value_type* { return (value_type*)(*this)[row]; };
-        gls::write_tiff_file<value_type>(filename, basic_image<T>::width, basic_image<T>::height, T::channels, T::bit_depth,
-                                       compression, metadata, row_pointer);
+        gls::write_tiff_file<value_type>(filename, basic_image<T>::width, basic_image<T>::height, T::channels,
+                                         T::bit_depth, compression, metadata, row_pointer);
     }
 
     // Image factory from DNG file
-    constexpr static unique_ptr read_dng_file(const std::string& filename, tiff_metadata* dng_metadata = nullptr, tiff_metadata* exif_metadata = nullptr) {
+    constexpr static unique_ptr read_dng_file(const std::string& filename, tiff_metadata* dng_metadata = nullptr,
+                                              tiff_metadata* exif_metadata = nullptr) {
         unique_ptr image = nullptr;
-        gls::read_dng_file(filename, T::channels, T::bit_depth, dng_metadata, exif_metadata,
-                            [&image](int width, int height) -> bool {
-                                return (image = std::make_unique<gls::image<T>>(width, height)) != nullptr;
-                            },
-                            [&image](int tiff_bitspersample, int tiff_samplesperpixel,
-                                     int row, int strip_width, int strip_height,
-                                     int crop_x, int crop_y, uint8_t *tiff_buffer) -> bool {
-                                return process_tiff_strip(image.get(), tiff_bitspersample, tiff_samplesperpixel,
-                                                          row, /*strip_width=*/ strip_width, strip_height,
-                                                          /*crop_x=*/ crop_x, /*crop_y=*/ crop_y, tiff_buffer);
-                            });
+        gls::read_dng_file(
+            filename, T::channels, T::bit_depth, dng_metadata, exif_metadata,
+            [&image](int width, int height) -> bool {
+                return (image = std::make_unique<gls::image<T>>(width, height)) != nullptr;
+            },
+            [&image](int tiff_bitspersample, int tiff_samplesperpixel, int row, int strip_width, int strip_height,
+                     int crop_x, int crop_y, uint8_t* tiff_buffer) -> bool {
+                return process_tiff_strip(image.get(), tiff_bitspersample, tiff_samplesperpixel, row,
+                                          /*strip_width=*/strip_width, strip_height,
+                                          /*crop_x=*/crop_x, /*crop_y=*/crop_y, tiff_buffer);
+            });
         return image;
     }
 
     // Write image to DNG file
     constexpr void write_dng_file(const std::string& filename, tiff_compression compression = tiff_compression::NONE,
-                                  const tiff_metadata* dng_metadata = nullptr, const tiff_metadata* exif_metadata = nullptr) const {
+                                  const tiff_metadata* dng_metadata = nullptr,
+                                  const tiff_metadata* exif_metadata = nullptr) const {
         typedef typename T::value_type value_type;
         auto row_pointer = [this](int row) -> value_type* { return (value_type*)(*this)[row]; };
         gls::write_dng_file(filename, basic_image<T>::width, basic_image<T>::height, T::channels, T::bit_depth,
@@ -459,10 +470,10 @@ constexpr static inline void copyPixels(gls::image<T>* to, const gls::image<T>& 
     assert(to->width == from.width && to->height == from.height);
 
     if (to->stride == from.stride) {
-        memcpy((void*) (*to)[0], (void*) from[0], to->stride * to->height * sizeof(T));
+        memcpy((void*)(*to)[0], (void*)from[0], to->stride * to->height * sizeof(T));
     } else {
         for (int j = 0; j < to->height; j++) {
-            memcpy((void*) (*to)[j], (void*) from[j], to->width * sizeof(T));
+            memcpy((void*)(*to)[j], (void*)from[j], to->width * sizeof(T));
         }
     }
 }

@@ -21,7 +21,7 @@ log_level currentLogLevel = LOG_LEVEL_ERROR;
 
 NullStream null;
 
-}
+}  // namespace gls
 
 #if defined(__ANDROID__) && !defined(USE_IOSTREAM_LOG)
 
@@ -30,14 +30,14 @@ NullStream null;
 struct AndroidLogBuf : public std::streambuf {
     AndroidLogBuf() = default;
 
-    std::streambuf &operator()(android_LogPriority PRIORITY, const std::string TAG) {
+    std::streambuf& operator()(android_LogPriority PRIORITY, const std::string TAG) {
         _PRIORITY = PRIORITY;
         _TAG = TAG;
         return *this;
     }
 
-protected:
-    std::streamsize xsputn(const char_type *s, std::streamsize n) override {
+   protected:
+    std::streamsize xsputn(const char_type* s, std::streamsize n) override {
         _buf.sputn(s, n);
         return n;
     }
@@ -49,7 +49,7 @@ protected:
         return ch;
     }
 
-private:
+   private:
     android_LogPriority _PRIORITY = ANDROID_LOG_INFO;
     std::string _TAG = "Default";
     std::stringbuf _buf;

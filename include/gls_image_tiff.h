@@ -17,10 +17,12 @@
 #define gls_image_tiff_hpp
 
 #include <functional>
-#include <string>
 #include <span>
+#include <string>
 
 namespace gls {
+
+// clang-format off
 
 typedef enum tiff_compression {
     NONE            = 1,        /* dump mode */
@@ -31,14 +33,16 @@ typedef enum tiff_compression {
     ADOBE_DEFLATE   = 8,        /* Deflate compression, as recognized by Adobe */
 } tiff_compression;
 
+// clang-format on
+
 class tiff_metadata;
 
 typedef std::function<bool(int tiff_bitspersample, int tiff_samplesperpixel, int row, int strip_width, int strip_height,
-                           int crop_x, int crop_y, uint8_t *tiff_buffer)> tiff_strip_procesor;
+                           int crop_x, int crop_y, uint8_t* tiff_buffer)>
+    tiff_strip_procesor;
 
 void read_tiff_file(const std::string& filename, int pixel_channels, int pixel_bit_depth, tiff_metadata* metadata,
-                    std::function<bool(int width, int height)> image_allocator,
-                    tiff_strip_procesor process_tiff_strip);
+                    std::function<bool(int width, int height)> image_allocator, tiff_strip_procesor process_tiff_strip);
 
 template <typename T>
 void write_tiff_file(const std::string& filename, int width, int height, int pixel_channels, int pixel_bit_depth,

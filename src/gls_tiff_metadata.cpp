@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gls_tiff_metadata.hpp"
-
 #include <iostream>
+
 #include "gls_logging.h"
+#include "gls_tiff_metadata.hpp"
 
 static const char* TAG = "DEMOSAIC";
 
@@ -25,10 +25,10 @@ static const char* TAG = "DEMOSAIC";
 namespace gls {
 
 struct TiffFieldInfo {
-    const ttag_t        field_tag;          /* field's tag */
-    const int           field_readcount;    /* read count/TIFF_VARIABLE/TIFF_SPP */
-    const TIFFDataType  field_type;         /* type of associated data */
-    const char*         field_name;         /* ASCII name */
+    const ttag_t field_tag;        /* field's tag */
+    const int field_readcount;     /* read count/TIFF_VARIABLE/TIFF_SPP */
+    const TIFFDataType field_type; /* type of associated data */
+    const char* field_name;        /* ASCII name */
 };
 
 std::string getFieldName(const TIFFField* tf) {
@@ -36,7 +36,7 @@ std::string getFieldName(const TIFFField* tf) {
     return (field_name != nullptr) ? std::string(field_name) : std::to_string(TIFFFieldTag(tf));
 }
 
-template<class T>
+template <class T>
 bool readMetaDataItem(TIFF* tif, const TIFFField* tf, tiff_metadata* metadata) {
     const auto field_tag = TIFFFieldTag(tf);
     const auto field_readcount = TIFFFieldReadCount(tf);
@@ -68,7 +68,7 @@ bool readMetaDataItem(TIFF* tif, const TIFFField* tf, tiff_metadata* metadata) {
         for (int i = 0; i < values.size() && i < 10; i++) {
             const auto& v = values[i];
             if (sizeof(v) == 1) {
-                LOG_INFO(TAG) << (int) v;
+                LOG_INFO(TAG) << (int)v;
             } else {
                 LOG_INFO(TAG) << v;
             }
@@ -80,7 +80,7 @@ bool readMetaDataItem(TIFF* tif, const TIFFField* tf, tiff_metadata* metadata) {
         }
         LOG_INFO(TAG) << std::endl;
 #endif
-        metadata->insert({ field_tag, values });
+        metadata->insert({field_tag, values});
         return true;
     } else if (field_readcount == 1) {
         T data;
@@ -88,7 +88,7 @@ bool readMetaDataItem(TIFF* tif, const TIFFField* tf, tiff_metadata* metadata) {
 #ifdef DEBUG_TIFF_TAGS
         LOG_INFO(TAG) << "New metadata scalar " << getFieldName(tf) << ": " << data << std::endl;
 #endif
-        metadata->insert({ field_tag, data });
+        metadata->insert({field_tag, data});
         return true;
     }
     return false;
@@ -111,7 +111,7 @@ bool readMetaDataString(TIFF* tif, const TIFFField* tf, tiff_metadata* metadata)
 #ifdef DEBUG_TIFF_TAGS
     LOG_INFO(TAG) << "New metadata string " << getFieldName(tf) << ": " << data << std::endl;
 #endif
-    metadata->insert({ field_tag, data });
+    metadata->insert({field_tag, data});
 
     return true;
 }
@@ -214,18 +214,18 @@ void writeExifMetadata(TIFF* tif, const tiff_metadata* exif_metadata) {
             writeMetadataForTag(tif, exif_metadata, entry.first);
         }
 
-        unsigned char exifVersion[4] = {'0','2','3','1'};        /* EXIF 2.31 version is 4 characters of a string! */
-        if (!TIFFSetField( tif, EXIFTAG_EXIFVERSION, exifVersion)) {
+        unsigned char exifVersion[4] = {'0', '2', '3', '1'}; /* EXIF 2.31 version is 4 characters of a string! */
+        if (!TIFFSetField(tif, EXIFTAG_EXIFVERSION, exifVersion)) {
             throw std::runtime_error("Can't write EXIFTAG_EXIFVERSION.");
         }
 
         uint64_t dir_offset_EXIF = 0;
-        if (!TIFFWriteCustomDirectory( tif, &dir_offset_EXIF )) {
+        if (!TIFFWriteCustomDirectory(tif, &dir_offset_EXIF)) {
             throw std::runtime_error("TIFFWriteCustomDirectory() with EXIF failed.");
         }
 
         TIFFSetDirectory(tif, 0);
-        TIFFSetField(tif, TIFFTAG_EXIFIFD, dir_offset_EXIF );
+        TIFFSetField(tif, TIFFTAG_EXIFIFD, dir_offset_EXIF);
 
         // Write directory to file
         TIFFWriteDirectory(tif);
@@ -251,7 +251,7 @@ void writeMetadataItem(TIFF* tif, const TIFFField* tf, const tiff_metadata_item&
         for (int i = 0; i < values.size() && i < 10; i++) {
             const auto& v = values[i];
             if (sizeof(v) == 1) {
-                LOG_INFO(TAG) << (int) v;
+                LOG_INFO(TAG) << (int)v;
             } else {
                 LOG_INFO(TAG) << v;
             }
@@ -264,12 +264,13 @@ void writeMetadataItem(TIFF* tif, const TIFFField* tf, const tiff_metadata_item&
         LOG_INFO(TAG) << std::endl;
 #endif
         if (writeCount < 0) {
-            if (!TIFFSetField(tif, tag, (uint16_t) values.size(), values.data())) {
+            if (!TIFFSetField(tif, tag, (uint16_t)values.size(), values.data())) {
                 std::cerr << "Can't write TIFF tag " << tag << std::endl;
             }
         } else {
             if (writeCount != values.size()) {
-                throw std::runtime_error("Vector size mismatch, should be: " + std::to_string(writeCount) + ", got: " + std::to_string(values.size()));
+                throw std::runtime_error("Vector size mismatch, should be: " + std::to_string(writeCount) +
+                                         ", got: " + std::to_string(values.size()));
             }
             if (!TIFFSetField(tif, tag, values.data())) {
                 std::cerr << "Can't write tag " << tag << std::endl;
@@ -349,67 +350,66 @@ void writeMetadataForTag(TIFF* tif, const tiff_metadata* metadata, ttag_t tag) {
 // DNG Extension Tags
 
 static const TIFFFieldInfo xtiffFieldInfo[] = {
-    { TIFFTAG_FORWARDMATRIX1, -1, -1, TIFF_SRATIONAL, FIELD_CUSTOM, 1, 1, (char *) "ForwardMatrix1" },
-    { TIFFTAG_FORWARDMATRIX2, -1, -1, TIFF_SRATIONAL, FIELD_CUSTOM, 1, 1, (char *) "ForwardMatrix2" },
+    {TIFFTAG_FORWARDMATRIX1, -1, -1, TIFF_SRATIONAL, FIELD_CUSTOM, 1, 1, (char*)"ForwardMatrix1"},
+    {TIFFTAG_FORWARDMATRIX2, -1, -1, TIFF_SRATIONAL, FIELD_CUSTOM, 1, 1, (char*)"ForwardMatrix2"},
 
-    { TIFFTAG_PROFILENAME, -1, -1, TIFF_ASCII, FIELD_CUSTOM, 1, 0, (char *) "ProfileName" },
-    { TIFFTAG_PROFILELOOKTABLEDIMS, 3, 3, TIFF_LONG, FIELD_CUSTOM, 1, 0, (char *) "ProfileLookTableDims" },
-    { TIFFTAG_PROFILELOOKTABLEDATA, -1, -1, TIFF_FLOAT, FIELD_CUSTOM, 1, 1, (char *) "ProfileLookTableData" },
-    { TIFFTAG_PROFILELOOKTABLEENCODING, 1, 1, TIFF_LONG, FIELD_CUSTOM, 1, 0, (char *) "ProfileLookTableEncoding" },
-    { TIFFTAG_DEFAULTUSERCROP, 4, 4, TIFF_RATIONAL, FIELD_CUSTOM, 1, 0, (char *) "DefaultUserCrop" },
+    {TIFFTAG_PROFILENAME, -1, -1, TIFF_ASCII, FIELD_CUSTOM, 1, 0, (char*)"ProfileName"},
+    {TIFFTAG_PROFILELOOKTABLEDIMS, 3, 3, TIFF_LONG, FIELD_CUSTOM, 1, 0, (char*)"ProfileLookTableDims"},
+    {TIFFTAG_PROFILELOOKTABLEDATA, -1, -1, TIFF_FLOAT, FIELD_CUSTOM, 1, 1, (char*)"ProfileLookTableData"},
+    {TIFFTAG_PROFILELOOKTABLEENCODING, 1, 1, TIFF_LONG, FIELD_CUSTOM, 1, 0, (char*)"ProfileLookTableEncoding"},
+    {TIFFTAG_DEFAULTUSERCROP, 4, 4, TIFF_RATIONAL, FIELD_CUSTOM, 1, 0, (char*)"DefaultUserCrop"},
 
-    { TIFFTAG_RATING, 1, 1, TIFF_SHORT, FIELD_CUSTOM, 1, 0, (char *) "Rating" },
-    { TIFFTAG_RATINGPERCENT, 1, 1, TIFF_SHORT, FIELD_CUSTOM, 1, 0, (char *) "RatingPercent" },
-    { TIFFTAG_TIFFEPSTANDARDID, -1, -1, TIFF_BYTE, FIELD_CUSTOM, 1, 1, (char *) "TIFF-EP Standard ID" },
+    {TIFFTAG_RATING, 1, 1, TIFF_SHORT, FIELD_CUSTOM, 1, 0, (char*)"Rating"},
+    {TIFFTAG_RATINGPERCENT, 1, 1, TIFF_SHORT, FIELD_CUSTOM, 1, 0, (char*)"RatingPercent"},
+    {TIFFTAG_TIFFEPSTANDARDID, -1, -1, TIFF_BYTE, FIELD_CUSTOM, 1, 1, (char*)"TIFF-EP Standard ID"},
 
-    { TIFFTAG_ISO, -1, -1, TIFF_SHORT, FIELD_CUSTOM, 1, 1, (char *) "ISO" },
-    { TIFFTAG_FNUMBER, -1, -1, TIFF_FLOAT, FIELD_CUSTOM, 1, 1, (char *) "FNumber" },
-    { TIFFTAG_EXPOSURETIME, -1, -1, TIFF_FLOAT, FIELD_CUSTOM, 1, 1, (char *) "ExposureTime" },
-    { TIFFTAG_FOCALLENGHT, -1, -1, TIFF_FLOAT, FIELD_CUSTOM, 1, 1, (char *) "FocalLength" },
-    { TIFFTAG_DATETIMEORIGINAL, -1, -1, TIFF_ASCII, FIELD_CUSTOM, 1, 0, (char *) "DateTimeOriginal" },
+    {TIFFTAG_ISO, -1, -1, TIFF_SHORT, FIELD_CUSTOM, 1, 1, (char*)"ISO"},
+    {TIFFTAG_FNUMBER, -1, -1, TIFF_FLOAT, FIELD_CUSTOM, 1, 1, (char*)"FNumber"},
+    {TIFFTAG_EXPOSURETIME, -1, -1, TIFF_FLOAT, FIELD_CUSTOM, 1, 1, (char*)"ExposureTime"},
+    {TIFFTAG_FOCALLENGHT, -1, -1, TIFF_FLOAT, FIELD_CUSTOM, 1, 1, (char*)"FocalLength"},
+    {TIFFTAG_DATETIMEORIGINAL, -1, -1, TIFF_ASCII, FIELD_CUSTOM, 1, 0, (char*)"DateTimeOriginal"},
 
-    { TIFFTAG_PROFILETONECURVE, -1, -1, TIFF_FLOAT, FIELD_CUSTOM, 1, 1, (char *) "ProfileToneCurve" },
-    { TIFFTAG_PROFILEEMBEDPOLICY, 1, 1, TIFF_LONG, FIELD_CUSTOM, 1, 0, (char *) "ProfileEmbedPolicy" },
-    { TIFFTAG_ORIGINALDEFAULTFINALSIZE, 2, 2, TIFF_LONG, FIELD_CUSTOM, 1, 0, (char *) "OriginalDefaultFinalSize" },
-    { TIFFTAG_ORIGINALBESTQUALITYSIZE, 2, 2, TIFF_LONG, FIELD_CUSTOM, 1, 0, (char *) "OriginalBestQualitySize" },
-    { TIFFTAG_ORIGINALDEFAULTCROPSIZE, 2, 2, TIFF_RATIONAL, FIELD_CUSTOM, 1, 0, (char *) "OriginalDefaultCropSize" },
-    { TIFFTAG_NEWRAWIMAGEDIGEST, 16, 16, TIFF_BYTE, FIELD_CUSTOM, 1, 0, (char *) "NewRawImageDigest" },
+    {TIFFTAG_PROFILETONECURVE, -1, -1, TIFF_FLOAT, FIELD_CUSTOM, 1, 1, (char*)"ProfileToneCurve"},
+    {TIFFTAG_PROFILEEMBEDPOLICY, 1, 1, TIFF_LONG, FIELD_CUSTOM, 1, 0, (char*)"ProfileEmbedPolicy"},
+    {TIFFTAG_ORIGINALDEFAULTFINALSIZE, 2, 2, TIFF_LONG, FIELD_CUSTOM, 1, 0, (char*)"OriginalDefaultFinalSize"},
+    {TIFFTAG_ORIGINALBESTQUALITYSIZE, 2, 2, TIFF_LONG, FIELD_CUSTOM, 1, 0, (char*)"OriginalBestQualitySize"},
+    {TIFFTAG_ORIGINALDEFAULTCROPSIZE, 2, 2, TIFF_RATIONAL, FIELD_CUSTOM, 1, 0, (char*)"OriginalDefaultCropSize"},
+    {TIFFTAG_NEWRAWIMAGEDIGEST, 16, 16, TIFF_BYTE, FIELD_CUSTOM, 1, 0, (char*)"NewRawImageDigest"},
 
-    { TIFFTAG_PREVIEWCOLORSPACE, 1, 1, TIFF_LONG, FIELD_CUSTOM, 1, 0, (char *) "PreviewColorSpace" },
+    {TIFFTAG_PREVIEWCOLORSPACE, 1, 1, TIFF_LONG, FIELD_CUSTOM, 1, 0, (char*)"PreviewColorSpace"},
 
-    { TIFFTAG_ASSHOTPROFILENAME, -1, -1, TIFF_ASCII, FIELD_CUSTOM, 1, 0, (char *) "AsShotProfileName" },
-    { TIFFTAG_PROFILEHUESATMAPDIMS, 3, 3, TIFF_LONG, FIELD_CUSTOM, 1, 0, (char *) "ProfileHueSatMapDims" },
-    { TIFFTAG_PROFILEHUESATMAPDATA1, -1, -1, TIFF_FLOAT, FIELD_CUSTOM, 1, 1, (char *) "ProfileHueSatMapData1" },
-    { TIFFTAG_PROFILEHUESATMAPDATA2, -1, -1, TIFF_FLOAT, FIELD_CUSTOM, 1, 1, (char *) "ProfileHueSatMapData2" },
+    {TIFFTAG_ASSHOTPROFILENAME, -1, -1, TIFF_ASCII, FIELD_CUSTOM, 1, 0, (char*)"AsShotProfileName"},
+    {TIFFTAG_PROFILEHUESATMAPDIMS, 3, 3, TIFF_LONG, FIELD_CUSTOM, 1, 0, (char*)"ProfileHueSatMapDims"},
+    {TIFFTAG_PROFILEHUESATMAPDATA1, -1, -1, TIFF_FLOAT, FIELD_CUSTOM, 1, 1, (char*)"ProfileHueSatMapData1"},
+    {TIFFTAG_PROFILEHUESATMAPDATA2, -1, -1, TIFF_FLOAT, FIELD_CUSTOM, 1, 1, (char*)"ProfileHueSatMapData2"},
 
-    { TIFFTAG_NOISEPROFILE, 2, 2, TIFF_FLOAT, FIELD_CUSTOM, 1, 0, (char *) "NoiseProfile" },
-    { TIFFTAG_NOISEREDUCTIONAPPLIED, 1, 1, TIFF_RATIONAL, FIELD_CUSTOM, 1, 0, (char *) "NoiseReductionApplied" },
+    {TIFFTAG_NOISEPROFILE, 2, 2, TIFF_FLOAT, FIELD_CUSTOM, 1, 0, (char*)"NoiseProfile"},
+    {TIFFTAG_NOISEREDUCTIONAPPLIED, 1, 1, TIFF_RATIONAL, FIELD_CUSTOM, 1, 0, (char*)"NoiseReductionApplied"},
 
-    { TIFFTAG_IMAGENUMBER, 1, 1, TIFF_LONG, FIELD_CUSTOM, 1, 0, (char *) "ImageNumber" },
+    {TIFFTAG_IMAGENUMBER, 1, 1, TIFF_LONG, FIELD_CUSTOM, 1, 0, (char*)"ImageNumber"},
 
-    { TIFFTAG_CAMERACALIBRATIONSIG, -1, -1, TIFF_ASCII, FIELD_CUSTOM, 1, 0, (char *) "CameraCalibrationSig" },
-    { TIFFTAG_PROFILECALIBRATIONSIG, -1, -1, TIFF_ASCII, FIELD_CUSTOM, 1, 0, (char *) "ProfileCalibrationSig" },
-    { TIFFTAG_PROFILECOPYRIGHT, -1, -1, TIFF_ASCII, FIELD_CUSTOM, 1, 0, (char *) "ProfileCopyright" },
-    { TIFFTAG_PREVIEWAPPLICATIONNAME, -1, -1, TIFF_ASCII, FIELD_CUSTOM, 1, 0, (char *) "PreviewApplicationName" },
-    { TIFFTAG_PREVIEWAPPLICATIONVERSION, -1, -1, TIFF_ASCII, FIELD_CUSTOM, 1, 0, (char *) "PreviewApplicationVersion" },
-    { TIFFTAG_PREVIEWSETTINGSDIGEST, -1, -1, TIFF_BYTE, FIELD_CUSTOM, 1, 1, (char *) "PreviewSettingsDigest" },
-    { TIFFTAG_PREVIEWDATETIME, -1, -1, TIFF_ASCII, FIELD_CUSTOM, 1, 0, (char *) "PreviewDateTime" },
- };
+    {TIFFTAG_CAMERACALIBRATIONSIG, -1, -1, TIFF_ASCII, FIELD_CUSTOM, 1, 0, (char*)"CameraCalibrationSig"},
+    {TIFFTAG_PROFILECALIBRATIONSIG, -1, -1, TIFF_ASCII, FIELD_CUSTOM, 1, 0, (char*)"ProfileCalibrationSig"},
+    {TIFFTAG_PROFILECOPYRIGHT, -1, -1, TIFF_ASCII, FIELD_CUSTOM, 1, 0, (char*)"ProfileCopyright"},
+    {TIFFTAG_PREVIEWAPPLICATIONNAME, -1, -1, TIFF_ASCII, FIELD_CUSTOM, 1, 0, (char*)"PreviewApplicationName"},
+    {TIFFTAG_PREVIEWAPPLICATIONVERSION, -1, -1, TIFF_ASCII, FIELD_CUSTOM, 1, 0, (char*)"PreviewApplicationVersion"},
+    {TIFFTAG_PREVIEWSETTINGSDIGEST, -1, -1, TIFF_BYTE, FIELD_CUSTOM, 1, 1, (char*)"PreviewSettingsDigest"},
+    {TIFFTAG_PREVIEWDATETIME, -1, -1, TIFF_ASCII, FIELD_CUSTOM, 1, 0, (char*)"PreviewDateTime"},
+};
 
 static TIFFExtendProc parent_extender = NULL;  // In case we want a chain of extensions
 
-static void registerCustomTIFFTags(TIFF *tif) {
+static void registerCustomTIFFTags(TIFF* tif) {
     // Install the extended Tag field info
-    TIFFMergeFieldInfo( tif, xtiffFieldInfo, sizeof( xtiffFieldInfo ) / sizeof( xtiffFieldInfo[0] ) );
+    TIFFMergeFieldInfo(tif, xtiffFieldInfo, sizeof(xtiffFieldInfo) / sizeof(xtiffFieldInfo[0]));
 
-    if (parent_extender)
-        parent_extender(tif);
+    if (parent_extender) parent_extender(tif);
 }
 
 void augment_libtiff_with_custom_tags() {
     static bool first_time = true;
     if (first_time) {
-        parent_extender = TIFFSetTagExtender( registerCustomTIFFTags );
+        parent_extender = TIFFSetTagExtender(registerCustomTIFFTags);
         first_time = false;
     }
 }

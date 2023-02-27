@@ -20,9 +20,7 @@
 
 namespace gls {
 
-enum log_level {
-    LOG_LEVEL_ERROR = 0, LOG_LEVEL_INFO = 1, LOG_LEVEL_DEBUG = 2
-};
+enum log_level { LOG_LEVEL_ERROR = 0, LOG_LEVEL_INFO = 1, LOG_LEVEL_DEBUG = 2 };
 
 extern log_level currentLogLevel;
 
@@ -34,11 +32,9 @@ class NullStream : public std::ostream {
 
 extern NullStream null;
 
-inline std::ostream& __log_null(std::ostream& os) {
-    return os;
-}
+inline std::ostream& __log_null(std::ostream& os) { return os; }
 
-}
+}  // namespace gls
 
 #if defined(__ANDROID__) && !defined(USE_IOSTREAM_LOG)
 
@@ -54,9 +50,10 @@ std::ostream __log_prefix(android_LogPriority level, const std::string& TAG);
 
 std::ostream& __log_prefix(std::ostream& os);
 
-#define LOG_INFO(TAG) ((gls::currentLogLevel >= gls::LOG_LEVEL_INFO ? __log_prefix(std::cout) : __log_null(gls::null)) << "I/" << TAG << ": ")
-#define LOG_ERROR(TAG) ((gls::currentLogLevel >= gls::LOG_LEVEL_ERROR ? __log_prefix(std::cerr) : __log_null(gls::null)) << "E/" << TAG << ": ")
-#define LOG_DEBUG(TAG) ((gls::currentLogLevel >= gls::LOG_LEVEL_DEBUG ? __log_prefix(std::cout) : __log_null(gls::null)) << "I/" << TAG << ": ")
+#define LOG_STREAM(label) (gls::currentLogLevel >= label ? __log_prefix(std::cout) : __log_null(gls::null))
+#define LOG_INFO(TAG) (LOG_STREAM(gls::LOG_LEVEL_INFO) << "I/" << TAG << ": ")
+#define LOG_ERROR(TAG) (LOG_STREAM(gls::LOG_LEVEL_ERROR) << "E/" << TAG << ": ")
+#define LOG_DEBUG(TAG) (LOG_STREAM(gls::LOG_LEVEL_DEBUG) << "I/" << TAG << ": ")
 
 #endif
 

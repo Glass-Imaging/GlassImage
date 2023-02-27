@@ -13,19 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "gls_cl.hpp"
-
 #include <fstream>
 #include <iostream>
 #include <map>
 
+#include "gls_cl.hpp"
 #include "gls_logging.h"
 
 namespace gls {
 
 static const char* TAG = "CLImage";
 
-#ifndef __ANDROID__ // On Apple and Linux
+#ifndef __ANDROID__  // On Apple and Linux
 
 OpenCLContext::OpenCLContext(const std::string& shadersRootPath, bool quiet) : _shadersRootPath(shadersRootPath) {
     _clContext = cl::Context::getDefault();
@@ -56,7 +55,7 @@ OpenCLContext::OpenCLContext(const std::string& shadersRootPath, bool quiet) : _
     }
 }
 
-#else // Android
+#else  // Android
 
 OpenCLContext::OpenCLContext(const std::string& shadersRootPath, bool quiet) : _shadersRootPath(shadersRootPath) {
     // Load libOpenCL
@@ -65,10 +64,9 @@ OpenCLContext::OpenCLContext(const std::string& shadersRootPath, bool quiet) : _
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
     cl::Platform platform;
-    for (auto &p : platforms) {
+    for (auto& p : platforms) {
         std::string version = p.getInfo<CL_PLATFORM_VERSION>();
-        if (version.find("OpenCL 2.") != std::string::npos ||
-            version.find("OpenCL 3.") != std::string::npos) {
+        if (version.find("OpenCL 2.") != std::string::npos || version.find("OpenCL 3.") != std::string::npos) {
             platform = p;
         }
     }
@@ -81,8 +79,7 @@ OpenCLContext::OpenCLContext(const std::string& shadersRootPath, bool quiet) : _
         throw cl::Error(-1, "Error setting default platform.");
     }
 
-    cl_context_properties properties[] = {CL_CONTEXT_PLATFORM, (cl_context_properties) (platform)(),
-                                          0};
+    cl_context_properties properties[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platform)(), 0};
     cl::Context context(CL_DEVICE_TYPE_ALL, properties);
 
     cl::Device d = cl::Device::getDefault();
@@ -92,8 +89,7 @@ OpenCLContext::OpenCLContext(const std::string& shadersRootPath, bool quiet) : _
         LOG_INFO(TAG) << "- Driver Version: " << d.getInfo<CL_DRIVER_VERSION>() << std::endl;
         LOG_INFO(TAG) << "- OpenCL C Version: " << d.getInfo<CL_DEVICE_OPENCL_C_VERSION>() << std::endl;
         LOG_INFO(TAG) << "- Compute Units: " << d.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
-        LOG_INFO(TAG) << "- CL_DEVICE_MAX_WORK_GROUP_SIZE: "
-                      << d.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
+        LOG_INFO(TAG) << "- CL_DEVICE_MAX_WORK_GROUP_SIZE: " << d.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
         LOG_INFO(TAG) << "- CL_DEVICE_EXTENSIONS: " << d.getInfo<CL_DEVICE_EXTENSIONS>() << std::endl;
     }
 
@@ -258,9 +254,9 @@ cl::NDRange OpenCLContext::computeWorkGroupSizes(size_t width, size_t height) {
             }
         }
     }
-//    LOG_INFO(TAG) << "computeWorkGroupSizes for " << width << ", " << height << ": "
-//                  << width_divisor << ", " << height_divisor
-//                  << " (" << width_divisor * height_divisor << ") of " <<  max_workgroup_size << std::endl;
+    //    LOG_INFO(TAG) << "computeWorkGroupSizes for " << width << ", " << height << ": "
+    //                  << width_divisor << ", " << height_divisor
+    //                  << " (" << width_divisor * height_divisor << ") of " <<  max_workgroup_size << std::endl;
     return cl::NDRange(width_divisor, height_divisor);
 }
 

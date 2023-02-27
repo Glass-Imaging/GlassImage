@@ -17,42 +17,37 @@
 #define gls_linalg_h
 
 #include <array>
-#include <span>
-#include <vector>
+#include <cassert>
 #include <cmath>
 #include <iostream>
+#include <span>
 #include <stdexcept>
-#include <cassert>
+#include <vector>
 
 #define DEBUG_ARRAY_INITIALIZATION false
 
 namespace gls {
 
-template<size_t M, size_t N, typename value_type = float> struct Matrix;
+template <size_t M, size_t N, typename value_type = float>
+struct Matrix;
 
 // ---- Vector Type ----
 template <size_t N, typename value_type = float>
 struct Vector : public std::array<value_type, N> {
 #if DEBUG_ARRAY_INITIALIZATION
-    Vector() {
-        this->fill(0);
-    }
+    Vector() { this->fill(0); }
 #else
     Vector() = default;
 #endif
 
-    Vector(value_type val) {
-        this->fill(val);
-    }
+    Vector(value_type val) { this->fill(val); }
 
     Vector(const std::array<value_type, N>& v) {
         assert(v.size() == N);
         std::copy(v.begin(), v.end(), this->begin());
     }
 
-    Vector(const value_type(&il)[N]) {
-        std::copy(il, il + N, this->begin());
-    }
+    Vector(const value_type (&il)[N]) { std::copy(il, il + N, this->begin()); }
 
     Vector(const std::vector<value_type>& v) {
         assert(v.size() == N);
@@ -72,8 +67,8 @@ struct Vector : public std::array<value_type, N> {
         }
     }
 
-    template<size_t P, size_t Q>
-    requires (P * Q == N)
+    template <size_t P, size_t Q>
+        requires(P* Q == N)
     Vector(const Matrix<P, Q>& m) {
         const auto ms = m.span();
         std::copy(ms.begin(), ms.end(), this->begin());
@@ -92,87 +87,86 @@ struct Vector : public std::array<value_type, N> {
     }
 
     template <typename T>
-    Vector& operator += (const T& v) {
+    Vector& operator+=(const T& v) {
         *this = *this + v;
         return *this;
     }
 
     template <typename T>
-    Vector& operator -= (const T& v) {
+    Vector& operator-=(const T& v) {
         *this = *this - v;
         return *this;
     }
 
     template <typename T>
-    Vector& operator *= (const T& v) {
+    Vector& operator*=(const T& v) {
         *this = *this * v;
         return *this;
     }
 
     template <typename T>
-    Vector& operator /= (const T& v) {
+    Vector& operator/=(const T& v) {
         *this = *this / v;
         return *this;
     }
 
     // Cast to a const value_type*
-    operator const value_type*() const {
-        return this->data();
-    }
+    operator const value_type*() const { return this->data(); }
 
     // Cast to a Vector with a different value_type
     template <typename T>
     operator gls::Vector<N, T>() const {
         gls::Vector<N, T> result;
         for (int j = 0; j < N; j++) {
-            result[j] = (T) (*this)[j];
+            result[j] = (T)(*this)[j];
         }
         return result;
     }
 
     // Cast Vector elements to a Matrix of compatible dimensions and of any given value_type T
     template <size_t K, size_t M, typename T>
-    requires (K * M == N)
+        requires(K* M == N)
     operator gls::Matrix<K, M, T>() const {
         gls::Matrix<K, M, T> result;
         for (int j = 0; j < K; j++) {
             for (int i = 0; i < M; i++) {
-                result[j][i] = (T) (*this)[j * M + i];
+                result[j][i] = (T)(*this)[j * M + i];
             }
         }
         return result;
     }
 };
 
-template <size_t N> using DVector = Vector<N, double>;
+template <size_t N>
+using DVector = Vector<N, double>;
 
 // Vector - Vector Addition (component-wise)
 template <size_t N, typename value_type>
-inline Vector<N, value_type> operator + (const Vector<N, value_type>& a, const Vector<N, value_type>& b) {
+inline Vector<N, value_type> operator+(const Vector<N, value_type>& a, const Vector<N, value_type>& b) {
     auto ita = a.begin();
     auto itb = b.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&](value_type &r){ r = *ita++ + *itb++; });
+    std::for_each(result.begin(), result.end(), [&](value_type& r) { r = *ita++ + *itb++; });
     return result;
 }
 
 // Vector - Vector Subtraction (component-wise)
 template <size_t N, typename value_type>
-inline Vector<N, value_type> operator - (const Vector<N, value_type>& a, const Vector<N, value_type>& b) {
+inline Vector<N, value_type> operator-(const Vector<N, value_type>& a, const Vector<N, value_type>& b) {
     auto ita = a.begin();
     auto itb = b.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&](value_type &r){ r = *ita++ - *itb++; });
+    std::for_each(result.begin(), result.end(), [&](value_type& r) { r = *ita++ - *itb++; });
     return result;
 }
 
 // Vector - Vector Multiplication (component-wise)
 template <size_t N, typename value_type>
-inline Vector<N, value_type> operator * (const Vector<N, value_type>& a, const Vector<N, value_type>& b) {
+inline Vector<N, value_type> operator*(const Vector<N, value_type>& a, const Vector<N, value_type>& b) {
     auto ita = a.begin();
     auto itb = b.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&](value_type &r){ r = *ita++ * *itb++; });
+    std::for_each(result.begin(), result.end(), [&](value_type& r) { r = *ita++ * *itb++; });
     return result;
 }
 
@@ -188,77 +182,77 @@ inline value_type dot(const Vector<N, value_type>& a, const Vector<N, value_type
 
 // Vector - Vector Division (component-wise)
 template <size_t N, typename value_type>
-inline Vector<N, value_type> operator / (const Vector<N, value_type>& a, const Vector<N, value_type>& b) {
+inline Vector<N, value_type> operator/(const Vector<N, value_type>& a, const Vector<N, value_type>& b) {
     auto ita = a.begin();
     auto itb = b.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&](value_type &r){ r = *ita++ / *itb++; });
+    std::for_each(result.begin(), result.end(), [&](value_type& r) { r = *ita++ / *itb++; });
     return result;
 }
 
 // Vector - Scalar Addition
 template <size_t N, typename value_type>
-inline Vector<N, value_type> operator + (const Vector<N, value_type>& v, value_type a) {
+inline Vector<N, value_type> operator+(const Vector<N, value_type>& v, value_type a) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&a, &itv](value_type &r){ r = *itv++ + a; });
+    std::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = *itv++ + a; });
     return result;
 }
 
 // Vector - Scalar Addition (commutative)
 template <size_t N, typename value_type>
-inline Vector<N, value_type> operator + (value_type a, const Vector<N, value_type>& v) {
+inline Vector<N, value_type> operator+(value_type a, const Vector<N, value_type>& v) {
     return v + a;
 }
 
 // Vector - Scalar Subtraction
 template <size_t N, typename value_type>
-inline Vector<N, value_type> operator - (const Vector<N, value_type>& v, value_type a) {
+inline Vector<N, value_type> operator-(const Vector<N, value_type>& v, value_type a) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&a, &itv](value_type &r){ r = *itv++ - a; });
+    std::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = *itv++ - a; });
     return result;
 }
 
 // Scalar - Vector Subtraction
 template <size_t N, typename value_type>
-inline Vector<N, value_type> operator - (value_type a, const Vector<N, value_type>& v) {
+inline Vector<N, value_type> operator-(value_type a, const Vector<N, value_type>& v) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&a, &itv](value_type &r){ r = a - *itv++; });
+    std::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = a - *itv++; });
     return result;
 }
 
 // Vector - Scalar Multiplication
 template <size_t N, typename value_type>
-inline Vector<N, value_type> operator * (const Vector<N, value_type>& v, value_type a) {
+inline Vector<N, value_type> operator*(const Vector<N, value_type>& v, value_type a) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&a, &itv](value_type &r){ r = *itv++ * a; });
+    std::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = *itv++ * a; });
     return result;
 }
 
 // Scalar - Vector Multiplication (commutative)
 template <size_t N, typename value_type>
-inline Vector<N, value_type> operator * (value_type a, const Vector<N, value_type>& v) {
+inline Vector<N, value_type> operator*(value_type a, const Vector<N, value_type>& v) {
     return v * a;
 }
 
 // Vector - Scalar Division
 template <size_t N, typename value_type>
-inline Vector<N, value_type> operator / (const Vector<N, value_type>& v, value_type a) {
+inline Vector<N, value_type> operator/(const Vector<N, value_type>& v, value_type a) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&a, &itv](value_type &r){ r = *itv++ / a; });
+    std::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = *itv++ / a; });
     return result;
 }
 
 // Scalar - Vector Division
 template <size_t N, typename value_type>
-inline Vector<N, value_type> operator / (value_type a, const Vector<N, value_type>& v) {
+inline Vector<N, value_type> operator/(value_type a, const Vector<N, value_type>& v) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&a, &itv](value_type &r){ r = a / *itv++; });
+    std::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = a / *itv++; });
     return result;
 }
 
@@ -266,7 +260,7 @@ template <size_t N, typename value_type>
 inline Vector<N, value_type> abs(const Vector<N, value_type>& v) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&itv](value_type &r){ r = std::abs(*itv++); });
+    std::for_each(result.begin(), result.end(), [&itv](value_type& r) { r = std::abs(*itv++); });
     return result;
 }
 
@@ -275,7 +269,7 @@ template <size_t N, typename value_type>
 inline Vector<N, value_type> max(const Vector<N, value_type>& v, value_type a) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&a, &itv](value_type &r){ r = std::max(*itv++, a); });
+    std::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = std::max(*itv++, a); });
     return result;
 }
 
@@ -284,7 +278,7 @@ template <size_t N, typename value_type>
 inline Vector<N, value_type> min(const Vector<N, value_type>& v, value_type a) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&a, &itv](value_type &r){ r = std::min(*itv++, a); });
+    std::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = std::min(*itv++, a); });
     return result;
 }
 
@@ -293,54 +287,54 @@ template <size_t N, typename value_type>
 inline Vector<N, value_type> sqrt(const Vector<N, value_type>& v) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&itv](value_type &r){ r = std::sqrt(*itv++); });
+    std::for_each(result.begin(), result.end(), [&itv](value_type& r) { r = std::sqrt(*itv++); });
     return result;
 }
 
 template <size_t N>
-inline Vector<N, bool> operator ! (const Vector<N, bool>& a) {
+inline Vector<N, bool> operator!(const Vector<N, bool>& a) {
     auto ita = a.begin();
     Vector<N, bool> result;
-    std::for_each(result.begin(), result.end(), [&](bool &r){ r = !*ita++; });
+    std::for_each(result.begin(), result.end(), [&](bool& r) { r = !*ita++; });
     return result;
 }
 
 // Vector - Vector comparison (component-wise)
 template <size_t N, typename value_type>
-inline Vector<N, bool> operator < (const Vector<N, value_type>& a, const Vector<N, value_type>& b) {
+inline Vector<N, bool> operator<(const Vector<N, value_type>& a, const Vector<N, value_type>& b) {
     auto ita = a.begin();
     auto itb = b.begin();
     Vector<N, bool> result;
-    std::for_each(result.begin(), result.end(), [&](bool &r){ r = *ita++ < *itb++; });
+    std::for_each(result.begin(), result.end(), [&](bool& r) { r = *ita++ < *itb++; });
     return result;
 }
 
 template <size_t N, typename value_type>
-inline Vector<N, bool> operator > (const Vector<N, value_type>& a, const Vector<N, value_type>& b) {
+inline Vector<N, bool> operator>(const Vector<N, value_type>& a, const Vector<N, value_type>& b) {
     return b < a;
 }
 
 template <size_t N, typename value_type>
-inline Vector<N, bool> operator <= (const Vector<N, value_type>& a, const Vector<N, value_type>& b) {
+inline Vector<N, bool> operator<=(const Vector<N, value_type>& a, const Vector<N, value_type>& b) {
     return !(a > b);
 }
 
 template <size_t N, typename value_type>
-inline Vector<N, bool> operator >= (const Vector<N, value_type>& a, const Vector<N, value_type>& b) {
+inline Vector<N, bool> operator>=(const Vector<N, value_type>& a, const Vector<N, value_type>& b) {
     return !(a < b);
 }
 
 template <size_t N, typename value_type>
-inline Vector<N, bool> operator == (const Vector<N, value_type>& a, const Vector<N, value_type>& b) {
+inline Vector<N, bool> operator==(const Vector<N, value_type>& a, const Vector<N, value_type>& b) {
     auto ita = a.begin();
     auto itb = b.begin();
     Vector<N, bool> result;
-    std::for_each(result.begin(), result.end(), [&](bool &r){ r = *ita++ == *itb++; });
+    std::for_each(result.begin(), result.end(), [&](bool& r) { r = *ita++ == *itb++; });
     return result;
 }
 
 template <size_t N, typename value_type>
-inline Vector<N, bool> operator != (const Vector<N, value_type>& a, const Vector<N, value_type>& b) {
+inline Vector<N, bool> operator!=(const Vector<N, value_type>& a, const Vector<N, value_type>& b) {
     return !(a == b);
 }
 
@@ -348,21 +342,21 @@ template <size_t N, typename value_type>
 inline Vector<N, bool> isnan(const Vector<N, value_type>& a) {
     auto ita = a.begin();
     Vector<N, bool> result;
-    std::for_each(result.begin(), result.end(), [&](bool &r){ r = std::isnan(*ita++); });
+    std::for_each(result.begin(), result.end(), [&](bool& r) { r = std::isnan(*ita++); });
     return result;
 }
 
 template <size_t N>
 inline bool all(const Vector<N, bool>& a) {
     bool result = true;
-    std::for_each(a.begin(), a.end(), [&result](const bool &v){ result = result && v; });
+    std::for_each(a.begin(), a.end(), [&result](const bool& v) { result = result && v; });
     return result;
 }
 
 template <size_t N>
 inline bool any(const Vector<N, bool>& a) {
     bool result = false;
-    std::for_each(a.begin(), a.end(), [&result](const bool &v){ result = result || v; });
+    std::for_each(a.begin(), a.end(), [&result](const bool& v) { result = result || v; });
     return result;
 }
 
@@ -374,19 +368,15 @@ struct Matrix : public std::array<Vector<M, value_type>, N> {
     static const constexpr int width = M;
     static const constexpr int height = N;
 
-    Matrix() { }
+    Matrix() {}
 
-    Matrix(const Vector<N * M, value_type>& v) {
-        std::copy(v.begin(), v.end(), span().begin());
-    }
+    Matrix(const Vector<N * M, value_type>& v) { std::copy(v.begin(), v.end(), span().begin()); }
 
-    Matrix(const value_type(&il)[N * M]) {
-        std::copy(il, il + (N * M), span().begin());
-    }
+    Matrix(const value_type (&il)[N * M]) { std::copy(il, il + (N * M), span().begin()); }
 
-    Matrix(const std::array<value_type, M>(&il)[N]) {
+    Matrix(const std::array<value_type, M> (&il)[N]) {
         // This is safe, il is just an array of arrays
-        std::copy((value_type *) il, (value_type *) il + (N * M), span().begin());
+        std::copy((value_type*)il, (value_type*)il + (N * M), span().begin());
     }
 
     Matrix(const std::vector<value_type>& v) {
@@ -436,7 +426,7 @@ struct Matrix : public std::array<Vector<M, value_type>, N> {
     }
 
     template <typename T>
-    Matrix& operator += (const T& v) {
+    Matrix& operator+=(const T& v) {
         for (int i = 0; i < N; i++) {
             (*this)[i] += v;
         }
@@ -444,7 +434,7 @@ struct Matrix : public std::array<Vector<M, value_type>, N> {
     }
 
     template <typename T>
-    Matrix& operator -= (const T& v) {
+    Matrix& operator-=(const T& v) {
         for (int i = 0; i < N; i++) {
             (*this)[i] -= v;
         }
@@ -452,7 +442,7 @@ struct Matrix : public std::array<Vector<M, value_type>, N> {
     }
 
     template <typename T>
-    Matrix& operator *= (const T& v) {
+    Matrix& operator*=(const T& v) {
         for (int i = 0; i < N; i++) {
             (*this)[i] *= v;
         }
@@ -460,7 +450,7 @@ struct Matrix : public std::array<Vector<M, value_type>, N> {
     }
 
     template <typename T>
-    Matrix& operator /= (const T& v) {
+    Matrix& operator/=(const T& v) {
         for (int i = 0; i < N; i++) {
             (*this)[i] /= v;
         }
@@ -468,27 +458,17 @@ struct Matrix : public std::array<Vector<M, value_type>, N> {
     }
 
     // Matrix Raw Data
-    std::span<value_type> span() {
-        return std::span(&(*this)[0][0], N * M);
-    }
+    std::span<value_type> span() { return std::span(&(*this)[0][0], N * M); }
 
-    const std::span<const value_type> span() const {
-        return std::span(&(*this)[0][0], N * M);
-    }
+    const std::span<const value_type> span() const { return std::span(&(*this)[0][0], N * M); }
 
     // Matrix Row Raw Data
-    std::span<value_type> span(size_t row) {
-        return std::span(&(*this)[row][0], M);
-    }
+    std::span<value_type> span(size_t row) { return std::span(&(*this)[row][0], M); }
 
-    const std::span<const value_type> span(size_t row) const {
-        return std::span(&(*this)[row][0], M);
-    }
+    const std::span<const value_type> span(size_t row) const { return std::span(&(*this)[row][0], M); }
 
     // Cast to a const value_type*
-    operator const value_type*() const {
-        return span().data();
-    }
+    operator const value_type*() const { return span().data(); }
 
     typedef value_type (*opPtr)(value_type a, value_type b);
 
@@ -498,7 +478,7 @@ struct Matrix : public std::array<Vector<M, value_type>, N> {
         gls::Matrix<N, M, T> result;
         for (int j = 0; j < N; j++) {
             for (int i = 0; i < N; i++) {
-                result[j][i] = (T) (*this)[j][i];
+                result[j][i] = (T)(*this)[j][i];
             }
         }
         return result;
@@ -510,14 +490,15 @@ struct Matrix : public std::array<Vector<M, value_type>, N> {
         gls::Vector<N * M, T> result;
         for (int j = 0; j < N; j++) {
             for (int i = 0; i < M; i++) {
-                result[j * M + i] = (T) (*this)[j][i];
+                result[j * M + i] = (T)(*this)[j][i];
             }
         }
         return result;
     }
 };
 
-template <size_t N, size_t M> using DMatrix = Matrix<N, M, double>;
+template <size_t N, size_t M>
+using DMatrix = Matrix<N, M, double>;
 
 template <size_t N, size_t M, typename value_type>
 std::span<value_type> span(Matrix<N, M, value_type>& m) {
@@ -530,7 +511,7 @@ const std::span<const value_type> span(const Matrix<N, M, value_type>& m) {
 }
 
 // Matrix Transpose
-template<size_t N, size_t M, typename value_type>
+template <size_t N, size_t M, typename value_type>
 inline Matrix<N, M, value_type> transpose(const Matrix<M, N, value_type>& m) {
     Matrix<N, M, value_type> result;
     for (size_t j = 0; j < M; j++) {
@@ -543,7 +524,7 @@ inline Matrix<N, M, value_type> transpose(const Matrix<M, N, value_type>& m) {
 
 // General Matrix Multiplication
 template <size_t N, size_t K, size_t M, typename value_type>
-inline Matrix<M, N, value_type> operator * (const Matrix<M, K, value_type>& a, const Matrix<K, N, value_type>& b) {
+inline Matrix<M, N, value_type> operator*(const Matrix<M, K, value_type>& a, const Matrix<K, N, value_type>& b) {
     Matrix<M, N, value_type> result;
     const auto bt = transpose(b);
     for (size_t j = 0; j < M; j++) {
@@ -560,27 +541,28 @@ inline Matrix<M, N, value_type> operator * (const Matrix<M, K, value_type>& a, c
 
 // Matrix - Vector Multiplication
 template <size_t M, size_t N, typename value_type>
-inline Vector<M, value_type> operator * (const Matrix<M, N, value_type>& a, const Vector<N, value_type>& b) {
-    const auto result = a * Matrix<N, 1, value_type> { b };
+inline Vector<M, value_type> operator*(const Matrix<M, N, value_type>& a, const Vector<N, value_type>& b) {
+    const auto result = a * Matrix<N, 1, value_type>{b};
     return Vector<M, value_type>(result);
 }
 
 // Vector - Matrix Multiplication
 template <size_t M, size_t N, typename value_type>
-inline Vector<N, value_type> operator * (const Vector<M, value_type>& a, const Matrix<M, N, value_type>& b) {
-    const auto result = Matrix<1, N, value_type> { a } * b;
+inline Vector<N, value_type> operator*(const Vector<M, value_type>& a, const Matrix<M, N, value_type>& b) {
+    const auto result = Matrix<1, N, value_type>{a} * b;
     return Vector<N, value_type>(result);
 }
 
 // (Square) Matrix Division (Multiplication with Inverse)
 template <size_t N, typename value_type>
-inline Matrix<N, N, value_type> operator / (const Matrix<N, N, value_type>& a, const Matrix<N, N, value_type>& b) {
+inline Matrix<N, N, value_type> operator/(const Matrix<N, N, value_type>& a, const Matrix<N, N, value_type>& b) {
     return a * inverse(b);
 }
 
 // Iterate over the elements of the input and output matrices applying a Matrix-Matrix function
-template<size_t N, size_t M, typename value_type>
-inline Matrix<N, M, value_type> apply(const Matrix<M, N, value_type>& a, const Matrix<M, N, value_type>& b, typename Matrix<N, M, value_type>::opPtr f) {
+template <size_t N, size_t M, typename value_type>
+inline Matrix<N, M, value_type> apply(const Matrix<M, N, value_type>& a, const Matrix<M, N, value_type>& b,
+                                      typename Matrix<N, M, value_type>::opPtr f) {
     Matrix<N, M, value_type> result;
     auto ita = span(a).begin();
     auto itb = span(b).begin();
@@ -591,8 +573,9 @@ inline Matrix<N, M, value_type> apply(const Matrix<M, N, value_type>& a, const M
 }
 
 // Iterate over the elements of the input and output matrices applying a Matrix-Scalar function
-template<size_t N, size_t M, typename value_type>
-inline Matrix<N, M, value_type> apply(const Matrix<M, N, value_type>& a, value_type b, typename Matrix<N, M, value_type>::opPtr f) {
+template <size_t N, size_t M, typename value_type>
+inline Matrix<N, M, value_type> apply(const Matrix<M, N, value_type>& a, value_type b,
+                                      typename Matrix<N, M, value_type>::opPtr f) {
     Matrix<N, M, value_type> result;
     auto ita = span(a).begin();
     for (auto& r : span(result)) {
@@ -603,50 +586,38 @@ inline Matrix<N, M, value_type> apply(const Matrix<M, N, value_type>& a, value_t
 
 // Matrix-Scalar Multiplication
 template <size_t N, size_t M, typename value_type>
-inline Matrix<N, M, value_type> operator * (const Matrix<N, M, value_type>& a, value_type b) {
-    return apply(a, b, [](value_type a, value_type b) {
-        return a * b;
-    });
+inline Matrix<N, M, value_type> operator*(const Matrix<N, M, value_type>& a, value_type b) {
+    return apply(a, b, [](value_type a, value_type b) { return a * b; });
 }
 
 // Matrix-Scalar Division
 template <size_t N, size_t M, typename value_type>
-inline Matrix<N, M, value_type> operator / (const Matrix<N, M, value_type>& a, value_type b) {
-    return apply(a, b, [](value_type a, value_type b) {
-        return a / b;
-    });
+inline Matrix<N, M, value_type> operator/(const Matrix<N, M, value_type>& a, value_type b) {
+    return apply(a, b, [](value_type a, value_type b) { return a / b; });
 }
 
 // Matrix-Matrix Addition
 template <size_t N, size_t M, typename value_type>
-inline Matrix<N, M, value_type> operator + (const Matrix<N, M, value_type>& a, const Matrix<N, M, value_type>& b) {
-    return apply(a, b, [](value_type a, value_type b) {
-        return a + b;
-    });
+inline Matrix<N, M, value_type> operator+(const Matrix<N, M, value_type>& a, const Matrix<N, M, value_type>& b) {
+    return apply(a, b, [](value_type a, value_type b) { return a + b; });
 }
 
 // Matrix-Scalar Addition
 template <size_t N, size_t M, typename value_type>
-inline Matrix<N, M, value_type> operator + (const Matrix<N, M, value_type>& a, value_type b) {
-    return apply(a, b, [](value_type a, value_type b) {
-        return a + b;
-    });
+inline Matrix<N, M, value_type> operator+(const Matrix<N, M, value_type>& a, value_type b) {
+    return apply(a, b, [](value_type a, value_type b) { return a + b; });
 }
 
 // Matrix-Matrix Subtraction
 template <size_t N, size_t M, typename value_type>
-inline Matrix<N, M, value_type> operator - (const Matrix<N, M, value_type>& a, const Matrix<N, M, value_type>& b) {
-    return apply(a, b, [](value_type a, value_type b) {
-        return a - b;
-    });
+inline Matrix<N, M, value_type> operator-(const Matrix<N, M, value_type>& a, const Matrix<N, M, value_type>& b) {
+    return apply(a, b, [](value_type a, value_type b) { return a - b; });
 }
 
 // Matrix-Scalar Subtraction
 template <size_t N, size_t M, typename value_type>
-inline Matrix<N, M, value_type> operator - (const Matrix<N, M, value_type>& a, value_type b) {
-    return apply(a, b, [](value_type a, value_type b) {
-        return a - b;
-    });
+inline Matrix<N, M, value_type> operator-(const Matrix<N, M, value_type>& a, value_type b) {
+    return apply(a, b, [](value_type a, value_type b) { return a - b; });
 }
 
 // --- Matrix Inverse Support ---
@@ -730,7 +701,7 @@ inline Matrix<N, N, value_type> adjoint(const Matrix<N, N, value_type>& m) {
 // Matrix Adjoint - Special case for size 1x1
 template <typename value_type>
 inline Matrix<1, 1, value_type> adjoint(const Matrix<1, 1, value_type>& m) {
-    return { 1 };
+    return {1};
 }
 
 // Inverse Matrix using Cramer's rule - Pretty much always slower than Gauss-Jordan
@@ -757,8 +728,7 @@ inline Matrix<N, N, value_type> cramerInverse(const Matrix<N, N, value_type>& m)
 
 template <size_t N, size_t M, typename value_type>
 void swap_rows(Matrix<N, M, value_type>& m, size_t i, size_t j) {
-    for (size_t column = 0; column < M; column++)
-        std::swap(m[i][column], m[j][column]);
+    for (size_t column = 0; column < M; column++) std::swap(m[i][column], m[j][column]);
 }
 
 // Convert matrix to reduced row echelon form
@@ -807,8 +777,7 @@ inline Matrix<N, N, value_type> inverse(const Matrix<N, N, value_type>& m) {
     to_reduced_row_echelon_form(tmp);
     Matrix<N, N, value_type> inv;
     for (size_t row = 0; row < N; ++row) {
-        for (size_t column = 0; column < N; ++column)
-            inv[row][column] = tmp[row][column + N];
+        for (size_t column = 0; column < N; ++column) inv[row][column] = tmp[row][column + N];
     }
     return inv;
 }
@@ -816,10 +785,9 @@ inline Matrix<N, N, value_type> inverse(const Matrix<N, N, value_type>& m) {
 // LU Decomposition Solver
 // Based on Wikipidia's C code example: https://en.wikipedia.org/wiki/LU_decomposition#C_code_example
 template <size_t N, typename value_type>
-void LUPDecompose(Matrix<N, N, value_type>& A,
-                  Vector<N + 1, int>& P) {
+void LUPDecompose(Matrix<N, N, value_type>& A, Vector<N + 1, int>& P) {
     for (int i = 0; i <= N; i++) {
-        P[i] = i; // Unit permutation matrix, P[N] initialized with N
+        P[i] = i;  // Unit permutation matrix, P[N] initialized with N
     }
 
     for (int i = 0; i < N; i++) {
@@ -851,15 +819,13 @@ void LUPDecompose(Matrix<N, N, value_type>& A,
 
         for (int j = i + 1; j < N; j++) {
             A[j][i] /= A[i][i];
-            for (int k = i + 1; k < N; k++)
-                A[j][k] -= A[j][i] * A[i][k];
+            for (int k = i + 1; k < N; k++) A[j][k] -= A[j][i] * A[i][k];
         }
     }
 }
 
 template <size_t N, typename A_type, typename value_type>
-gls::Vector<N, value_type> LUPSolve(const Matrix<N, N, A_type>&A,
-                                    const Vector<N + 1, int>& P,
+gls::Vector<N, value_type> LUPSolve(const Matrix<N, N, A_type>& A, const Vector<N + 1, int>& P,
                                     const Vector<N, value_type>& b) {
     Vector<N, value_type> x;
 
@@ -912,8 +878,7 @@ value_type LUPDeterminant(const Matrix<N, N, value_type>& A, const Vector<N + 1,
 }
 
 template <size_t N, typename value_type>
-gls::Vector<N, value_type> LUSolve(const gls::Matrix<N, N, value_type>& m,
-                                   const gls::Vector<N, value_type>& b) {
+gls::Vector<N, value_type> LUSolve(const gls::Matrix<N, N, value_type>& m, const gls::Vector<N, value_type>& b) {
     Matrix<N, N, double> A(m);
     Vector<N + 1, int> P;
     LUPDecompose(A, P);
@@ -923,8 +888,7 @@ gls::Vector<N, value_type> LUSolve(const gls::Matrix<N, N, value_type>& m,
 // Alternative LU Decomposition Solver
 // Based on Wikipidia's C# code example: https://en.wikipedia.org/wiki/LU_decomposition#C#_code_example
 template <size_t N, typename value_type>
-gls::Vector<N, value_type> LUSolveAlt(const gls::Matrix<N, N, value_type>& m,
-                                      const gls::Vector<N, value_type>& b) {
+gls::Vector<N, value_type> LUSolveAlt(const gls::Matrix<N, N, value_type>& m, const gls::Vector<N, value_type>& b) {
     // decomposition of matrix
     gls::Matrix<N, N, double> lu;
     for (int i = 0; i < N; i++) {
@@ -969,7 +933,7 @@ gls::Vector<N, value_type> LUSolveAlt(const gls::Matrix<N, N, value_type>& m,
 // From DCRaw (https://www.dechifro.org/dcraw/)
 template <size_t size, typename value_type>
 Matrix<size, 3> pseudoinverse(const Matrix<size, 3, value_type>& in) {
-    Matrix<3,6> work;
+    Matrix<3, 6> work;
 
     for (size_t i = 0; i < 3; i++) {
         for (size_t j = 0; j < 6; j++) {
@@ -1017,7 +981,7 @@ template <size_t N, size_t M, typename value_type>
 inline std::ostream& operator<<(std::ostream& os, const Matrix<N, M, value_type>& m) {
     for (size_t j = 0; j < N; j++) {
         os << m[j] << ",";
-        if (j < N-1) {
+        if (j < N - 1) {
             os << std::endl;
         }
     }
@@ -1041,6 +1005,6 @@ inline std::ostream& operator<<(std::ostream& os, const std::span<value_type>& s
     return os;
 }
 
-} // namespace gls
+}  // namespace std
 
 #endif /* gls_linalg_h */

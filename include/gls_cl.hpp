@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <map>
 #include <cmath>
+#include <map>
 
 #ifndef GLS_CL_HPP
 #define GLS_CL_HPP
@@ -35,27 +35,30 @@
 #define CL_TARGET_OPENCL_VERSION 200
 #define CL_HPP_TARGET_OPENCL_VERSION 200
 
+// clang-format off
+
 // Include cl_icd_wrapper.h before <CL/*>
 #include "gls_icd_wrapper.h"
 
 #include <CL/cl_ext.h>
 #include <CL/opencl.hpp>
 
-#elif __linux__ 
+// clang-format on
+
+#elif __linux__
 
 #define CL_TARGET_OPENCL_VERSION 200
 #define CL_HPP_TARGET_OPENCL_VERSION 200
 
 #include <CL/cl_ext.h>
+
 #include <CL/opencl.hpp>
 
 #endif
 
 namespace gls {
 
-inline static size_t roundTo(size_t value, int step) {
-    return step * ((value + step - 1) / step);
-}
+inline static size_t roundTo(size_t value, int step) { return step * ((value + step - 1) / step); }
 
 class OpenCLContext {
     cl::Context _clContext;
@@ -66,7 +69,7 @@ class OpenCLContext {
     std::map<std::string, std::vector<unsigned char>> cl_bytecode;
 #endif
 
-public:
+   public:
     OpenCLContext(const std::string& shadersRootPath = "", bool quiet = false);
 
     cl::Context clContext() { return _clContext; }

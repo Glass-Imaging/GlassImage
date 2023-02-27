@@ -20,6 +20,8 @@
 
 namespace gls {
 
+// clang-format off
+
 static const std::map<int, const char*> error_codes = {
     { CL_SUCCESS, "CL_SUCCESS" },
     { CL_DEVICE_NOT_FOUND, "CL_DEVICE_NOT_FOUND" },
@@ -97,6 +99,8 @@ static const std::map<int, const char*> error_codes = {
     { CL_MAX_SIZE_RESTRICTION_EXCEEDED, "CL_MAX_SIZE_RESTRICTION_EXCEEDED" },
 #endif
 };
+
+// clang-format on
 
 std::string clStatusToString(cl_int status) {
     auto error_entry = error_codes.find(status);

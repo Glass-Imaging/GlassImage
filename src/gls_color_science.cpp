@@ -23,16 +23,19 @@
  *              Gunter Wyszecki and W. S. Stiles, John Wiley & Sons, 1982, pp. 227, 228.
  */
 
-#include "gls_color_science.hpp"
-
 #include <float.h>
+
 #include <cmath>
 
+#include "gls_color_science.hpp"
+
 typedef struct UVT {
-    float  u;
-    float  v;
-    float  t;
+    float u;
+    float v;
+    float t;
 } UVT;
+
+// clang-format off
 
 float rt[31] = {       /* reciprocal temperature (K) */
     FLT_MIN,  10.0e-6,  20.0e-6,  30.0e-6,  40.0e-6,  50.0e-6,
@@ -77,19 +80,20 @@ UVT uvt[31] = {
     {0.33724, 0.36051, -116.45}
 };
 
+// clang-format on
+
 struct uv {
     const float u;
     const float v;
 
-    uv(const float xyz[3]) :
-        u((4.0 * xyz[0]) / (xyz[0] + 15.0 * xyz[1] + 3.0 * xyz[2])),
-        v((6.0 * xyz[1]) / (xyz[0] + 15.0 * xyz[1] + 3.0 * xyz[2])) {
-    }
+    uv(const float xyz[3])
+        : u((4.0 * xyz[0]) / (xyz[0] + 15.0 * xyz[1] + 3.0 * xyz[2])),
+          v((6.0 * xyz[1]) / (xyz[0] + 15.0 * xyz[1] + 3.0 * xyz[2])) {}
 };
 
 float XYZtoCorColorTemp(const float xyz[3]) {
     if ((xyz[0] < 1.0e-20) && (xyz[1] < 1.0e-20) && (xyz[2] < 1.0e-20))
-        return(-1);     /* protect against possible divide-by-zero failure */
+        return (-1); /* protect against possible divide-by-zero failure */
 
     uv sample(xyz);
 
@@ -99,16 +103,16 @@ float XYZtoCorColorTemp(const float xyz[3]) {
     for (idx = 0; idx < 31; idx++) {
         di = (sample.v - uvt[idx].v) - uvt[idx].t * (sample.u - uvt[idx].u);
         if ((idx > 0) && (((di < 0.0) && (dm >= 0.0)) || ((di >= 0.0) && (dm < 0.0))))
-            break;  /* found lines bounding sample : i-1 and i */
+            break; /* found lines bounding sample : i-1 and i */
         dm = di;
     }
 
     if (idx == 31)
-        return -1;     /* bad XYZ input, color temp would be less than minimum of 1666.7 degrees, or too far towards blue */
+        return -1; /* bad XYZ input, color temp would be less than minimum of 1666.7 degrees, or too far towards blue */
 
-    di = di / sqrt(1.0 + uvt[idx    ].t * uvt[idx    ].t);
+    di = di / sqrt(1.0 + uvt[idx].t * uvt[idx].t);
     dm = dm / sqrt(1.0 + uvt[idx - 1].t * uvt[idx - 1].t);
-    float p = dm / (dm - di);     /* p = interpolation parameter, 0.0 : i-1, 1.0 : i */
+    float p = dm / (dm - di); /* p = interpolation parameter, 0.0 : i-1, 1.0 : i */
     p = 1.0 / (std::lerp(rt[idx - 1], rt[idx], p));
 
     return p;
