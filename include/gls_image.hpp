@@ -17,6 +17,7 @@
 #define GLS_IMAGE_H
 
 #include <sys/types.h>
+#include <string.h>
 
 #include <cassert>
 #include <functional>
