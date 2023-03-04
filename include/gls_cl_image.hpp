@@ -39,6 +39,8 @@ class cl_image : public basic_image<T> {
                       std::is_same<typename T::value_type, uint8_t>::value ||
                       std::is_same<typename T::value_type, uint16_t>::value ||
                       std::is_same<typename T::value_type, uint32_t>::value ||
+                      std::is_same<typename T::value_type, int8_t>::value ||
+                      std::is_same<typename T::value_type, int16_t>::value ||
                       std::is_same<typename T::value_type, int32_t>::value);
 
         cl_channel_order order = T::channels == 1 ? CL_R : T::channels == 2 ? CL_RG : CL_RGBA;
@@ -50,6 +52,8 @@ class cl_image : public basic_image<T> {
                                std::is_same<typename T::value_type, uint8_t>::value    ? CL_UNORM_INT8
                                : std::is_same<typename T::value_type, uint16_t>::value ? CL_UNORM_INT16
                                : std::is_same<typename T::value_type, uint32_t>::value ? CL_UNSIGNED_INT32
+                               : std::is_same<typename T::value_type, int8_t>::value   ? CL_SNORM_INT8
+                               : std::is_same<typename T::value_type, int16_t>::value  ? CL_SNORM_INT16
                                                                                        : CL_SIGNED_INT32;
 
         return cl::ImageFormat(order, type);
@@ -58,47 +62,36 @@ class cl_image : public basic_image<T> {
 
 // Other Supported OpenCL mappings
 
-template <>
-inline cl::ImageFormat cl_image<float>::ImageFormat() {
-    return cl::ImageFormat(CL_R, CL_FLOAT);
+#define DECLARE_TYPE_FORMATS(data_type, channel_type)                      \
+template <>                                                                \
+inline cl::ImageFormat cl_image<data_type>::ImageFormat() {                \
+    return cl::ImageFormat(CL_R, channel_type);                            \
+}                                                                          \
+                                                                           \
+template <>                                                                \
+inline cl::ImageFormat cl_image<std::array<data_type, 2>>::ImageFormat() { \
+    return cl::ImageFormat(CL_RG, channel_type);                           \
+}                                                                          \
+                                                                           \
+template <>                                                                \
+inline cl::ImageFormat cl_image<std::array<data_type, 4>>::ImageFormat() { \
+    return cl::ImageFormat(CL_RGBA, channel_type);                         \
 }
 
-template <>
-inline cl::ImageFormat cl_image<std::array<float, 2>>::ImageFormat() {
-    return cl::ImageFormat(CL_RG, CL_FLOAT);
-}
-
-template <>
-inline cl::ImageFormat cl_image<std::array<float, 4>>::ImageFormat() {
-    return cl::ImageFormat(CL_RGBA, CL_FLOAT);
-}
+DECLARE_TYPE_FORMATS(float, CL_FLOAT)
 
 #if USE_FP16_FLOATS && !(__APPLE__ && __x86_64__)
-template <>
-inline cl::ImageFormat cl_image<gls::float16_t>::ImageFormat() {
-    return cl::ImageFormat(CL_R, CL_HALF_FLOAT);
-}
+DECLARE_TYPE_FORMATS(gls::float16_t, CL_HALF_FLOAT)
 #endif
 
-template <>
-inline cl::ImageFormat cl_image<uint8_t>::ImageFormat() {
-    return cl::ImageFormat(CL_R, CL_UNORM_INT8);
-}
+DECLARE_TYPE_FORMATS(uint8_t, CL_UNORM_INT8)
+DECLARE_TYPE_FORMATS(uint16_t, CL_UNORM_INT16)
+DECLARE_TYPE_FORMATS(uint32_t, CL_UNSIGNED_INT32)
 
-template <>
-inline cl::ImageFormat cl_image<uint16_t>::ImageFormat() {
-    return cl::ImageFormat(CL_R, CL_UNORM_INT16);
-}
+DECLARE_TYPE_FORMATS(int8_t, CL_SNORM_INT8)
+DECLARE_TYPE_FORMATS(int16_t, CL_SNORM_INT16)
+DECLARE_TYPE_FORMATS(int32_t, CL_SIGNED_INT32)
 
-template <>
-inline cl::ImageFormat cl_image<uint32_t>::ImageFormat() {
-    return cl::ImageFormat(CL_R, CL_UNSIGNED_INT32);
-}
-
-template <>
-inline cl::ImageFormat cl_image<int32_t>::ImageFormat() {
-    return cl::ImageFormat(CL_R, CL_SIGNED_INT32);
-}
 
 template <typename T>
 class cl_image_2d : public cl_image<T> {

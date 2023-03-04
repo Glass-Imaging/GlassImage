@@ -280,6 +280,20 @@ class image : public basic_image<T> {
 
     const constexpr std::span<T> pixels() const { return _data; }
 
+    constexpr const T& getPixel(int x, int y) const {
+        if (y < 0) {
+            y = std::min(-y, basic_image<T>::height-1);
+        } else if (y > basic_image<T>::height-1) {
+            y = 2 * (basic_image<T>::height-1) - y;
+        }
+        if (x < 0) {
+            x = std::min(-x, basic_image<T>::width-1);
+        } else if (x > basic_image<T>::width-1) {
+            x = 2 * (basic_image<T>::width-1) - x;
+        }
+        return (*this)[y][x];
+    }
+
     constexpr void apply(std::function<void(const T& pixel)> process) const {
         for (int y = 0; y < basic_image<T>::height; y++) {
             for (int x = 0; x < basic_image<T>::width; x++) {
