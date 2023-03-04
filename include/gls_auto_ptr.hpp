@@ -16,6 +16,8 @@
 #ifndef auto_ptr_h
 #define auto_ptr_h
 
+#include <functional>
+
 namespace gls {
 
 // exception friendly pointer with destructor
