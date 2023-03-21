@@ -41,7 +41,7 @@
 
 namespace gls {
 
-template <typename T, int N>
+template <typename T, size_t N>
 struct pixel : public std::array<T, N> {
     constexpr const static size_t channels = N;
     constexpr const static int bit_depth = 8 * sizeof(T);
@@ -426,12 +426,14 @@ class image : public basic_image<T> {
     };
 
     // Image factory from TIFF file
-    constexpr static unique_ptr read_tiff_file(const std::string& filename, tiff_metadata* metadata = nullptr) {
+    constexpr static unique_ptr read_tiff_file(const std::string& filename,
+                                               std::function<unique_ptr(int width, int height)> image_allocator,
+                                               tiff_metadata* metadata = nullptr) {
         unique_ptr image = nullptr;
         gls::read_tiff_file(
             filename, T::channels, T::bit_depth, metadata,
-            [&image](int width, int height) -> bool {
-                return (image = std::make_unique<gls::image<T>>(width, height)) != nullptr;
+            [&image, &image_allocator](int width, int height) -> bool {
+                return (image = image_allocator(width, height)) != nullptr;
             },
             [&image](int tiff_bitspersample, int tiff_samplesperpixel, int row, int strip_width, int strip_height,
                      int crop_x, int crop_y, uint8_t* tiff_buffer) -> bool {
@@ -440,6 +442,12 @@ class image : public basic_image<T> {
                                           /*crop_x=*/0, /*crop_y=*/0, tiff_buffer);
             });
         return image;
+    }
+
+    constexpr static unique_ptr read_tiff_file(const std::string& filename, tiff_metadata* metadata = nullptr) {
+        return read_tiff_file(filename, [] (int width, int height) -> unique_ptr {
+            return std::make_unique<gls::image<T>>(width, height);
+        }, metadata);
     }
 
     // Write image to TIFF file
@@ -452,13 +460,15 @@ class image : public basic_image<T> {
     }
 
     // Image factory from DNG file
-    constexpr static unique_ptr read_dng_file(const std::string& filename, tiff_metadata* dng_metadata = nullptr,
+    constexpr static unique_ptr read_dng_file(const std::string& filename,
+                                              std::function<unique_ptr(int width, int height)> image_allocator,
+                                              tiff_metadata* dng_metadata = nullptr,
                                               tiff_metadata* exif_metadata = nullptr) {
         unique_ptr image = nullptr;
         gls::read_dng_file(
             filename, T::channels, T::bit_depth, dng_metadata, exif_metadata,
-            [&image](int width, int height) -> bool {
-                return (image = std::make_unique<gls::image<T>>(width, height)) != nullptr;
+            [&image, &image_allocator](int width, int height) -> bool {
+                return (image = image_allocator(width, height)) != nullptr;
             },
             [&image](int tiff_bitspersample, int tiff_samplesperpixel, int row, int strip_width, int strip_height,
                      int crop_x, int crop_y, uint8_t* tiff_buffer) -> bool {
@@ -467,6 +477,14 @@ class image : public basic_image<T> {
                                           /*crop_x=*/crop_x, /*crop_y=*/crop_y, tiff_buffer);
             });
         return image;
+    }
+
+    constexpr static unique_ptr read_dng_file(const std::string& filename,
+                                              tiff_metadata* dng_metadata = nullptr,
+                                              tiff_metadata* exif_metadata = nullptr) {
+        return read_dng_file(filename, [] (int width, int height) -> unique_ptr {
+            return std::make_unique<gls::image<T>>(width, height);
+        }, dng_metadata, exif_metadata);
     }
 
     // Write image to DNG file
