@@ -17,8 +17,6 @@
 #include <png.h>
 #include <zlib.h>
 
-#include <fstream>
-
 #include "gls_image_png.h"
 
 namespace gls {
@@ -92,26 +90,9 @@ void read_png_file(const std::string& filename, int pixel_channels, int pixel_bi
     fclose(fp);
 }
 
-static std::vector<unsigned char> read_binary_file (const std::string filename) {
-    // binary mode is only for switching off newline translation
-    std::ifstream file(filename, std::ios::binary);
-    file.unsetf(std::ios::skipws);
-
-    std::streampos file_size;
-    file.seekg(0, std::ios::end);
-    file_size = file.tellg();
-    file.seekg(0, std::ios::beg);
-
-    std::vector<unsigned char> vec;
-    vec.reserve(file_size);
-    vec.insert(vec.begin(),
-               std::istream_iterator<unsigned char>(file),
-               std::istream_iterator<unsigned char>());
-    return (vec);
-}
-
 void write_png_file(const std::string& filename, int width, int height, int pixel_channels, int pixel_bit_depth,
-                    bool skip_alpha, int compression_level, std::function<uint8_t*(int row)> row_pointer) {
+                    bool skip_alpha, int compression_level, const std::vector<uint8_t>* icc_profile_data,
+                    std::function<uint8_t*(int row)> row_pointer) {
     FILE* fp = fopen(filename.c_str(), "wb");
     if (!fp) {
         throw std::runtime_error("Could not open " + filename);
@@ -149,11 +130,12 @@ void write_png_file(const std::string& filename, int width, int height, int pixe
     png_set_IHDR(png_ptr, info_ptr, width, height, pixel_bit_depth, png_color_type, PNG_INTERLACE_NONE,
                  PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
-    png_set_sRGB(png_ptr, info_ptr, PNG_sRGB_INTENT_PERCEPTUAL);
-
-    // Read ICC color profile data
-    // auto icc_data = read_binary_file("/System/Library/ColorSync/Profiles/Display P3.icc");
-    // png_set_iCCP(png_ptr, info_ptr, "Display P3", PNG_COMPRESSION_TYPE_BASE, icc_data.data(), (int) icc_data.size());
+    if (icc_profile_data) {
+        png_set_iCCP(png_ptr, info_ptr, "Display P3", PNG_COMPRESSION_TYPE_BASE,
+                     icc_profile_data->data(), (int) icc_profile_data->size());
+    } else {
+        png_set_sRGB(png_ptr, info_ptr, PNG_sRGB_INTENT_PERCEPTUAL);
+    }
 
     // Fast compression strategy with fast filtering.
     // Save time: 10x faster on Android with ~10% worse compression

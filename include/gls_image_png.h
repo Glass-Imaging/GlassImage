@@ -30,7 +30,8 @@ void read_png_file(const std::string& filename, int pixel_channels, int pixel_bi
                    std::function<bool(int width, int height, std::vector<uint8_t*>* row_pointers)> image_allocator);
 
 void write_png_file(const std::string& filename, int width, int height, int pixel_channels, int pixel_bit_depth,
-                    bool skip_alpha, int compression_level, std::function<uint8_t*(int row)> row_pointer);
+                    bool skip_alpha, int compression_level, const std::vector<uint8_t>* icc_profile_data,
+                    std::function<uint8_t*(int row)> row_pointer);
 
 }  // namespace gls
 

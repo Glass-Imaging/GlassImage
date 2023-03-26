@@ -343,16 +343,19 @@ class image : public basic_image<T> {
     // Write image to PNG file
     // compression_level range: [0-9], 0 -> no compression (default), 1 -> *fast* compression, otherwise useful range:
     // [3-6]
-    constexpr void write_png_file(const std::string& filename, int compression_level = 0) const {
+    constexpr void write_png_file(const std::string& filename, bool skip_alpha,
+                                  const std::vector<uint8_t>* icc_profile_data, int compression_level = 0) const {
         auto row_pointer = [this](int row) -> uint8_t* { return (uint8_t*)(*this)[row]; };
-        gls::write_png_file(filename, basic_image<T>::width, basic_image<T>::height, T::channels, T::bit_depth, false,
-                            compression_level, row_pointer);
+        gls::write_png_file(filename, basic_image<T>::width, basic_image<T>::height, T::channels, T::bit_depth,
+                            skip_alpha, compression_level, icc_profile_data, row_pointer);
     }
 
     constexpr void write_png_file(const std::string& filename, bool skip_alpha, int compression_level = 0) const {
-        auto row_pointer = [this](int row) -> uint8_t* { return (uint8_t*)(*this)[row]; };
-        gls::write_png_file(filename, basic_image<T>::width, basic_image<T>::height, T::channels, T::bit_depth,
-                            skip_alpha, compression_level, row_pointer);
+        write_png_file(filename, skip_alpha, /*icc_profile_data=*/ nullptr, compression_level);
+    }
+
+    constexpr void write_png_file(const std::string& filename, int compression_level = 0) const {
+        write_png_file(filename, /*skip_alpha=*/ false, /*icc_profile_data=*/ nullptr, compression_level);
     }
 
     // Image factory from JPEG file
