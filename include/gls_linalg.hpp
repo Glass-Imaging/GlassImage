@@ -291,6 +291,24 @@ inline Vector<N, value_type> sqrt(const Vector<N, value_type>& v) {
     return result;
 }
 
+template <size_t N, typename value_type>
+inline value_type min_element(const Vector<N, value_type>& v) {
+    return *std::min_element(std::begin(v), std::end(v));
+}
+
+template <size_t N, typename value_type>
+inline value_type max_element(const Vector<N, value_type>& v) {
+    return *std::max_element(std::begin(v), std::end(v));
+}
+
+template <size_t N, typename value_type>
+inline Vector<N, value_type> apply(value_type (*f)(value_type), const Vector<N, value_type>& v) {
+    auto itv = v.begin();
+    Vector<N, value_type> result;
+    std::for_each(result.begin(), result.end(), [&itv, f](value_type& r) { r = f(*itv++); });
+    return result;
+}
+
 template <size_t N>
 inline Vector<N, bool> operator!(const Vector<N, bool>& a) {
     auto ita = a.begin();
