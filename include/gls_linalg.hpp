@@ -269,7 +269,7 @@ template <size_t N, typename value_type>
 inline Vector<N, value_type> max(const Vector<N, value_type>& v, value_type a) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = std::max(*itv++, a); });
+    std::for_each(result.begin(), result.end(), [a, &itv](value_type& r) { r = std::max(*itv++, a); });
     return result;
 }
 
@@ -278,7 +278,16 @@ template <size_t N, typename value_type>
 inline Vector<N, value_type> min(const Vector<N, value_type>& v, value_type a) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = std::min(*itv++, a); });
+    std::for_each(result.begin(), result.end(), [a, &itv](value_type& r) { r = std::min(*itv++, a); });
+    return result;
+}
+
+// Vector - Scalar Clamp
+template <size_t N, typename value_type>
+inline Vector<N, value_type> clamp(const Vector<N, value_type>& v, value_type lo, value_type hi) {
+    auto itv = v.begin();
+    Vector<N, value_type> result;
+    std::for_each(result.begin(), result.end(), [lo, hi, &itv](value_type& r) { r = std::min(std::max(*itv++, lo), hi); });
     return result;
 }
 
