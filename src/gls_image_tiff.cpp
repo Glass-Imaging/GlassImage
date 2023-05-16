@@ -259,7 +259,8 @@ static void writeTiffImageData(TIFF* tif, int width, int height, int pixel_chann
 
 template <typename T>
 void write_tiff_file(const std::string& filename, int width, int height, int pixel_channels, int pixel_bit_depth,
-                     tiff_compression compression, tiff_metadata* metadata, std::function<T*(int row)> row_pointer) {
+                     tiff_compression compression, tiff_metadata* metadata, const std::vector<uint8_t>* icc_profile_data,
+                     std::function<T*(int row)> row_pointer) {
     setTiffErrorHandler();
 
     auto_ptr<TIFF> tif(TIFFOpen(filename.c_str(), "w"), [](TIFF* tif) { TIFFClose(tif); });
@@ -274,7 +275,23 @@ void write_tiff_file(const std::string& filename, int width, int height, int pix
 
         TIFFSetField(tif, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB);
         TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_UINT);
-        TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
+
+        // Add orientation from metadata
+        uint16_t orientation = ORIENTATION_TOPLEFT;
+        if (metadata) {
+            const auto entry = metadata->find(TIFFTAG_ORIENTATION);
+            if (entry != metadata->end()) {
+                orientation = std::get<uint16_t>(entry->second);
+            }
+        }
+        TIFFSetField(tif, TIFFTAG_ORIENTATION, orientation);
+
+        // TODO: Add more TIFF tags here
+
+        // Add ICC profile data, otherwise sRGB is assumed.
+        if (icc_profile_data) {
+            TIFFSetField(tif, TIFFTAG_ICCPROFILE, icc_profile_data->size(), icc_profile_data->data());
+        }
 
         writeTiffImageData(tif, width, height, pixel_channels, pixel_bit_depth, row_pointer);
     } else {
@@ -293,6 +310,14 @@ void read_dng_file(const std::string& filename, int pixel_channels, int pixel_bi
     if (tif) {
         if (dng_metadata) {
             readAllTIFFTags(tif, dng_metadata);
+        }
+
+        // TODO: Add more TIFF tags here
+        uint16_t orientation = 0;
+        TIFFGetField(tif, TIFFTAG_ORIENTATION, &orientation);
+        LOG_DEBUG(TAG) << "orientation: " << orientation << std::endl;
+        if (dng_metadata) {
+            dng_metadata->insert({TIFFTAG_ORIENTATION, orientation});
         }
 
         uint32_t subfileType = 0;
@@ -368,13 +393,6 @@ void read_dng_file(const std::string& filename, int pixel_channels, int pixel_bi
         if (!active_area.empty()) {
             crop_x += active_area[1];
             crop_y += active_area[0];
-        }
-
-        uint16_t orientation;
-        TIFFGetField(tif, TIFFTAG_ORIENTATION, &orientation);
-        LOG_DEBUG(TAG) << "orientation: " << orientation << std::endl;
-        if (dng_metadata) {
-            dng_metadata->insert({TIFFTAG_ORIENTATION, orientation});
         }
 
         auto allocation_successful = image_allocator(image_width, image_height);
@@ -591,10 +609,12 @@ void write_dng_file(const std::string& filename, int width, int height, int pixe
 
 template void write_tiff_file<uint8_t>(const std::string& filename, int width, int height, int pixel_channels,
                                        int pixel_bit_depth, tiff_compression compression, tiff_metadata* metadata,
+                                       const std::vector<uint8_t>* icc_profile_data,
                                        std::function<uint8_t*(int row)> row_pointer);
 
 template void write_tiff_file<uint16_t>(const std::string& filename, int width, int height, int pixel_channels,
                                         int pixel_bit_depth, tiff_compression compression, tiff_metadata* metadata,
+                                        const std::vector<uint8_t>* icc_profile_data,
                                         std::function<uint16_t*(int row)> row_pointer);
 
 }  // namespace gls

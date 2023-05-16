@@ -46,7 +46,8 @@ void read_tiff_file(const std::string& filename, int pixel_channels, int pixel_b
 
 template <typename T>
 void write_tiff_file(const std::string& filename, int width, int height, int pixel_channels, int pixel_bit_depth,
-                     tiff_compression compression, tiff_metadata* metadata, std::function<T*(int row)> row_pointer);
+                     tiff_compression compression, tiff_metadata* metadata, const std::vector<uint8_t>* icc_profile_data,
+                     std::function<T*(int row)> row_pointer);
 
 void read_dng_file(const std::string& filename, int pixel_channels, int pixel_bit_depth, tiff_metadata* dng_metadata,
                    tiff_metadata* exif_metadata, std::function<bool(int width, int height)> image_allocator,
