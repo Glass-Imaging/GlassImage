@@ -241,12 +241,9 @@ static void writeTiffImageData(TIFF* tif, int width, int height, int pixel_chann
             uint32_t nrow = (row + rowsperstrip) > height ? nrow = height - row : rowsperstrip;
             tstrip_t strip = TIFFComputeStrip(tif, row, 0);
             tsize_t bi = 0;
-            for (int y = 0; y < nrow; ++y) {
-                for (int x = 0; x < width; ++x) {
-                    for (int c = 0; c < pixel_channels; c++) {
-                        tiffbuf[bi++] = row_pointer(row + y)[pixel_channels * x + c];
-                    }
-                }
+            for (int y = 0; y < nrow; y++) {
+                memcpy(&tiffbuf[bi], row_pointer(row + y), sizeof(T) * width * pixel_channels);
+                bi += width * pixel_channels;
             }
             if (TIFFWriteEncodedStrip(tif, strip, tiffbuf, bi * sizeof(T)) < 0) {
                 throw std::runtime_error("Failed to encode TIFF strip.");
