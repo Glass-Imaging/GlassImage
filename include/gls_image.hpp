@@ -169,10 +169,10 @@ typedef basic_pixel<rgba_type<float>> pixel_fp32_4;
 
 #if USE_FP16_FLOATS && !(__APPLE__ && __x86_64__)
 typedef __fp16 float16_t;
-typedef basic_pixel<luma_type<float16_t>> luma_pixel_fp16;
-typedef basic_pixel<luma_alpha_type<float16_t>> luma_alpha_pixel_fp16;
-typedef basic_pixel<rgb_type<float16_t>> rgb_pixel_fp16;
-typedef basic_pixel<rgba_type<float16_t>> rgba_pixel_fp16;
+typedef basic_pixel<luma_type<float16_t>> pixel_fp16;
+typedef basic_pixel<luma_alpha_type<float16_t>> pixel_fp16_2;
+typedef basic_pixel<rgb_type<float16_t>> pixel_fp16_3;
+typedef basic_pixel<rgba_type<float16_t>> pixel_fp16_4;
 #endif
 
 #if USE_FP16_FLOATS && !(__APPLE__ && __x86_64__)
@@ -180,10 +180,10 @@ typedef float16_t float_type;
 #else
 typedef float float_type;
 #endif
-typedef basic_pixel<luma_type<float_type>> luma_pixel_float;
-typedef basic_pixel<luma_alpha_type<float_type>> luma_alpha_pixel_float;
-typedef basic_pixel<rgb_type<float_type>> rgb_pixel_float;
-typedef basic_pixel<rgba_type<float_type>> rgba_pixel_float;
+typedef basic_pixel<luma_type<float_type>> pixel_float;
+typedef basic_pixel<luma_alpha_type<float_type>> pixel_float2;
+typedef basic_pixel<rgb_type<float_type>> pixel_float3;
+typedef basic_pixel<rgba_type<float_type>> pixel_float4;
 
 typedef basic_pixel<luma_type<float_type>> pixel_float;
 typedef basic_pixel<luma_alpha_type<float_type>> pixel_float2;
