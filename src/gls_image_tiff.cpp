@@ -162,7 +162,7 @@ static void GLS_Printf(FILE* __restrict f, const char* tag, const char* a, const
     std::strftime(mbstr, sizeof(mbstr), "%F %T", std::localtime(&time_now.tv_sec));
 
     fprintf(f, "%s.%.3d - %s: %s ", mbstr, (int)(time_now.tv_usec / 1000), tag, a);
-    fprintf(f, b, args);
+    vfprintf(f, b, args);
     fprintf(f, "\n");
 }
 
