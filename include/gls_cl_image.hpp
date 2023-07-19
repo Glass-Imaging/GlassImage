@@ -92,6 +92,7 @@ DECLARE_TYPE_FORMATS(int8_t, CL_SNORM_INT8)
 DECLARE_TYPE_FORMATS(int16_t, CL_SNORM_INT16)
 DECLARE_TYPE_FORMATS(int32_t, CL_SIGNED_INT32)
 
+#undef DECLARE_TYPE_FORMATS
 
 template <typename T>
 class cl_image_2d : public cl_image<T> {
