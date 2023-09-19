@@ -16,7 +16,9 @@
 #include <iostream>
 
 #include "gls_ocl.hpp"
+#ifdef __APPLE__
 #include "gls_mtl.hpp"
+#endif
 
 struct GpuBlurKernel {
     gls::Kernel<
@@ -66,6 +68,7 @@ int main(int argc, const char * argv[]) {
         runKernel(gpuContext.get(), *inputImage, "ocl_output.tiff");
     }
 
+#ifdef __APPLE__
     // Run the Metal kernel
     {
         auto allMetalDevices = NS::TransferPtr(MTL::CopyAllDevices());
@@ -74,6 +77,6 @@ int main(int argc, const char * argv[]) {
 
         runKernel(gpuContext.get(), *inputImage, "metal_output.tiff");
     }
-
+#endif
     return 0;
 }

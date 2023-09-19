@@ -15,6 +15,15 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        externalNativeBuild {
+            cmake {
+                // Sets optional flags for the C++ compiler.
+                cppFlags("-std=c++20 -frtti -fexceptions")
+
+                abiFilters("arm64-v8a")
+            }
+        }
     }
 
     buildTypes {

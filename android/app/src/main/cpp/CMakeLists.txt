@@ -11,6 +11,78 @@ cmake_minimum_required(VERSION 3.22.1)
 # build script scope).
 project("glassimagetest")
 
+add_library( libz STATIC IMPORTED )
+set_target_properties( libz PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/jni/${ANDROID_ABI}/libz.a )
+add_library( libpng STATIC IMPORTED )
+set_target_properties( libpng PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/jni/${ANDROID_ABI}/libpng.a )
+add_library( libjpg STATIC IMPORTED )
+set_target_properties( libjpg PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/jni/${ANDROID_ABI}/libjpeg-turbo.a )
+
+add_library( libtiff STATIC IMPORTED )
+set_target_properties( libtiff PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/jni/${ANDROID_ABI}/libtiff.a )
+add_library( libtiffxx STATIC IMPORTED )
+set_target_properties( libtiffxx PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/jni/${ANDROID_ABI}/libtiffxx.a )
+
+add_executable( # Sets the name of the library.
+        glassImageTest
+
+        # Sets the library as a shared library.
+        # SHARED
+
+        # Provides a relative path to your source file(s).
+        glassimage/src/gls_icd_wrapper.cpp
+        glassimage/src/gls_cl_error.cpp
+        glassimage/src/gls_logging.cpp
+        glassimage/src/gls_cl.cpp
+        glassimage/src/gls_ocl.cpp
+        glassimage/src/gls_android_support.cpp
+        glassimage/src/gls_image_png.cpp
+        glassimage/src/gls_image_jpeg.cpp
+        glassimage/src/gls_image_tiff.cpp
+        glassimage/src/gls_tiff_metadata.cpp
+        glassimage/src/gls_dng_lossless_jpeg.cpp
+        glassimage/glsTestV2/glassImageTestV2.cpp)
+
+target_compile_options( glassImageTest PRIVATE -Wall -Werror ) # -DUSE_ASSET_MANAGER
+
+# Add header files for opencl
+target_include_directories( glassImageTest PRIVATE ${CMAKE_SOURCE_DIR}/headers )
+target_include_directories( glassImageTest PRIVATE ${CMAKE_SOURCE_DIR}/glassimage/include )
+
+target_compile_options( glassImageTest PRIVATE -Wall -Werror -DUSE_IOSTREAM_LOG )
+
+# Searches for a specified prebuilt library and stores the path as a
+# variable. Because CMake includes system libraries in the search path by
+# default, you only need to specify the name of the public NDK library
+# you want to add. CMake verifies that the library exists before
+# completing its build.
+
+find_library( # Sets the name of the path variable.
+        log-lib
+
+        # Specifies the name of the NDK library that
+        # you want CMake to locate.
+        log)
+
+# Specifies libraries CMake should link to your target library. You
+# can link multiple libraries, such as libraries you define in this
+# build script, prebuilt third-party libraries, or system libraries.
+
+target_link_libraries( # Specifies the target library.
+        glassImageTest
+
+        libjpg
+        libpng
+        libz
+        libtiff
+        libtiffxx
+
+        # Links the target library to the log library
+        # included in the NDK.
+        ${log-lib}
+        -ljnigraphics
+        -landroid)
+
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
 # You can define multiple libraries, and CMake builds them for you.
