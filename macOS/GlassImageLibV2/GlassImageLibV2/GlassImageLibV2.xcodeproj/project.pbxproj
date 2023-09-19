@@ -1,0 +1,488 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		E5FD22E32AB8FE490001D329 /* gls_geometry.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E5FD22D22AB8FE490001D329 /* gls_geometry.hpp */; };
+		E5FD22E42AB8FE490001D329 /* gls_ocl.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E5FD22D32AB8FE490001D329 /* gls_ocl.hpp */; };
+		E5FD22E52AB8FE490001D329 /* gls_linalg.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E5FD22D42AB8FE490001D329 /* gls_linalg.hpp */; };
+		E5FD22E62AB8FE490001D329 /* gls_mtl_image.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E5FD22D52AB8FE490001D329 /* gls_mtl_image.hpp */; };
+		E5FD22E72AB8FE490001D329 /* gls_gpu_image.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E5FD22D62AB8FE490001D329 /* gls_gpu_image.hpp */; };
+		E5FD22E82AB8FE490001D329 /* gls_image_tiff.h in Headers */ = {isa = PBXBuildFile; fileRef = E5FD22D72AB8FE490001D329 /* gls_image_tiff.h */; };
+		E5FD22E92AB8FE490001D329 /* gls_image_png.h in Headers */ = {isa = PBXBuildFile; fileRef = E5FD22D82AB8FE490001D329 /* gls_image_png.h */; };
+		E5FD22EA2AB8FE490001D329 /* gls_image_jpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = E5FD22D92AB8FE490001D329 /* gls_image_jpeg.h */; };
+		E5FD22EB2AB8FE490001D329 /* gls_ocl_image.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E5FD22DA2AB8FE490001D329 /* gls_ocl_image.hpp */; };
+		E5FD22EC2AB8FE490001D329 /* gls_mtl.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E5FD22DB2AB8FE490001D329 /* gls_mtl.hpp */; };
+		E5FD22ED2AB8FE490001D329 /* gls_color_science.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E5FD22DC2AB8FE490001D329 /* gls_color_science.hpp */; };
+		E5FD22EE2AB8FE490001D329 /* gls_logging.h in Headers */ = {isa = PBXBuildFile; fileRef = E5FD22DD2AB8FE490001D329 /* gls_logging.h */; };
+		E5FD22EF2AB8FE490001D329 /* gls_dng_lossless_jpeg.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E5FD22DE2AB8FE490001D329 /* gls_dng_lossless_jpeg.hpp */; };
+		E5FD22F02AB8FE490001D329 /* gls_simd.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E5FD22DF2AB8FE490001D329 /* gls_simd.hpp */; };
+		E5FD22F12AB8FE490001D329 /* gls_tiff_metadata.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E5FD22E02AB8FE490001D329 /* gls_tiff_metadata.hpp */; };
+		E5FD22F22AB8FE490001D329 /* gls_image.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E5FD22E12AB8FE490001D329 /* gls_image.hpp */; };
+		E5FD22F32AB8FE490001D329 /* gls_statistics.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E5FD22E22AB8FE490001D329 /* gls_statistics.hpp */; };
+		E5FD22FF2AB8FE6A0001D329 /* gls_dng_lossless_jpeg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E5FD22F42AB8FE690001D329 /* gls_dng_lossless_jpeg.cpp */; };
+		E5FD23002AB8FE6A0001D329 /* gls_ocl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E5FD22F52AB8FE690001D329 /* gls_ocl.cpp */; };
+		E5FD23012AB8FE6A0001D329 /* gls_image_jpeg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E5FD22F62AB8FE690001D329 /* gls_image_jpeg.cpp */; };
+		E5FD23022AB8FE6A0001D329 /* gls_tiff_metadata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E5FD22F72AB8FE690001D329 /* gls_tiff_metadata.cpp */; };
+		E5FD23032AB8FE6A0001D329 /* gls_image_png.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E5FD22F82AB8FE690001D329 /* gls_image_png.cpp */; };
+		E5FD23042AB8FE6A0001D329 /* gls_color_science.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E5FD22F92AB8FE690001D329 /* gls_color_science.cpp */; };
+		E5FD23052AB8FE6A0001D329 /* gls_logging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E5FD22FA2AB8FE6A0001D329 /* gls_logging.cpp */; };
+		E5FD23062AB8FE6A0001D329 /* gls_image_tiff.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E5FD22FB2AB8FE6A0001D329 /* gls_image_tiff.cpp */; };
+		E5FD23072AB8FE6A0001D329 /* gls_cl_error.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E5FD22FC2AB8FE6A0001D329 /* gls_cl_error.cpp */; };
+		E5FD23082AB8FE6A0001D329 /* gls_mtl_image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E5FD22FD2AB8FE6A0001D329 /* gls_mtl_image.cpp */; };
+		E5FD23092AB8FE6A0001D329 /* gls_mtl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E5FD22FE2AB8FE6A0001D329 /* gls_mtl.cpp */; };
+		E5FD230F2AB9084C0001D329 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5FD230E2AB9084C0001D329 /* Metal.framework */; };
+		E5FD23112AB908560001D329 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5FD23102AB908560001D329 /* OpenCL.framework */; };
+		E5FD23132AB908670001D329 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5FD23122AB908670001D329 /* Foundation.framework */; };
+		E5FD23192AB909810001D329 /* libpng16.16.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E5FD23152AB909810001D329 /* libpng16.16.dylib */; };
+		E5FD231A2AB909810001D329 /* libtiff.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E5FD23162AB909810001D329 /* libtiff.6.dylib */; };
+		E5FD231B2AB909810001D329 /* libz.1.2.13.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E5FD23172AB909810001D329 /* libz.1.2.13.dylib */; };
+		E5FD231C2AB909810001D329 /* libjpeg.8.2.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E5FD23182AB909810001D329 /* libjpeg.8.2.2.dylib */; };
+		E5FD23572ABA3B760001D329 /* gls_auto_ptr.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E5FD23562ABA3B760001D329 /* gls_auto_ptr.hpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		E5FD22C42AB8FBD20001D329 /* libGlassImageLibV2.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libGlassImageLibV2.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		E5FD22D22AB8FE490001D329 /* gls_geometry.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gls_geometry.hpp; path = ../../../../include/gls_geometry.hpp; sourceTree = "<group>"; };
+		E5FD22D32AB8FE490001D329 /* gls_ocl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gls_ocl.hpp; path = ../../../../include/gls_ocl.hpp; sourceTree = "<group>"; };
+		E5FD22D42AB8FE490001D329 /* gls_linalg.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gls_linalg.hpp; path = ../../../../include/gls_linalg.hpp; sourceTree = "<group>"; };
+		E5FD22D52AB8FE490001D329 /* gls_mtl_image.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gls_mtl_image.hpp; path = ../../../../include/gls_mtl_image.hpp; sourceTree = "<group>"; };
+		E5FD22D62AB8FE490001D329 /* gls_gpu_image.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gls_gpu_image.hpp; path = ../../../../include/gls_gpu_image.hpp; sourceTree = "<group>"; };
+		E5FD22D72AB8FE490001D329 /* gls_image_tiff.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gls_image_tiff.h; path = ../../../../include/gls_image_tiff.h; sourceTree = "<group>"; };
+		E5FD22D82AB8FE490001D329 /* gls_image_png.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gls_image_png.h; path = ../../../../include/gls_image_png.h; sourceTree = "<group>"; };
+		E5FD22D92AB8FE490001D329 /* gls_image_jpeg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gls_image_jpeg.h; path = ../../../../include/gls_image_jpeg.h; sourceTree = "<group>"; };
+		E5FD22DA2AB8FE490001D329 /* gls_ocl_image.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gls_ocl_image.hpp; path = ../../../../include/gls_ocl_image.hpp; sourceTree = "<group>"; };
+		E5FD22DB2AB8FE490001D329 /* gls_mtl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gls_mtl.hpp; path = ../../../../include/gls_mtl.hpp; sourceTree = "<group>"; };
+		E5FD22DC2AB8FE490001D329 /* gls_color_science.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gls_color_science.hpp; path = ../../../../include/gls_color_science.hpp; sourceTree = "<group>"; };
+		E5FD22DD2AB8FE490001D329 /* gls_logging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gls_logging.h; path = ../../../../include/gls_logging.h; sourceTree = "<group>"; };
+		E5FD22DE2AB8FE490001D329 /* gls_dng_lossless_jpeg.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gls_dng_lossless_jpeg.hpp; path = ../../../../include/gls_dng_lossless_jpeg.hpp; sourceTree = "<group>"; };
+		E5FD22DF2AB8FE490001D329 /* gls_simd.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gls_simd.hpp; path = ../../../../include/gls_simd.hpp; sourceTree = "<group>"; };
+		E5FD22E02AB8FE490001D329 /* gls_tiff_metadata.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gls_tiff_metadata.hpp; path = ../../../../include/gls_tiff_metadata.hpp; sourceTree = "<group>"; };
+		E5FD22E12AB8FE490001D329 /* gls_image.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gls_image.hpp; path = ../../../../include/gls_image.hpp; sourceTree = "<group>"; };
+		E5FD22E22AB8FE490001D329 /* gls_statistics.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gls_statistics.hpp; path = ../../../../include/gls_statistics.hpp; sourceTree = "<group>"; };
+		E5FD22F42AB8FE690001D329 /* gls_dng_lossless_jpeg.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gls_dng_lossless_jpeg.cpp; path = ../../../../src/gls_dng_lossless_jpeg.cpp; sourceTree = "<group>"; };
+		E5FD22F52AB8FE690001D329 /* gls_ocl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gls_ocl.cpp; path = ../../../../src/gls_ocl.cpp; sourceTree = "<group>"; };
+		E5FD22F62AB8FE690001D329 /* gls_image_jpeg.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gls_image_jpeg.cpp; path = ../../../../src/gls_image_jpeg.cpp; sourceTree = "<group>"; };
+		E5FD22F72AB8FE690001D329 /* gls_tiff_metadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gls_tiff_metadata.cpp; path = ../../../../src/gls_tiff_metadata.cpp; sourceTree = "<group>"; };
+		E5FD22F82AB8FE690001D329 /* gls_image_png.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gls_image_png.cpp; path = ../../../../src/gls_image_png.cpp; sourceTree = "<group>"; };
+		E5FD22F92AB8FE690001D329 /* gls_color_science.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gls_color_science.cpp; path = ../../../../src/gls_color_science.cpp; sourceTree = "<group>"; };
+		E5FD22FA2AB8FE6A0001D329 /* gls_logging.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gls_logging.cpp; path = ../../../../src/gls_logging.cpp; sourceTree = "<group>"; };
+		E5FD22FB2AB8FE6A0001D329 /* gls_image_tiff.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gls_image_tiff.cpp; path = ../../../../src/gls_image_tiff.cpp; sourceTree = "<group>"; };
+		E5FD22FC2AB8FE6A0001D329 /* gls_cl_error.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gls_cl_error.cpp; path = ../../../../src/gls_cl_error.cpp; sourceTree = "<group>"; };
+		E5FD22FD2AB8FE6A0001D329 /* gls_mtl_image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gls_mtl_image.cpp; path = ../../../../src/gls_mtl_image.cpp; sourceTree = "<group>"; };
+		E5FD22FE2AB8FE6A0001D329 /* gls_mtl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gls_mtl.cpp; path = ../../../../src/gls_mtl.cpp; sourceTree = "<group>"; };
+		E5FD230A2AB905030001D329 /* metal-cpp */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "metal-cpp"; path = "../../../../metal-cpp"; sourceTree = "<group>"; };
+		E5FD230E2AB9084C0001D329 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		E5FD23102AB908560001D329 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
+		E5FD23122AB908670001D329 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		E5FD23152AB909810001D329 /* libpng16.16.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpng16.16.dylib; path = ../../../../../../../opt/homebrew/Cellar/libpng/1.6.39/lib/libpng16.16.dylib; sourceTree = "<group>"; };
+		E5FD23162AB909810001D329 /* libtiff.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libtiff.6.dylib; path = ../../../../../../../opt/homebrew/Cellar/libtiff/4.5.0/lib/libtiff.6.dylib; sourceTree = "<group>"; };
+		E5FD23172AB909810001D329 /* libz.1.2.13.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.2.13.dylib; path = ../../../../../../../opt/homebrew/Cellar/zlib/1.2.13/lib/libz.1.2.13.dylib; sourceTree = "<group>"; };
+		E5FD23182AB909810001D329 /* libjpeg.8.2.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libjpeg.8.2.2.dylib; path = "../../../../../../../opt/homebrew/Cellar/jpeg-turbo/2.1.5.1/lib/libjpeg.8.2.2.dylib"; sourceTree = "<group>"; };
+		E5FD23562ABA3B760001D329 /* gls_auto_ptr.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gls_auto_ptr.hpp; path = ../../../../include/gls_auto_ptr.hpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E5FD22C22AB8FBD20001D329 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E5FD23192AB909810001D329 /* libpng16.16.dylib in Frameworks */,
+				E5FD231A2AB909810001D329 /* libtiff.6.dylib in Frameworks */,
+				E5FD231B2AB909810001D329 /* libz.1.2.13.dylib in Frameworks */,
+				E5FD231C2AB909810001D329 /* libjpeg.8.2.2.dylib in Frameworks */,
+				E5FD23132AB908670001D329 /* Foundation.framework in Frameworks */,
+				E5FD23112AB908560001D329 /* OpenCL.framework in Frameworks */,
+				E5FD230F2AB9084C0001D329 /* Metal.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		E5FD22BB2AB8FBD20001D329 = {
+			isa = PBXGroup;
+			children = (
+				E5FD22C62AB8FBD20001D329 /* GlassImageLibV2 */,
+				E5FD22C52AB8FBD20001D329 /* Products */,
+				E5FD230D2AB9084C0001D329 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		E5FD22C52AB8FBD20001D329 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E5FD22C42AB8FBD20001D329 /* libGlassImageLibV2.dylib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E5FD22C62AB8FBD20001D329 /* GlassImageLibV2 */ = {
+			isa = PBXGroup;
+			children = (
+				E5FD230A2AB905030001D329 /* metal-cpp */,
+				E5FD22DC2AB8FE490001D329 /* gls_color_science.hpp */,
+				E5FD22DE2AB8FE490001D329 /* gls_dng_lossless_jpeg.hpp */,
+				E5FD22D22AB8FE490001D329 /* gls_geometry.hpp */,
+				E5FD22D62AB8FE490001D329 /* gls_gpu_image.hpp */,
+				E5FD23562ABA3B760001D329 /* gls_auto_ptr.hpp */,
+				E5FD22D92AB8FE490001D329 /* gls_image_jpeg.h */,
+				E5FD22D82AB8FE490001D329 /* gls_image_png.h */,
+				E5FD22D72AB8FE490001D329 /* gls_image_tiff.h */,
+				E5FD22E12AB8FE490001D329 /* gls_image.hpp */,
+				E5FD22D42AB8FE490001D329 /* gls_linalg.hpp */,
+				E5FD22DD2AB8FE490001D329 /* gls_logging.h */,
+				E5FD22D52AB8FE490001D329 /* gls_mtl_image.hpp */,
+				E5FD22DB2AB8FE490001D329 /* gls_mtl.hpp */,
+				E5FD22DA2AB8FE490001D329 /* gls_ocl_image.hpp */,
+				E5FD22D32AB8FE490001D329 /* gls_ocl.hpp */,
+				E5FD22DF2AB8FE490001D329 /* gls_simd.hpp */,
+				E5FD22E22AB8FE490001D329 /* gls_statistics.hpp */,
+				E5FD22E02AB8FE490001D329 /* gls_tiff_metadata.hpp */,
+				E5FD22FC2AB8FE6A0001D329 /* gls_cl_error.cpp */,
+				E5FD22F92AB8FE690001D329 /* gls_color_science.cpp */,
+				E5FD22F42AB8FE690001D329 /* gls_dng_lossless_jpeg.cpp */,
+				E5FD22F62AB8FE690001D329 /* gls_image_jpeg.cpp */,
+				E5FD22F82AB8FE690001D329 /* gls_image_png.cpp */,
+				E5FD22FB2AB8FE6A0001D329 /* gls_image_tiff.cpp */,
+				E5FD22FA2AB8FE6A0001D329 /* gls_logging.cpp */,
+				E5FD22FD2AB8FE6A0001D329 /* gls_mtl_image.cpp */,
+				E5FD22FE2AB8FE6A0001D329 /* gls_mtl.cpp */,
+				E5FD22F52AB8FE690001D329 /* gls_ocl.cpp */,
+				E5FD22F72AB8FE690001D329 /* gls_tiff_metadata.cpp */,
+			);
+			path = GlassImageLibV2;
+			sourceTree = "<group>";
+		};
+		E5FD230D2AB9084C0001D329 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				E5FD23182AB909810001D329 /* libjpeg.8.2.2.dylib */,
+				E5FD23152AB909810001D329 /* libpng16.16.dylib */,
+				E5FD23162AB909810001D329 /* libtiff.6.dylib */,
+				E5FD23172AB909810001D329 /* libz.1.2.13.dylib */,
+				E5FD23122AB908670001D329 /* Foundation.framework */,
+				E5FD23102AB908560001D329 /* OpenCL.framework */,
+				E5FD230E2AB9084C0001D329 /* Metal.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		E5FD22C02AB8FBD20001D329 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E5FD22E52AB8FE490001D329 /* gls_linalg.hpp in Headers */,
+				E5FD22E42AB8FE490001D329 /* gls_ocl.hpp in Headers */,
+				E5FD22F02AB8FE490001D329 /* gls_simd.hpp in Headers */,
+				E5FD22ED2AB8FE490001D329 /* gls_color_science.hpp in Headers */,
+				E5FD22EF2AB8FE490001D329 /* gls_dng_lossless_jpeg.hpp in Headers */,
+				E5FD22F32AB8FE490001D329 /* gls_statistics.hpp in Headers */,
+				E5FD22E92AB8FE490001D329 /* gls_image_png.h in Headers */,
+				E5FD22EA2AB8FE490001D329 /* gls_image_jpeg.h in Headers */,
+				E5FD22E82AB8FE490001D329 /* gls_image_tiff.h in Headers */,
+				E5FD22E32AB8FE490001D329 /* gls_geometry.hpp in Headers */,
+				E5FD22EE2AB8FE490001D329 /* gls_logging.h in Headers */,
+				E5FD23572ABA3B760001D329 /* gls_auto_ptr.hpp in Headers */,
+				E5FD22E72AB8FE490001D329 /* gls_gpu_image.hpp in Headers */,
+				E5FD22F22AB8FE490001D329 /* gls_image.hpp in Headers */,
+				E5FD22EB2AB8FE490001D329 /* gls_ocl_image.hpp in Headers */,
+				E5FD22E62AB8FE490001D329 /* gls_mtl_image.hpp in Headers */,
+				E5FD22EC2AB8FE490001D329 /* gls_mtl.hpp in Headers */,
+				E5FD22F12AB8FE490001D329 /* gls_tiff_metadata.hpp in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		E5FD22C32AB8FBD20001D329 /* GlassImageLibV2 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E5FD22CF2AB8FBD20001D329 /* Build configuration list for PBXNativeTarget "GlassImageLibV2" */;
+			buildPhases = (
+				E5FD23142AB908CB0001D329 /* ShellScript */,
+				E5FD22C02AB8FBD20001D329 /* Headers */,
+				E5FD22C12AB8FBD20001D329 /* Sources */,
+				E5FD22C22AB8FBD20001D329 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GlassImageLibV2;
+			productName = GlassImageLibV2;
+			productReference = E5FD22C42AB8FBD20001D329 /* libGlassImageLibV2.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E5FD22BC2AB8FBD20001D329 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					E5FD22C32AB8FBD20001D329 = {
+						CreatedOnToolsVersion = 14.3.1;
+					};
+				};
+			};
+			buildConfigurationList = E5FD22BF2AB8FBD20001D329 /* Build configuration list for PBXProject "GlassImageLibV2" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = E5FD22BB2AB8FBD20001D329;
+			productRefGroup = E5FD22C52AB8FBD20001D329 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E5FD22C32AB8FBD20001D329 /* GlassImageLibV2 */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		E5FD23142AB908CB0001D329 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "UNAME=`uname -m`\n\nBREW_PATH=\"\"\nif [[ \"$UNAME\" == \"arm64\" ]]; then\n    BREW_PATH=\"/opt/homebrew\"\nelse\n    BREW_PATH=\"/usr/local\"\nfi\n\nGLASSIMAGELIB_PATH=\"$SRCROOT\"/GlassImageLibV2/lib\n\nmkdir -p \"$GLASSIMAGELIB_PATH\"\nln -sf $BREW_PATH/lib/libjpeg.dylib \"$GLASSIMAGELIB_PATH\"/\nln -sf $BREW_PATH/lib/libpng.dylib \"$GLASSIMAGELIB_PATH\"/\nln -sf $BREW_PATH/lib/libtiff.dylib \"$GLASSIMAGELIB_PATH\"/\nln -sf $BREW_PATH/opt/zlib/lib/libz.dylib \"$GLASSIMAGELIB_PATH\"/\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		E5FD22C12AB8FBD20001D329 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E5FD23022AB8FE6A0001D329 /* gls_tiff_metadata.cpp in Sources */,
+				E5FD23072AB8FE6A0001D329 /* gls_cl_error.cpp in Sources */,
+				E5FD23082AB8FE6A0001D329 /* gls_mtl_image.cpp in Sources */,
+				E5FD23032AB8FE6A0001D329 /* gls_image_png.cpp in Sources */,
+				E5FD22FF2AB8FE6A0001D329 /* gls_dng_lossless_jpeg.cpp in Sources */,
+				E5FD23062AB8FE6A0001D329 /* gls_image_tiff.cpp in Sources */,
+				E5FD23092AB8FE6A0001D329 /* gls_mtl.cpp in Sources */,
+				E5FD23042AB8FE6A0001D329 /* gls_color_science.cpp in Sources */,
+				E5FD23012AB8FE6A0001D329 /* gls_image_jpeg.cpp in Sources */,
+				E5FD23052AB8FE6A0001D329 /* gls_logging.cpp in Sources */,
+				E5FD23002AB8FE6A0001D329 /* gls_ocl.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		E5FD22CD2AB8FBD20001D329 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/../../../OpenCLHeaders",
+					"$(SRCROOT)/../../../metal-cpp",
+					/opt/homebrew/include,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		E5FD22CE2AB8FBD20001D329 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/../../../OpenCLHeaders",
+					"$(SRCROOT)/../../../metal-cpp",
+					/opt/homebrew/include,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.3;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		E5FD22D02AB8FBD20001D329 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 4A4DGXV9V7;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/opt/homebrew/Cellar/libpng/1.6.39/lib,
+					/opt/homebrew/Cellar/libtiff/4.5.0/lib,
+					/opt/homebrew/Cellar/zlib/1.2.13/lib,
+					"/opt/homebrew/Cellar/jpeg-turbo/2.1.5.1/lib",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		E5FD22D12AB8FBD20001D329 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 4A4DGXV9V7;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/opt/homebrew/Cellar/libpng/1.6.39/lib,
+					/opt/homebrew/Cellar/libtiff/4.5.0/lib,
+					/opt/homebrew/Cellar/zlib/1.2.13/lib,
+					"/opt/homebrew/Cellar/jpeg-turbo/2.1.5.1/lib",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		E5FD22BF2AB8FBD20001D329 /* Build configuration list for PBXProject "GlassImageLibV2" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E5FD22CD2AB8FBD20001D329 /* Debug */,
+				E5FD22CE2AB8FBD20001D329 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E5FD22CF2AB8FBD20001D329 /* Build configuration list for PBXNativeTarget "GlassImageLibV2" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E5FD22D02AB8FBD20001D329 /* Debug */,
+				E5FD22D12AB8FBD20001D329 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = E5FD22BC2AB8FBD20001D329 /* Project object */;
+}

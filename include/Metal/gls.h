@@ -51,12 +51,12 @@ static inline int get_image_height(texture2d<T, a> texture) {
 }
 
 template <typename T, access a>
-int2 get_image_dim(texture2d<T, a> image) {
+static inline int2 get_image_dim(texture2d<T, a> image) {
     return int2(image.get_width(), image.get_height());
 }
 
 template <typename T>
-T sincos(T x, private T *cosval) {
+static inline T sincos(T x, private T *cosval) {
     return sincos(x, *cosval);
 }
 
@@ -78,44 +78,44 @@ T sincos(T x, private T *cosval) {
 
 #define get_global_id(dim)  global_id[dim]
 
-float4 read_imagef(image2df_t image, sampler s, float2 coord) {
+static inline float4 read_imagef(image2df_t image, sampler s, float2 coord) {
     return image.sample(s, coord);
 }
 
-float4 read_imagef(image2df_t image, sampler s, int2 coord) {
+static inline float4 read_imagef(image2df_t image, sampler s, int2 coord) {
     uint2 dim = uint2(get_image_width(image), get_image_height(image));
     return image.sample(s, float2(coord) / float2(dim));
 }
 
-float4 read_imagef(image2df_t image, int2 coord) {
+static inline float4 read_imagef(image2df_t image, int2 coord) {
     return image.read(static_cast<uint2>(coord));
 }
 
-void write_imagef(image2df_write_t image, int2 coord, float4 value) {
+static inline void write_imagef(image2df_write_t image, int2 coord, float4 value) {
     image.write(value, static_cast<uint2>(coord));
 }
 
-void write_imageh(image2dh_write_t image, int2 coord, half4 value) {
+static inline void write_imageh(image2dh_write_t image, int2 coord, half4 value) {
     image.write(value, static_cast<uint2>(coord));
 }
 
-half4 read_imageh(image2dh_t image, int2 coord) {
+static inline half4 read_imageh(image2dh_t image, int2 coord) {
     return image.read(static_cast<uint2>(coord));
 }
 
-half4 read_imageh(image2dh_t image, sampler s, float2 coord) {
+static inline half4 read_imageh(image2dh_t image, sampler s, float2 coord) {
     return image.sample(s, coord);
 }
 
-void write_imageui(image2dui_write_t image, int2 coord, uint4 value) {
+static inline void write_imageui(image2dui_write_t image, int2 coord, uint4 value) {
     image.write(value, static_cast<uint2>(coord));
 }
 
-uint4 read_imageui(image2dui_t image, int2 coord) {
+static inline uint4 read_imageui(image2dui_t image, int2 coord) {
     return image.read(static_cast<uint2>(coord));
 }
 
-uint4 read_imageui(image2dui_t image, sampler s, float2 coord) {
+static inline uint4 read_imageui(image2dui_t image, sampler s, float2 coord) {
     return image.sample(s, coord);
 }
 

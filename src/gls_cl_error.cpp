@@ -16,7 +16,7 @@
 #include <map>
 #include <string>
 
-#include "gls_cl.hpp"
+#include <CL/cl.h>
 
 namespace gls {
 

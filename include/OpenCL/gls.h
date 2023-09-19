@@ -56,22 +56,21 @@
 #define float4(args...)     ((float4) (args))
 #define float8(args...)     ((float8) (args))
 
-#ifdef __APPLE__
-__ovld inline half2 myconvert_half2(float2 val) {
-    return (half2) (val.x, val.y);
-}
-
-__ovld inline half3 myconvert_half3(float3 val) {
-    return (half3) (val.x, val.y, val.z);
-}
-
-__ovld inline half4 myconvert_half4(float4 val) {
-    return (half4) (val.x, val.y, val.z, val.w);
-}
-
-#define convert_half2(val)      myconvert_half2(val)
-#define convert_half3(val)      myconvert_half3(val)
-#define convert_half4(val)      myconvert_half4(val)
-
-#endif
-
+//#ifdef __APPLE__
+//static inline __ovld half2 myconvert_half2(float2 val) {
+//    return (half2) (val.x, val.y);
+//}
+//
+//static inline __ovld half3 myconvert_half3(float3 val) {
+//    return (half3) (val.x, val.y, val.z);
+//}
+//
+//static inline __ovld half4 myconvert_half4(float4 val) {
+//    return (half4) (val.x, val.y, val.z, val.w);
+//}
+//
+//#define convert_half2(val)      myconvert_half2(val)
+//#define convert_half3(val)      myconvert_half3(val)
+//#define convert_half4(val)      myconvert_half4(val)
+//
+//#endif
