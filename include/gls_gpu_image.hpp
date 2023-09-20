@@ -106,6 +106,27 @@ public:
         const int channels;
         const channel_type dataType;
 
+        int elementSize() {
+            int type_size;
+            switch (dataType) {
+                case UNORM_INT8:
+                case SNORM_INT8:
+                    type_size = 1;
+                    break;
+                case UNORM_INT16:
+                case SNORM_INT16:
+                case FLOAT16:
+                    type_size = 2;
+                    break;
+                case UNSIGNED_INT32:
+                case SIGNED_INT32:
+                case FLOAT32:
+                    type_size = 4;
+                    break;
+            }
+            return type_size * channels;
+        }
+
         format(int _channels, channel_type _dataType) : channels(_channels), dataType(_dataType) { }
     };
 

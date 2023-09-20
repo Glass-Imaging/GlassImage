@@ -19,6 +19,7 @@ namespace gls {
 
 class ocl_texture : public virtual platform_texture {
 protected:
+    cl::Buffer _buffer;
     cl::Image2D _image;
 
 public:
@@ -64,27 +65,24 @@ public:
         return cl::ImageFormat(order, type);
     }
 
-    ocl_texture(cl::Context context, int _width, int _height, format textureFormat) :
-        _image(cl::Image2D(context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, imageFormat(textureFormat), _width, _height))
-        { }
+    ocl_texture(cl::Context context, int _width, int _height, format textureFormat) {
+        const int pitch_alignment = cl::Device::getDefault().getInfo<CL_DEVICE_IMAGE_PITCH_ALIGNMENT>();
+        const int stride = pitch_alignment * ((_width + pitch_alignment - 1) / pitch_alignment);
+        const int element_size = textureFormat.elementSize();
+        _buffer = cl::Buffer(context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, stride * _height * element_size);
+        _image = cl::Image2D(context, imageFormat(textureFormat), _buffer, _width, _height, stride * element_size);
+    }
 
     std::span<uint8_t> mapTexture() const override {
-        size_t row_pitch;
         cl::CommandQueue queue = cl::CommandQueue::getDefault();
-        void* mapped_data = queue.enqueueMapImage(_image, CL_TRUE, CL_MAP_READ | CL_MAP_WRITE, {0, 0, 0},
-                                                  {static_cast<size_t>(texture_width()), static_cast<size_t>(texture_height()), 1}, &row_pitch,
-                                                  /*slice_pitch=*/nullptr);
-        assert(mapped_data != nullptr);
-        assert(texture_stride() == row_pitch / pixelSize());
-
-        size_t data_size = row_pitch * texture_height();
-
-        return std::span<uint8_t>((uint8_t*) mapped_data, data_size);
+        size_t buffer_size = pixelSize() * texture_stride() * texture_height();
+        void* mapped_data = queue.enqueueMapBuffer(_buffer, true, CL_MAP_READ | CL_MAP_WRITE, 0, buffer_size);
+        return std::span<uint8_t>((uint8_t*) mapped_data, buffer_size);
     }
 
     void unmapTexture(void* ptr) const override {
         cl::CommandQueue queue = cl::CommandQueue::getDefault();
-        queue.enqueueUnmapMemObject(ocl_texture::_image, ptr);
+        queue.enqueueUnmapMemObject(ocl_texture::_buffer, ptr);
     }
 
     virtual const class platform_texture* operator() () const override {
@@ -97,7 +95,6 @@ class ocl_buffer : public platform_buffer {
 
 public:
     ocl_buffer(cl::Context context, size_t lenght, bool readOnly) :
-        // TODO: verify that CL_MEM_ALLOC_HOST_PTR is the best generic access mode
         _buffer(cl::Buffer(context, readOnly ? CL_MEM_READ_ONLY : CL_MEM_READ_WRITE, lenght)) { }
 
     cl::Buffer buffer() const {
