@@ -83,6 +83,24 @@ target_link_libraries( # Specifies the target library.
         -ljnigraphics
         -landroid)
 
+###
+### ShaderCompiler
+###
+
+add_executable(
+        ShaderCompiler
+        glassimage/src/gls_icd_wrapper.cpp
+        glassimage/src/gls_cl_error.cpp
+        glassimage/src/gls_logging.cpp
+        glassimage/src/gls_cl.cpp
+        ShaderCompiler.cpp
+)
+
+target_compile_options( ShaderCompiler PRIVATE -Wall -Werror -DUSE_IOSTREAM_LOG )
+
+target_include_directories( ShaderCompiler PRIVATE ${CMAKE_SOURCE_DIR}/headers )
+target_include_directories( ShaderCompiler PRIVATE ${CMAKE_SOURCE_DIR}/glassimage/include )
+
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
 # You can define multiple libraries, and CMake builds them for you.

@@ -161,7 +161,7 @@ void OpenCLContext::handleProgramException(const cl::BuildError& e) {
 #ifdef __APPLE__
 static const char* cl_options = "-cl-std=CL1.2 -cl-single-precision-constant";
 #else
-static const char* cl_options = "-cl-std=CL2.0 -Werror -cl-single-precision-constant";
+static const char* cl_options = "-cl-std=CL2.0 -Werror -cl-single-precision-constant -I OpenCL";
 #endif
 
 cl::Program OpenCLContext::loadProgram(const std::string& programName, const std::string& shadersRootPath) {
