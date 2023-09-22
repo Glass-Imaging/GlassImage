@@ -46,7 +46,8 @@ add_executable( # Sets the name of the library.
 target_compile_options( glassImageTest PRIVATE -Wall -Werror ) # -DUSE_ASSET_MANAGER
 
 # Add header files for opencl
-target_include_directories( glassImageTest PRIVATE ${CMAKE_SOURCE_DIR}/headers )
+include_directories( glassImageTest SYSTEM PUBLIC ${CMAKE_SOURCE_DIR}/headers )
+include_directories( glassImageTest SYSTEM PUBLIC ${CMAKE_SOURCE_DIR}/OpenCLHeaders )
 target_include_directories( glassImageTest PRIVATE ${CMAKE_SOURCE_DIR}/glassimage/include )
 
 target_compile_options( glassImageTest PRIVATE -Wall -Werror -DUSE_IOSTREAM_LOG )
