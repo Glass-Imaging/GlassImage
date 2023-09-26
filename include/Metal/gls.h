@@ -76,6 +76,23 @@ static inline T sincos(T x, private T *cosval) {
 #define convert_float3(x)   float3(x)
 #define convert_float4(x)   float4(x)
 
+#define as_uint2(x)    uint2(x)
+#define as_uint3(x)    uint3(x)
+#define as_uint4(x)    uint4(x)
+
+#define as_int2(x)     int2(x)
+#define as_int3(x)     int3(x)
+#define as_int4(x)     int4(x)
+
+#define as_half2(x)    half2(x)
+#define as_half3(x)    half3(x)
+#define as_half4(x)    half4(x)
+#define as_half8(x)    _half8(x)
+
+#define as_float2(x)   float2(x)
+#define as_float3(x)   float3(x)
+#define as_float4(x)   float4(x)
+
 #define get_global_id(dim)  global_id[dim]
 
 static inline float4 read_imagef(image2df_t image, sampler s, float2 coord) {
