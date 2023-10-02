@@ -23,6 +23,9 @@
 #define BUFFER(id)
 
 #define USE_GLOBAL_ID
+#define USE_GLOBAL_SIZE
+#define USE_LOCAL_ID
+#define USE_GROUP_ID
 
 #define VAL(type)       const type
 

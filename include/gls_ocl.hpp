@@ -301,10 +301,9 @@ public:
         cl::CommandQueue queue = cl::CommandQueue::getDefault();
 
         cl::NDRange global_workgroup_size = cl::NDRange(gridSize.width, gridSize.height);
-        cl::NDRange local_workgroup_size = computeWorkGroupSizes(threadGroupSize.width, threadGroupSize.height);
-        auto enqueueArgs = cl::EnqueueArgs(global_workgroup_size, local_workgroup_size);
+        cl::NDRange local_workgroup_size = cl::NDRange(threadGroupSize.width, threadGroupSize.height);
 
-        queue.enqueueNDRangeKernel(kernel, cl::NullRange, global_workgroup_size);
+        queue.enqueueNDRangeKernel(kernel, cl::NullRange, global_workgroup_size, local_workgroup_size);
     }
 
     virtual void enqueue(const std::string& kernelName, const gls::size& gridSize,
@@ -319,8 +318,6 @@ public:
             cl::CommandQueue queue = cl::CommandQueue::getDefault();
 
             cl::NDRange global_workgroup_size = cl::NDRange(gridSize.width, gridSize.height);
-            //        cl::NDRange local_workgroup_size = computeWorkGroupSizes(threadGroupSize.width, threadGroupSize.height);
-            //        auto enqueueArgs = cl::EnqueueArgs(global_workgroup_size, local_workgroup_size);
 
             queue.enqueueNDRangeKernel(kernel, cl::NullRange, global_workgroup_size);
         } catch (const cl::Error& e) {
