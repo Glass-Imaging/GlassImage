@@ -84,10 +84,14 @@ public:
     }
 };
 
+#ifndef OPENCL_HEADERS_PATH
+#define OPENCL_HEADERS_PATH ""
+#endif
+
 #ifdef __APPLE__
-static const char* cl_options = "-cl-std=CL1.2 -cl-single-precision-constant -I OpenCL";
+static const char* cl_options = "-cl-std=CL1.2 -cl-single-precision-constant -I " OPENCL_HEADERS_PATH "OpenCL";
 #else
-static const char* cl_options = "-cl-std=CL2.0 -Werror -cl-single-precision-constant -I OpenCL";
+static const char* cl_options = "-cl-std=CL2.0 -Werror -cl-single-precision-constant -I " OPENCL_HEADERS_PATH "OpenCL";
 #endif
 
 class OCLContext : public GpuContext {
