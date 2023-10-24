@@ -373,23 +373,25 @@ void read_dng_file(const std::string& filename, int pixel_channels, int pixel_bi
         uint32_t image_width = width;
         uint32_t image_height = height;
 
-        const auto crop_origin = getVector<float>(*dng_metadata, TIFFTAG_DEFAULTCROPORIGIN);
-        const auto crop_size = getVector<float>(*dng_metadata, TIFFTAG_DEFAULTCROPSIZE);
-        const auto active_area = getVector<uint32_t>(*dng_metadata, TIFFTAG_ACTIVEAREA);
-
-        if (!crop_size.empty()) {
-            image_width = crop_size[0];
-            image_height = crop_size[1];
-        }
         int crop_x = 0;
         int crop_y = 0;
-        if (!crop_origin.empty()) {
-            crop_x = crop_origin[0];
-            crop_y = crop_origin[1];
-        }
-        if (!active_area.empty()) {
-            crop_x += active_area[1];
-            crop_y += active_area[0];
+        if (dng_metadata) {
+            const auto crop_origin = getVector<float>(*dng_metadata, TIFFTAG_DEFAULTCROPORIGIN);
+            const auto crop_size = getVector<float>(*dng_metadata, TIFFTAG_DEFAULTCROPSIZE);
+            const auto active_area = getVector<uint32_t>(*dng_metadata, TIFFTAG_ACTIVEAREA);
+
+            if (!crop_size.empty()) {
+                image_width = crop_size[0];
+                image_height = crop_size[1];
+            }
+            if (!crop_origin.empty()) {
+                crop_x = crop_origin[0];
+                crop_y = crop_origin[1];
+            }
+            if (!active_area.empty()) {
+                crop_x += active_area[1];
+                crop_y += active_area[0];
+            }
         }
 
         auto allocation_successful = image_allocator(image_width, image_height);
