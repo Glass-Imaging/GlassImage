@@ -84,10 +84,14 @@ public:
     }
 };
 
+#ifndef OPENCL_HEADERS_PATH
+#define OPENCL_HEADERS_PATH ""
+#endif
+
 #ifdef __APPLE__
-static const char* cl_options = "-cl-std=CL1.2 -cl-single-precision-constant -I OpenCL";
+static const char* cl_options = "-cl-std=CL1.2 -cl-single-precision-constant -I " OPENCL_HEADERS_PATH "OpenCL";
 #else
-static const char* cl_options = "-cl-std=CL2.0 -Werror -cl-single-precision-constant";
+static const char* cl_options = "-cl-std=CL2.0 -Werror -cl-single-precision-constant -I " OPENCL_HEADERS_PATH "OpenCL";
 #endif
 
 class OCLContext : public GpuContext {
@@ -97,6 +101,44 @@ class OCLContext : public GpuContext {
 
 public:
     OCLContext(const std::vector<std::string>& programs, const std::string& shadersRootPath = "") : _shadersRootPath(shadersRootPath) {
+#if __ANDROID__
+        // Load libOpenCL
+        CL_WRAPPER_NS::bindOpenCLLibrary();
+
+        std::vector<cl::Platform> platforms;
+        cl::Platform::get(&platforms);
+        cl::Platform platform;
+        for (auto& p : platforms) {
+            std::string version = p.getInfo<CL_PLATFORM_VERSION>();
+            if (version.find("OpenCL 2.") != std::string::npos || version.find("OpenCL 3.") != std::string::npos) {
+                platform = p;
+            }
+        }
+        if (platform() == nullptr) {
+            throw cl::Error(-1, "No OpenCL 2.0 platform found.");
+        }
+
+        cl::Platform defaultPlatform = cl::Platform::setDefault(platform);
+        if (defaultPlatform != platform) {
+            throw cl::Error(-1, "Error setting default platform.");
+        }
+
+        cl_context_properties properties[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platform)(), 0};
+        cl::Context context(CL_DEVICE_TYPE_ALL, properties);
+
+        cl::Device d = cl::Device::getDefault();
+        std::cout << "- Device: " << d.getInfo<CL_DEVICE_NAME>() << std::endl;
+        std::cout << "- Device Version: " << d.getInfo<CL_DEVICE_VERSION>() << std::endl;
+        std::cout << "- Driver Version: " << d.getInfo<CL_DRIVER_VERSION>() << std::endl;
+        std::cout << "- OpenCL C Version: " << d.getInfo<CL_DEVICE_OPENCL_C_VERSION>() << std::endl;
+        std::cout << "- Compute Units: " << d.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
+        std::cout << "- CL_DEVICE_MAX_WORK_GROUP_SIZE: " << d.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
+        std::cout << "- CL_DEVICE_EXTENSIONS: " << d.getInfo<CL_DEVICE_EXTENSIONS>() << std::endl;
+
+        // opencl.hpp relies on a default context
+        cl::Context::setDefault(context);
+        _clContext = cl::Context::getDefault();
+#else
         _clContext = cl::Context::getDefault();
 
         std::vector<cl::Device> devices = _clContext.getInfo<CL_CONTEXT_DEVICES>();
@@ -112,7 +154,7 @@ public:
             }
         }
         cl::Device::setDefault(best_device);
-#if 0
+#if 1
         cl::Device d = cl::Device::getDefault();
         std::cout << "OpenCL Default Device: " << d.getInfo<CL_DEVICE_NAME>() << std::endl;
         std::cout << "- Device Version: " << d.getInfo<CL_DEVICE_VERSION>() << std::endl;
@@ -121,6 +163,7 @@ public:
         std::cout << "- Compute Units: " << d.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
         std::cout << "- CL_DEVICE_MAX_WORK_GROUP_SIZE: " << d.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
         std::cout << "- CL_DEVICE_EXTENSIONS: " << d.getInfo<CL_DEVICE_EXTENSIONS>() << std::endl;
+#endif
 #endif
         loadPrograms(programs);
     }
@@ -262,10 +305,9 @@ public:
         cl::CommandQueue queue = cl::CommandQueue::getDefault();
 
         cl::NDRange global_workgroup_size = cl::NDRange(gridSize.width, gridSize.height);
-        cl::NDRange local_workgroup_size = computeWorkGroupSizes(threadGroupSize.width, threadGroupSize.height);
-        auto enqueueArgs = cl::EnqueueArgs(global_workgroup_size, local_workgroup_size);
+        cl::NDRange local_workgroup_size = cl::NDRange(threadGroupSize.width, threadGroupSize.height);
 
-        queue.enqueueNDRangeKernel(kernel, cl::NullRange, global_workgroup_size);
+        queue.enqueueNDRangeKernel(kernel, cl::NullRange, global_workgroup_size, local_workgroup_size);
     }
 
     virtual void enqueue(const std::string& kernelName, const gls::size& gridSize,
@@ -280,8 +322,6 @@ public:
             cl::CommandQueue queue = cl::CommandQueue::getDefault();
 
             cl::NDRange global_workgroup_size = cl::NDRange(gridSize.width, gridSize.height);
-            //        cl::NDRange local_workgroup_size = computeWorkGroupSizes(threadGroupSize.width, threadGroupSize.height);
-            //        auto enqueueArgs = cl::EnqueueArgs(global_workgroup_size, local_workgroup_size);
 
             queue.enqueueNDRangeKernel(kernel, cl::NullRange, global_workgroup_size);
         } catch (const cl::Error& e) {

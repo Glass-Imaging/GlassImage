@@ -7,14 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E5FD232B2AB90D360001D329 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E5FD232A2AB90D360001D329 /* main.cpp */; };
 		E5FD233B2ABA10680001D329 /* Assets in CopyFiles */ = {isa = PBXBuildFile; fileRef = E5FD233A2AB90EEA0001D329 /* Assets */; };
 		E5FD23402ABA11E00001D329 /* libGlassImageLibV2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E5FD23362AB90E460001D329 /* libGlassImageLibV2.dylib */; };
 		E5FD23422ABA11E90001D329 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5FD23412ABA11E90001D329 /* OpenCL.framework */; };
 		E5FD23442ABA12EF0001D329 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5FD23432ABA12EF0001D329 /* Metal.framework */; };
 		E5FD23462ABA12FB0001D329 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5FD23452ABA12FB0001D329 /* Foundation.framework */; };
-		E5FD234D2ABA16F10001D329 /* blur_utils.metal in Sources */ = {isa = PBXBuildFile; fileRef = E5FD234C2ABA16F10001D329 /* blur_utils.metal */; };
-		E5FD234F2ABA16F30001D329 /* blur.metal in Sources */ = {isa = PBXBuildFile; fileRef = E5FD234E2ABA16F30001D329 /* blur.metal */; };
+		E5FD235B2ABA44BC0001D329 /* glassImageTestV2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E5FD23582ABA44BC0001D329 /* glassImageTestV2.cpp */; };
+		E5FD235C2ABA44BC0001D329 /* blur_utils.metal in Sources */ = {isa = PBXBuildFile; fileRef = E5FD23592ABA44BC0001D329 /* blur_utils.metal */; };
+		E5FD235D2ABA44BC0001D329 /* blur.metal in Sources */ = {isa = PBXBuildFile; fileRef = E5FD235A2ABA44BC0001D329 /* blur.metal */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,17 +49,17 @@
 
 /* Begin PBXFileReference section */
 		E5FD23272AB90D360001D329 /* GlassImageTestV2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = GlassImageTestV2; sourceTree = BUILT_PRODUCTS_DIR; };
-		E5FD232A2AB90D360001D329 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		E5FD23312AB90E460001D329 /* GlassImageLibV2.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = GlassImageLibV2.xcodeproj; path = ../GlassImageLibV2/GlassImageLibV2/GlassImageLibV2.xcodeproj; sourceTree = "<group>"; };
 		E5FD233A2AB90EEA0001D329 /* Assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Assets; path = ../../glsTestV2/Assets; sourceTree = "<group>"; };
 		E5FD23412ABA11E90001D329 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
 		E5FD23432ABA12EF0001D329 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		E5FD23452ABA12FB0001D329 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		E5FD23472ABA13190001D329 /* GlassImageTestV2.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GlassImageTestV2.entitlements; sourceTree = "<group>"; };
-		E5FD234C2ABA16F10001D329 /* blur_utils.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = blur_utils.metal; sourceTree = "<group>"; };
-		E5FD234E2ABA16F30001D329 /* blur.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = blur.metal; sourceTree = "<group>"; };
 		E5FD23532ABA1CD50001D329 /* Metal */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Metal; path = ../../../include/Metal; sourceTree = "<group>"; };
 		E5FD23542ABA1CD50001D329 /* OpenCL */ = {isa = PBXFileReference; lastKnownFileType = folder; name = OpenCL; path = ../../../include/OpenCL; sourceTree = "<group>"; };
+		E5FD23582ABA44BC0001D329 /* glassImageTestV2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = glassImageTestV2.cpp; path = ../../../glsTestV2/glassImageTestV2.cpp; sourceTree = "<group>"; };
+		E5FD23592ABA44BC0001D329 /* blur_utils.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = blur_utils.metal; path = ../../../glsTestV2/blur_utils.metal; sourceTree = "<group>"; };
+		E5FD235A2ABA44BC0001D329 /* blur.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = blur.metal; path = ../../../glsTestV2/blur.metal; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,9 +102,9 @@
 				E5FD23472ABA13190001D329 /* GlassImageTestV2.entitlements */,
 				E5FD23532ABA1CD50001D329 /* Metal */,
 				E5FD23542ABA1CD50001D329 /* OpenCL */,
-				E5FD234C2ABA16F10001D329 /* blur_utils.metal */,
-				E5FD234E2ABA16F30001D329 /* blur.metal */,
-				E5FD232A2AB90D360001D329 /* main.cpp */,
+				E5FD23592ABA44BC0001D329 /* blur_utils.metal */,
+				E5FD235A2ABA44BC0001D329 /* blur.metal */,
+				E5FD23582ABA44BC0001D329 /* glassImageTestV2.cpp */,
 			);
 			path = GlassImageTestV2;
 			sourceTree = "<group>";
@@ -214,7 +214,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir $BUILT_PRODUCTS_DIR/OpenCL/\ncp $SRCROOT/../../include/OpenCL/gls.h $BUILT_PRODUCTS_DIR/OpenCL/gls.h\ncp $SRCROOT/GlassImageTestV2/blur_utils.metal $BUILT_PRODUCTS_DIR/OpenCL/blur_utils.cl\ncp $SRCROOT/GlassImageTestV2/blur.metal $BUILT_PRODUCTS_DIR/OpenCL/blur.cl\n";
+			shellScript = "mkdir $BUILT_PRODUCTS_DIR/OpenCL/\ncp $SRCROOT/../../include/OpenCL/gls.h $BUILT_PRODUCTS_DIR/OpenCL/gls.h\ncp $SRCROOT/../../glsTestV2/blur_utils.metal $BUILT_PRODUCTS_DIR/OpenCL/blur_utils.cl\ncp $SRCROOT/../../glsTestV2/blur.metal $BUILT_PRODUCTS_DIR/OpenCL/blur.cl\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -223,9 +223,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E5FD234F2ABA16F30001D329 /* blur.metal in Sources */,
-				E5FD234D2ABA16F10001D329 /* blur_utils.metal in Sources */,
-				E5FD232B2AB90D360001D329 /* main.cpp in Sources */,
+				E5FD235D2ABA44BC0001D329 /* blur.metal in Sources */,
+				E5FD235C2ABA44BC0001D329 /* blur_utils.metal in Sources */,
+				E5FD235B2ABA44BC0001D329 /* glassImageTestV2.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -22,12 +22,23 @@ using namespace metal;
 #define TEXTURE(id) [[texture(id)]]
 #define BUFFER(id) [[buffer(id)]]
 
-#define USE_GLOBAL_ID   , uint2 global_id [[thread_position_in_grid]]
+#define USE_GLOBAL_ID           , uint2 __gls__global_id [[thread_position_in_grid]]
+#define get_global_id(dim)      __gls__global_id[dim]
+
+#define USE_GLOBAL_SIZE         , uint2 __gls__global_size [[threads_per_grid]]
+#define get_global_size(dim)    __gls__global_size[dim]
+
+#define USE_LOCAL_ID            , uint2 __gls__local_id [[thread_position_in_threadgroup]]
+#define get_local_id(dim)       __gls__local_id[dim]
+
+#define USE_GROUP_ID            , uint2 __gls__group_id [[threadgroup_position_in_grid]]
+#define get_group_id(dim)       __gls__group_id[dim]
 
 #define VAL(type)       constant type&
 
 #define global device
 #define private thread
+#define local threadgroup
 
 #define __ovld
 
@@ -76,7 +87,22 @@ static inline T sincos(T x, private T *cosval) {
 #define convert_float3(x)   float3(x)
 #define convert_float4(x)   float4(x)
 
-#define get_global_id(dim)  global_id[dim]
+#define as_uint2(x)    uint2(x)
+#define as_uint3(x)    uint3(x)
+#define as_uint4(x)    uint4(x)
+
+#define as_int2(x)     int2(x)
+#define as_int3(x)     int3(x)
+#define as_int4(x)     int4(x)
+
+#define as_half2(x)    half2(x)
+#define as_half3(x)    half3(x)
+#define as_half4(x)    half4(x)
+#define as_half8(x)    _half8(x)
+
+#define as_float2(x)   float2(x)
+#define as_float3(x)   float3(x)
+#define as_float4(x)   float4(x)
 
 static inline float4 read_imagef(image2df_t image, sampler s, float2 coord) {
     return image.sample(s, coord);

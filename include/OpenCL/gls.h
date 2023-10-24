@@ -23,6 +23,9 @@
 #define BUFFER(id)
 
 #define USE_GLOBAL_ID
+#define USE_GLOBAL_SIZE
+#define USE_LOCAL_ID
+#define USE_GROUP_ID
 
 #define VAL(type)       const type
 
@@ -36,25 +39,42 @@
 #define image2df_write_t write_only image2d_t
 #define image2dui_write_t write_only image2d_t
 
+#define uint(args)          ((uint) (args))
 #define uint2(args...)      ((uint2) (args))
 #define uint3(args...)      ((uint3) (args))
 #define uint4(args...)      ((uint4) (args))
 #define uint8(args...)      ((uint8) (args))
 
+#define int(args)           ((int) (args))
 #define int2(args...)       ((int2) (args))
 #define int3(args...)       ((int3) (args))
 #define int4(args...)       ((int4) (args))
 #define int8(args...)       ((int8) (args))
 
+#define half(args)          ((half) (args))
 #define half2(args...)      ((half2) (args))
 #define half3(args...)      ((half3) (args))
 #define half4(args...)      ((half4) (args))
 #define half8(args...)      ((half8) (args))
 
+#define float(args)         ((float) (args))
 #define float2(args...)     ((float2) (args))
 #define float3(args...)     ((float3) (args))
 #define float4(args...)     ((float4) (args))
 #define float8(args...)     ((float8) (args))
+
+#ifndef HALF_DIG
+#define HALF_DIG            3
+#define HALF_MANT_DIG       11
+#define HALF_MAX_10_EXP     +4
+#define HALF_MAX_EXP        +16
+#define HALF_MIN_10_EXP     -4
+#define HALF_MIN_EXP        -13
+#define HALF_RADIX          2
+#define HALF_MAX            0x1.ffcp15h
+#define HALF_MIN            0x1.0p-14h
+#define HALF_EPSILON        0x1.0p-10h
+#endif
 
 //#ifdef __APPLE__
 //static inline __ovld half2 myconvert_half2(float2 val) {

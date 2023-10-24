@@ -57,9 +57,11 @@ struct simdMatrix {
     std::array<simdVector<N == 3 ? 4 : N, T>, N> m;
 
     simdMatrix(const gls::Matrix<N, N>& transform) {
-        m[0] = gls::Vector<3> { transform[0][0], transform[0][1], transform[0][2] };
-        m[1] = gls::Vector<3> { transform[1][0], transform[1][1], transform[1][2] };
-        m[2] = gls::Vector<3> { transform[2][0], transform[2][1], transform[2][2] };
+        for (int j = 0; j < N; j++) {
+            for (int i = 0; i < N; i++) {
+                m[j][i] = transform[j][i];
+            }
+        }
     }
 };
 
