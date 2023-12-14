@@ -26,6 +26,8 @@
 
 #elif __ANDROID__
 
+#define USE_ASSET_MANAGER // Use asset manager to load OpenCL kernels
+
 #define CL_TARGET_OPENCL_VERSION 200
 #define CL_HPP_TARGET_OPENCL_VERSION 200
 
@@ -95,6 +97,11 @@ class OCLContext : public GpuContext {
     cl::Program _program;
     const std::string _shadersRootPath;
 
+#if defined(__ANDROID__) && defined(USE_ASSET_MANAGER)
+  std::map<std::string, std::string> cl_shaders;
+  // std::map<std::string, std::vector<unsigned char>> cl_bytecode;
+#endif
+
 public:
     OCLContext(const std::vector<std::string>& programs, const std::string& shadersRootPath = "") : _shadersRootPath(shadersRootPath) {
 #if __ANDROID__
@@ -124,12 +131,25 @@ public:
 
         cl::Device d = cl::Device::getDefault();
         std::cout << "- Device: " << d.getInfo<CL_DEVICE_NAME>() << std::endl;
+        __android_log_print(ANDROID_LOG_INFO, "foo",  "- Device: %s", d.getInfo<CL_DEVICE_NAME>().c_str());
+
         std::cout << "- Device Version: " << d.getInfo<CL_DEVICE_VERSION>() << std::endl;
+        __android_log_print(ANDROID_LOG_INFO, "foo", "- Device Version: %s", d.getInfo<CL_DEVICE_VERSION>().c_str());
+
         std::cout << "- Driver Version: " << d.getInfo<CL_DRIVER_VERSION>() << std::endl;
+        __android_log_print(ANDROID_LOG_INFO, "foo", "- Driver Version: %s", d.getInfo<CL_DRIVER_VERSION>().c_str());
+
         std::cout << "- OpenCL C Version: " << d.getInfo<CL_DEVICE_OPENCL_C_VERSION>() << std::endl;
+        __android_log_print(ANDROID_LOG_INFO, "foo", "- OpenCL C Version: %s", d.getInfo<CL_DEVICE_OPENCL_C_VERSION>().c_str());
+
         std::cout << "- Compute Units: " << d.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
+        __android_log_print(ANDROID_LOG_INFO, "foo", "- Compute Units: %u", d.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>());
+
         std::cout << "- CL_DEVICE_MAX_WORK_GROUP_SIZE: " << d.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
+        __android_log_print(ANDROID_LOG_INFO, "foo", "- CL_DEVICE_MAX_WORK_GROUP_SIZE: %zu", d.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>());
+
         std::cout << "- CL_DEVICE_EXTENSIONS: " << d.getInfo<CL_DEVICE_EXTENSIONS>() << std::endl;
+        __android_log_print(ANDROID_LOG_INFO, "foo", "- CL_DEVICE_EXTENSIONS: %s", d.getInfo<CL_DEVICE_EXTENSIONS>().c_str());
 
         // opencl.hpp relies on a default context
         cl::Context::setDefault(context);
@@ -161,10 +181,16 @@ public:
         std::cout << "- CL_DEVICE_EXTENSIONS: " << d.getInfo<CL_DEVICE_EXTENSIONS>() << std::endl;
 #endif
 #endif
-        loadPrograms(programs);
+        // loadPrograms(programs);
     }
 
-    // OCLContext(const std::string& shadersRootPath = "") : OCLContext({}, shadersRootPath) { }
+#if defined(__ANDROID__) && defined(USE_ASSET_MANAGER)
+  std::map<std::string, std::string>* getShadersMap() { return &cl_shaders; }
+  // std::map<std::string, std::vector<unsigned char>>* getBytecodeMap() { return &cl_bytecode; }
+#endif
+
+
+  // OCLContext(const std::string& shadersRootPath = "") : OCLContext({}, shadersRootPath) { }
 
     virtual ~OCLContext() {
         waitForCompletion();
@@ -240,8 +266,10 @@ public:
 
     std::string OpenCLSource(const std::string& shaderName) {
 #if defined(__ANDROID__) && defined(USE_ASSET_MANAGER)
+        __android_log_print(ANDROID_LOG_INFO, "foo", "LOADING FROM ASSET MANAGER!: %s", shaderName.c_str());
         return cl_shaders[shaderName];
 #else
+        __android_log_print(ANDROID_LOG_INFO, "foo", "LOADING FROM FILE SYSTEM (NOT ASSET MANAGER)!: %s", shaderName.c_str());
         std::ifstream file(_shadersRootPath + "OpenCL/" + shaderName, std::ios::in | std::ios::ate);
         if (file.is_open()) {
             std::streampos size = file.tellg();
@@ -251,28 +279,39 @@ public:
             file.close();
             return std::string(memblock.data(), memblock.data() + size);
         }
+        __android_log_print(ANDROID_LOG_INFO, "foo", "COULD NOT OPEN SHADER FILE!: %s", shaderName.c_str());
         return "";
 #endif
     }
 
     void loadPrograms(const std::vector<std::string>& programNames) {
         try {
+            __android_log_print(ANDROID_LOG_INFO, "foo", "DEBUG: %s", "GETTING DEVICE");
             cl::Device device = cl::Device::getDefault();
+            __android_log_print(ANDROID_LOG_INFO, "foo", "DEBUG: %s", "LOADING PROGRAMS!");
 
             std::vector<std::string> sources;
             for (const auto& p : programNames) {
+                __android_log_print(ANDROID_LOG_INFO, "foo", "LOADING: %s", p.c_str());
                 const auto& source = OpenCLSource(p + ".cl");
+                __android_log_print(ANDROID_LOG_INFO, "foo", "SOURCE: %s", source.c_str());
                 sources.push_back(source);
             }
 
+            __android_log_print(ANDROID_LOG_INFO, "foo", "DEBUG: %s", "CREATING PROGRAMS FROM SOURCES!");
             cl::Program program = cl::Program(sources);
+            __android_log_print(ANDROID_LOG_INFO, "foo", "DEBUG: %s", "BUILDING PROGRAMS FROM SOURCES!");
             program.build(device, cl_options);
+            __android_log_print(ANDROID_LOG_INFO, "foo", "DEBUG: %s", "DONE");
             _program = program;
         } catch (const cl::BuildError& e) {
             std::cerr << "OpenCL Build Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
+            __android_log_print(ANDROID_LOG_ERROR, "foo", "OPENCL ERROR: %s", e.what() );
+            __android_log_print(ANDROID_LOG_ERROR, "foo", "OPENCL ERROR: %s", clStatusToString(e.err()).c_str() );
             // Print build info for all devices
             for (auto& pair : e.getBuildLog()) {
                 std::cerr << pair.second << std::endl;
+                __android_log_print(ANDROID_LOG_ERROR, "foo", ">>: %s", pair.second.c_str() );
             }
             throw std::runtime_error("OpenCL Build Error");
         }
