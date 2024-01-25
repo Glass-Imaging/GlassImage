@@ -26,6 +26,8 @@
 
 #elif __ANDROID__
 
+#define USE_ASSET_MANAGER // Use asset manager to load OpenCL kernels
+
 #define CL_TARGET_OPENCL_VERSION 200
 #define CL_HPP_TARGET_OPENCL_VERSION 200
 
@@ -99,6 +101,11 @@ class OCLContext : public GpuContext {
     cl::Program _program;
     const std::string _shadersRootPath;
 
+#if defined(__ANDROID__) && defined(USE_ASSET_MANAGER)
+        std::map<std::string, std::string> cl_shaders;
+        // std::map<std::string, std::vector<unsigned char>> cl_bytecode;
+#endif
+
 public:
     OCLContext(const std::vector<std::string>& programs, const std::string& shadersRootPath = "") : _shadersRootPath(shadersRootPath) {
 #if __ANDROID__
@@ -167,6 +174,12 @@ public:
 #endif
         loadPrograms(programs);
     }
+
+#if defined(__ANDROID__) && defined(USE_ASSET_MANAGER)
+        std::map<std::string, std::string>* getShadersMap() { return &cl_shaders; }
+        // std::map<std::string, std::vector<unsigned char>>* getBytecodeMap() { return &cl_bytecode; }
+#endif
+
 
     // OCLContext(const std::string& shadersRootPath = "") : OCLContext({}, shadersRootPath) { }
 
