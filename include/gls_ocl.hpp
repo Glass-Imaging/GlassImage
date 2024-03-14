@@ -26,8 +26,8 @@
 
 #elif __ANDROID__
 
-#define USE_ASSET_MANAGER // Use asset manager to load OpenCL kernels
-#define USE_TEXT_SHADERS
+//#define USE_ASSET_MANAGER // Use asset manager to load OpenCL kernels
+//#define USE_TEXT_ASSET_SHADERS
 
 #define CL_TARGET_OPENCL_VERSION 200
 #define CL_HPP_TARGET_OPENCL_VERSION 200
@@ -258,23 +258,10 @@ public:
         return cl::EnqueueArgs(global_workgroup_size, local_workgroup_size);
     }
 
-    std::string OpenCLSource(const std::string& shaderName, bool use_local_shaders = false) {
+    std::string OpenCLSource(const std::string& shaderName) {
 #if defined(__ANDROID__) && defined(USE_ASSET_MANAGER)
-        if(use_local_shaders){
-            std::ifstream file(_shadersRootPath + "OpenCL/" + shaderName, std::ios::in | std::ios::ate);
-            if (file.is_open()) {
-                std::streampos size = file.tellg();
-                std::vector<char> memblock((int)size);
-                file.seekg(0, std::ios::beg);
-                file.read(memblock.data(), size);
-                file.close();
-                return std::string(memblock.data(), memblock.data() + size);
-            }
-            return "";
-        }
-        else {
-            return cl_shaders[shaderName];
-        }
+        return cl_shaders[shaderName];
+
 #else
         std::ifstream file(_shadersRootPath + "OpenCL/" + shaderName, std::ios::in | std::ios::ate);
         if (file.is_open()) {
@@ -307,18 +294,18 @@ public:
 #endif
         }
 
-    void loadPrograms(const std::vector<std::string>& programNames, bool use_local_shaders = false) {
+    void loadPrograms(const std::vector<std::string>& programNames) {
         cl::Program program;
         cl::Device device;
         try {
             device = cl::Device::getDefault();
-#if (defined(USE_TEXT_SHADERS))
+#if (defined(USE_TEXT_ASSET_SHADERS))
 
 
             std::vector<std::string> sources;
             for (const auto& p : programNames) {
 
-                const auto& source = OpenCLSource(p + ".cl", use_local_shaders);
+                const auto& source = OpenCLSource(p + ".cl");
                 __android_log_print(ANDROID_LOG_INFO, "foo",  "OpenCL Source:  %s", source.c_str());
                 std::cout << "OpenCL Source: " << source << std::endl;
                 sources.push_back(source);
