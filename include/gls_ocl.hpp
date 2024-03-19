@@ -27,7 +27,7 @@
 #elif __ANDROID__
 
 //#define USE_ASSET_MANAGER // Use asset manager to load OpenCL kernels
-//#define USE_TEXT_ASSET_SHADERS
+//#define USE_TEXT_SHADERS
 
 #define CL_TARGET_OPENCL_VERSION 200
 #define CL_HPP_TARGET_OPENCL_VERSION 200
@@ -299,7 +299,7 @@ public:
         cl::Device device;
         try {
             device = cl::Device::getDefault();
-#if (defined(USE_TEXT_ASSET_SHADERS))
+#if (defined(USE_TEXT_SHADERS))
 
 
             std::vector<std::string> sources;
@@ -307,7 +307,7 @@ public:
 
                 const auto& source = OpenCLSource(p + ".cl");
                 __android_log_print(ANDROID_LOG_INFO, "foo",  "OpenCL Source:  %s", source.c_str());
-                std::cout << "OpenCL Source: " << source << std::endl;
+//                std::cout << "OpenCL Source: " << source << std::endl;
                 sources.push_back(source);
             }
 
