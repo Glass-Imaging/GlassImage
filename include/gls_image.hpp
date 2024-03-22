@@ -18,6 +18,8 @@
 
 #include <sys/types.h>
 #include <string.h>
+#include <fstream>
+#include <sstream>
 
 #include <cassert>
 #include <functional>
@@ -211,6 +213,12 @@ class basic_image {
     constexpr basic_image(gls::size _dimensions) : width(_dimensions.width), height(_dimensions.height) {}
 };
 
+template<typename T, typename = void>
+struct has_channels : std::false_type {};
+
+template<typename T>
+struct has_channels<T, std::void_t<decltype(T::channels)>> : std::true_type {};
+
 // std::vector is convenient but it is expensive as it initializes memory
 #define USE_STD_VECTOR_ALLOCATION false
 
@@ -319,7 +327,7 @@ class image : public basic_image<T> {
         }
     }
 
-    const constexpr size_t size_in_bytes() { return _data.size() * basic_image<T>::pixel_size; }
+    const constexpr size_t size_in_bytes() const { return _data.size() * basic_image<T>::pixel_size; }
 
     // image factory from PNG file
     constexpr static unique_ptr read_png_file(const std::string& filename) {
@@ -387,6 +395,32 @@ class image : public basic_image<T> {
         };
         gls::write_jpeg_file(filename, basic_image<T>::width, basic_image<T>::height, stride, T::channels, T::bit_depth,
                              image_data, quality);
+    }
+
+    // Do not include extension
+    void write_data_file(const std::string& filename) const {
+        int channels = 1;
+        int bit_depth = 1;
+
+        if constexpr (has_channels<T>::value) {
+            channels = T::channels;
+            bit_depth = int(sizeof(T) / channels);
+        } else {
+            channels = 1;
+            bit_depth = sizeof(T);
+        }
+
+        std::ostringstream oss;
+        oss << filename << "_w[" << this->width << "]_h[" << this->height << "]_c[" << channels << "]_b[" << bit_depth << "].raw";
+        std::ofstream file(oss.str(), std::ios::binary);
+        if (!file) {
+            std::cout << "Cannot open file :: " << filename << std::endl;
+        } else {
+            auto byteSpan = std::as_bytes(this->pixels());
+            const char* imgData = reinterpret_cast<const char*>(byteSpan.data());
+            file.write(imgData, this->size_in_bytes());
+            file.close();
+        }
     }
 
     // Helper function for read_tiff_file and read_dng_file
