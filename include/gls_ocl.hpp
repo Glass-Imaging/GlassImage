@@ -294,6 +294,35 @@ public:
 #endif
         }
 
+    void loadProgramsFromFullStringSource(const::std::vector<std::string>& programSources) {
+        cl::Program program;
+        cl::Device device;
+        try {
+            device = cl::Device::getDefault();
+            program = cl::Program(programSources);
+            program.build(device, cl_options);
+            _program = program;
+        }
+        catch (const cl::BuildError& e) {
+            LOG_ERROR("GLS_OCL") << "OpenCL Build Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
+            // Print build info for all devices
+            for (auto& pair : e.getBuildLog()) {
+                std::cerr << pair.second << std::endl;
+            }
+
+            std::string name  = device.getInfo<CL_DEVICE_NAME>();
+            std::string buildlog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
+            LOG_ERROR("GLS_OCL") <<  "Build log for: " << name.c_str() << ": " << buildlog.c_str() << std::endl;
+
+            throw std::runtime_error("OpenCL Build Error");
+        }
+        catch (const cl::Error& e) {
+            LOG_ERROR("GLS_OCL") << "OpenCL Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
+
+            throw std::runtime_error("OpenCL Error");
+        }
+    }
+
     void loadPrograms(const std::vector<std::string>& programNames) {
         cl::Program program;
         cl::Device device;
@@ -390,16 +419,6 @@ public:
             std::cerr << "OpenCL Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
             __android_log_print(ANDROID_LOG_INFO, "foo",  "OpenCL Error - %s: %s",
                                 e.what(), clStatusToString(e.err()).c_str());
-
-//            for (auto& pair : e.getBuildLog()) {
-//                std::cerr << pair.second << std::endl;
-//            }
-
-//            std::string name  = device.getInfo<CL_DEVICE_NAME>();
-//            std::string buildlog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
-////            std::cerr << "Build log for " << name << ":" << std::endl
-////                      << buildlog << std::endl;
-//            __android_log_print(ANDROID_LOG_INFO, "foo",  "Build log for: %s: %s", name.c_str(), buildlog.c_str());
 
             throw std::runtime_error("OpenCL Error");
         }
