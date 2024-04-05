@@ -12,6 +12,7 @@
 #include <map>
 #include <fstream>
 #include <iostream>
+#include "gls_logging.h"
 
 #define CL_HPP_ENABLE_EXCEPTIONS
 
