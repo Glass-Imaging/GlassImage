@@ -416,11 +416,60 @@ class image : public basic_image<T> {
         if (!file) {
             std::cout << "Cannot open file :: " << filename << std::endl;
         } else {
-            auto byteSpan = std::as_bytes(this->pixels());
-            const char* imgData = reinterpret_cast<const char*>(byteSpan.data());
-            file.write(imgData, this->size_in_bytes());
+            // Cannot just use pixels b/c pixels points to underlying data, so of a view is used it will not be reflected in pixels
+            for(int i=0; i<this->height; ++i) {
+                auto row = std::span((*this)[i], this->width);
+                auto byteSpan = std::as_bytes(row);
+                const char* imgData = reinterpret_cast<const char*>(byteSpan.data());
+                file.write(imgData, byteSpan.size());
+            }
+
             file.close();
         }
+    }
+
+    void read_in_data_file(const std::string& filename) {
+        std::ifstream file(filename, std::ios::binary);
+
+        int channels = 1;
+        int bit_depth = 1;
+
+        if constexpr (has_channels<T>::value) {
+            channels = T::channels;
+            bit_depth = int(sizeof(T) / channels);
+        } else {
+            channels = 1;
+            bit_depth = sizeof(T);
+        }
+
+        // Check if the file was opened successfully
+        if (!file) {
+            std::cout << "Cannot open file " << filename << std::endl;
+            return;
+        }
+
+        // Seek to the end of the file to find its size
+        file.seekg(0, std::ios::end);
+        long file_size = file.tellg();
+        file.seekg(0, std::ios::beg);
+
+        long image_size = this->width * this->height * bit_depth;
+
+        if(image_size != file_size) {
+            std::cout << "WARNING: Image size does not equal file size. Only reading by the smaller value" << std::endl;
+        }
+
+        auto size = std::min(file_size, image_size);
+
+        // Read the file into the buffer
+        if (file.read((char*) this->_data.data(), size)) {
+            std::cout << "Successfully read file " << filename << std::endl;
+        } else {
+            std::cout << "Error reading file." << std::endl;
+        }
+
+        // Close the file
+        file.close();
     }
 
     // Helper function for read_tiff_file and read_dng_file
