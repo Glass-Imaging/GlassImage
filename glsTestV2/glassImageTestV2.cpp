@@ -54,19 +54,33 @@ void runKernel(gls::GpuContext* gpuContext, const gls::image<gls::rgba_pixel>& i
 }
 
 int main(int argc, const char * argv[]) {
-    std::cout << "Hello, GPU!\n";
+    std::cout << "Hello from C++!\n";
 
     // Read the input file into an image object
     auto inputImage = gls::image<gls::rgba_pixel>::read_tiff_file("Assets/baboon.tiff");
 
     std::cout << "inputImage size: " << inputImage->width << " x " << inputImage->height << std::endl;
 
-    // Run the OpenCL kernel
-    {
-        auto gpuContext = std::unique_ptr<gls::GpuContext>(new gls::OCLContext(/*programs=*/ { "blur", "blur_utils" }));
+    auto outputImage = gls::image<gls::rgba_pixel>(inputImage->width, inputImage->height);
 
-        runKernel(gpuContext.get(), *inputImage, "ocl_output.tiff");
+
+    for(int y = 0; y < inputImage->height; y++) {
+        for(int x = 0; x < inputImage->width; x++) {
+            outputImage[y][x].red = (*inputImage)[y][x].red / 2;
+            outputImage[y][x].green = (*inputImage)[y][x].green / 2;
+            outputImage[y][x].blue = (*inputImage)[y][x].blue / 2;
+            outputImage[y][x].alpha = (*inputImage)[y][x].alpha;
+        }
     }
+
+    outputImage.write_png_file("output.png");
+
+    // Run the OpenCL kernel - Needs Debugging
+    // {
+    //     auto gpuContext = std::unique_ptr<gls::GpuContext>(new gls::OCLContext(/*programs=*/ { "blur", "blur_utils" }));
+    //     runKernel(gpuContext.get(), *inputImage, "ocl_output.tiff");
+    // }
+
 
 #ifdef __APPLE__
     // Run the Metal kernel
