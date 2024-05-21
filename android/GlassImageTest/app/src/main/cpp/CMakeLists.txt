@@ -25,11 +25,12 @@ set_target_properties( libtiffxx PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR
 
 add_executable( # Sets the name of the library.
         glassImageTest
-
         # Sets the library as a shared library.
         # SHARED
 
         # Provides a relative path to your source file(s).
+        headers/cnpy.h
+        utils/cnpy.cpp
         glassimage/src/gls_icd_wrapper.cpp
         glassimage/src/gls_cl_error.cpp
         glassimage/src/gls_logging.cpp

@@ -14,8 +14,10 @@
 // limitations under the License.
 
 #include <iostream>
-
+#include <complex>
 #include "gls_ocl.hpp"
+#include "cnpy.h"
+
 #ifdef __APPLE__
 #include "gls_mtl.hpp"
 #endif
@@ -54,26 +56,34 @@ void runKernel(gls::GpuContext* gpuContext, const gls::image<gls::rgba_pixel>& i
 }
 
 int main(int argc, const char * argv[]) {
+
     std::cout << "Hello from C++!\n";
 
-    // Read the input file into an image object
-    auto inputImage = gls::image<gls::rgba_pixel>::read_tiff_file("Assets/baboon.tiff");
+    //load from npy file
+    cnpy::NpyArray raw_data = cnpy::npy_load(argv[1]);
 
-    std::cout << "inputImage size: " << inputImage->width << " x " << inputImage->height << std::endl;
+    std::cout << "The byte of pixel size is:" << raw_data.word_size << std::endl;
+    std::cout << "The size of Npy array is:" << raw_data.shape[0] <<" x " << raw_data.shape[1] << std::endl;
 
-    auto outputImage = gls::image<gls::rgba_pixel>(inputImage->width, inputImage->height);
+    if (word_size == sizeof(uint16_t)):
+    // two bytes for each pixel, uint_16 type
+        uint16_t * loaded_data = raw_data.data<uint16_t>();
+    else:
+    // two bytes for each pixel, uint_8 type
+        uint8_t * loaded_data = raw_data.data<uint8_t>();
 
+//    auto outputImage = gls::image<gls::rgb_pixel>(raw_data.shape[1], raw_data.shape[0]);
+    auto outputImage = gls::image<gls::luma_pixel>(raw_data.shape[1], raw_data.shape[0]);
 
-    for(int y = 0; y < inputImage->height; y++) {
-        for(int x = 0; x < inputImage->width; x++) {
-            outputImage[y][x].red = (*inputImage)[y][x].red / 2;
-            outputImage[y][x].green = (*inputImage)[y][x].green / 2;
-            outputImage[y][x].blue = (*inputImage)[y][x].blue / 2;
-            outputImage[y][x].alpha = (*inputImage)[y][x].alpha;
+    // import the QNN module and run the OF estimation
+    // Example here reduce data from 12bit to 8bit to feed into network
+    for(int y = 0; y < raw_data.shape[0]; y++) {
+        for(int x = 0; x < raw_data.shape[1]; x++) {
+            outputImage[y][x] = loaded_data[y*raw_data.shape[1] + x] / 16;
         }
     }
 
-    outputImage.write_png_file("output.png");
+    outputImage.write_png_file("output_test_results.png");
 
     // Run the OpenCL kernel - Needs Debugging
     // {
