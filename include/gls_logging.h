@@ -16,6 +16,7 @@
 #ifndef GLS_LOGGING_H
 #define GLS_LOGGING_H
 
+#pragma once
 #include <iostream>
 
 namespace gls {
