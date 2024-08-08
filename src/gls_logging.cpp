@@ -23,7 +23,7 @@ NullStream null;
 
 }  // namespace gls
 
-#if defined(__ANDROID__) && !defined(USE_IOSTREAM_LOG)
+#if defined(__ANDROID__) && !defined(USE_IOSTREAM_LOG) && !defined(USE_SYSLOG)
 
 #include <sstream>
 
@@ -59,6 +59,48 @@ std::ostream __log_prefix(android_LogPriority level, const std::string& TAG) {
     static auto buf = AndroidLogBuf();
     return std::ostream(&buf(level, TAG));
 }
+
+
+#elif defined(__ANDROID__) && !defined(USE_IOSTREAM_LOG) && defined(USE_SYSLOG)
+
+#include <sstream>
+#include "gls_syslog.hpp"
+
+struct AndroidLogBuf : public std::streambuf {
+    AndroidLogBuf() = default;
+
+    std::streambuf& operator()(int PRIORITY, const std::string TAG) {
+        _PRIORITY = PRIORITY;
+        _TAG = TAG;
+        return *this;
+    }
+
+   protected:
+    std::streamsize xsputn(const char_type* s, std::streamsize n) override {
+        _buf.sputn(s, n);
+        return n;
+    }
+
+    int_type overflow(int_type ch) override {
+        _buf.sputc(ch);
+        openlog(_TAG.c_str(), 0, 0);
+        syslog(_PRIORITY, "%s", _buf.str().c_str());
+        _buf.str("");
+        return ch;
+    }
+
+   private:
+    int _PRIORITY = SYSLOG_INFO;
+    std::string _TAG = "Default";
+    std::stringbuf _buf;
+};
+
+// Level is based on syslog log levels: err=3, warning=4, info= 5|6, debug=7
+std::ostream __log_prefix(int level, const std::string& TAG) {
+    static auto buf = AndroidLogBuf();
+    return std::ostream(&buf(level, TAG));
+}
+
 
 #else
 

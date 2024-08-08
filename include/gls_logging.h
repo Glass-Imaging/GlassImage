@@ -36,7 +36,7 @@ inline std::ostream& __log_null(std::ostream& os) { return os; }
 
 }  // namespace gls
 
-#if defined(__ANDROID__) && !defined(USE_IOSTREAM_LOG)
+#if defined(__ANDROID__) && !defined(USE_IOSTREAM_LOG) && !defined(USE_SYSLOG)
 
 #include <android/log.h>
 
@@ -45,6 +45,15 @@ std::ostream __log_prefix(android_LogPriority level, const std::string& TAG);
 #define LOG_INFO(TAG) __log_prefix(ANDROID_LOG_INFO, TAG)
 #define LOG_ERROR(TAG) __log_prefix(ANDROID_LOG_ERROR, TAG)
 #define LOG_DEBUG(TAG) __log_prefix(ANDROID_LOG_DEBUG, TAG)
+
+#elif defined(__ANDROID__) && !defined(USE_IOSTREAM_LOG) && defined(USE_SYSLOG)
+
+#include "gls_syslog.hpp"
+std::ostream __log_prefix(int level, const std::string& TAG);
+
+#define LOG_INFO(TAG) __log_prefix(SYSLOG_INFO, TAG)
+#define LOG_ERROR(TAG) __log_prefix(SYSLOG_ERR, TAG)
+#define LOG_DEBUG(TAG) __log_prefix(SYSLOG_DEBUG, TAG)
 
 #else
 
