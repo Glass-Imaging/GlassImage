@@ -25,6 +25,8 @@
 #include <span>
 #include <string>
 #include <vector>
+#include <fstream>
+#include <iostream>
 
 #include "gls_geometry.hpp"
 #include "gls_image_jpeg.h"
@@ -499,6 +501,28 @@ class image : public basic_image<T> {
         gls::write_dng_file(filename, basic_image<T>::width, basic_image<T>::height, T::channels, T::bit_depth,
                             compression, dng_metadata, exif_metadata, row_pointer);
     }
+
+    static unique_ptr read_raw_dump(const std::string& filename,
+                                              const int width,
+                                              const int height,
+                                              const int bytes_per_pixel) {
+
+        std::cout << "Reading raw dump file: " << filename << std::endl;
+
+        auto image = std::make_unique<gls::image<gls::luma_pixel_16>>(width, height);
+        // read bytes from file
+        std::ifstream file(filename, std::ios::binary);
+        if (!file) {
+            std::cout << "Cannot open the image file: " << filename << std::endl;
+            return nullptr;
+        }
+        file.read((char*)image->pixels().data(), width * height * bytes_per_pixel);
+
+        file.close();
+
+        return image;
+    }
+
 };
 
 template <typename T>
