@@ -26,12 +26,15 @@
 #include <span>
 #include <variant>
 #include <vector>
+#include <type_traits>
+
 
 #include "gls_auto_ptr.hpp"
 #include "gls_dng_lossless_jpeg.hpp"
 #include "gls_image_tiff.h"
 #include "gls_logging.h"
 #include "gls_tiff_metadata.hpp"
+#include "float16.hpp"
 
 static const char* TAG = "TIFF";
 
@@ -257,7 +260,7 @@ static void writeTiffImageData(TIFF* tif, int width, int height, int pixel_chann
 template <typename T>
 void write_tiff_file(const std::string& filename, int width, int height, int pixel_channels, int pixel_bit_depth,
                      tiff_compression compression, tiff_metadata* metadata, const std::vector<uint8_t>* icc_profile_data,
-                     std::function<T*(int row)> row_pointer) {
+                     std::function<T*(int row)> row_pointer, bool is_float) {
     setTiffErrorHandler();
 
     auto_ptr<TIFF> tif(TIFFOpen(filename.c_str(), "w"), [](TIFF* tif) { TIFFClose(tif); });
@@ -271,7 +274,14 @@ void write_tiff_file(const std::string& filename, int width, int height, int pix
         TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, pixel_channels);
 
         TIFFSetField(tif, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB);
-        TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_UINT);
+//        TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_UINT);
+//        TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_IEEEFP);
+        
+
+        if (is_float)
+            TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_IEEEFP);
+        else
+            TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_UINT);
 
         // Add orientation from metadata
         uint16_t orientation = ORIENTATION_TOPLEFT;
@@ -609,11 +619,22 @@ void write_dng_file(const std::string& filename, int width, int height, int pixe
 template void write_tiff_file<uint8_t>(const std::string& filename, int width, int height, int pixel_channels,
                                        int pixel_bit_depth, tiff_compression compression, tiff_metadata* metadata,
                                        const std::vector<uint8_t>* icc_profile_data,
-                                       std::function<uint8_t*(int row)> row_pointer);
+                                       std::function<uint8_t*(int row)> row_pointer, bool is_float);
 
 template void write_tiff_file<uint16_t>(const std::string& filename, int width, int height, int pixel_channels,
                                         int pixel_bit_depth, tiff_compression compression, tiff_metadata* metadata,
                                         const std::vector<uint8_t>* icc_profile_data,
-                                        std::function<uint16_t*(int row)> row_pointer);
+                                        std::function<uint16_t*(int row)> row_pointer, bool is_float);
+
+template void write_tiff_file<float16_t>(const std::string& filename, int width, int height, int pixel_channels,
+                                        int pixel_bit_depth, tiff_compression compression, tiff_metadata* metadata,
+                                        const std::vector<uint8_t>* icc_profile_data,
+                                        std::function<float16_t*(int row)> row_pointer, bool is_float);
+
+//template void write_tiff_file<float>(const std::string& filename, int width, int height, int pixel_channels,
+//                                        int pixel_bit_depth, tiff_compression compression, tiff_metadata* metadata,
+//                                        const std::vector<uint8_t>* icc_profile_data,
+//                                        std::function<float*(int row)> row_pointer, bool is_float);
+
 
 }  // namespace gls

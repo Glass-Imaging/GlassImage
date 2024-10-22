@@ -22,12 +22,34 @@
 #include <unordered_map>
 #include <variant>
 #include <vector>
+#include <span>
 
 namespace gls {
 
+struct GainMap {
+    bool isEmpty = true;
+    long top;
+    long left;
+    long bottom;
+    long right;
+    long plane;
+    long planes;
+    long rowPitch;
+    long colPitch;
+    long mapPointsV;
+    long mapPointsH;
+    double mapSpacingV;
+    double mapSpacingH;
+    double mapOriginV;
+    double mapOriginH;
+    long mapPlanes;
+//    std::span<float> gainData;
+    std::vector<float> gainData;
+};
+
 typedef std::variant<uint8_t, uint16_t, uint32_t, int8_t, int16_t, int32_t, float, double, std::vector<uint8_t>,
                      std::vector<uint16_t>, std::vector<uint32_t>, std::vector<int8_t>, std::vector<int16_t>,
-                     std::vector<int32_t>, std::vector<float>, std::vector<double>, std::string>
+                     std::vector<int32_t>, std::vector<float>, std::vector<double>, std::string, gls::GainMap>
     tiff_metadata_item;
 
 class tiff_metadata : public std::unordered_map<ttag_t, tiff_metadata_item> {};
@@ -60,6 +82,13 @@ bool getValue(const gls::tiff_metadata& metadata, ttag_t key, T* value) {
     }
     return false;
 }
+
+// CUSTOM TIFF TAGS For convenience using values not used in TIFF specification 
+
+#define GLS_TIFFTAG_GAINMAP 0xafc6
+#define GLS_TIFFTAG_FIXVIGNETTERADIAL 0xafc7
+
+//
 
 // DNG Extension Tags
 

@@ -542,7 +542,15 @@ class image : public basic_image<T> {
         typedef typename T::value_type value_type;
         auto row_pointer = [this](int row) -> value_type* { return (value_type*)(*this)[row]; };
         gls::write_tiff_file<value_type>(filename, basic_image<T>::width, basic_image<T>::height, T::channels,
-                                         T::bit_depth, compression, metadata, icc_profile_data, row_pointer);
+                                         T::bit_depth, compression, metadata, icc_profile_data, row_pointer, /*is_float*/false);
+    }
+    
+    constexpr void write_tiff_file_float(const std::string& filename, tiff_compression compression = tiff_compression::NONE,
+                                   tiff_metadata* metadata = nullptr, const std::vector<uint8_t>* icc_profile_data = nullptr) const {
+        typedef typename T::value_type value_type;
+        auto row_pointer = [this](int row) -> value_type* { return (value_type*)(*this)[row]; };
+        gls::write_tiff_file<value_type>(filename, basic_image<T>::width, basic_image<T>::height, T::channels,
+                                         T::bit_depth, compression, metadata, icc_profile_data, row_pointer, /*is_float*/true);
     }
 
     // Image factory from DNG file
