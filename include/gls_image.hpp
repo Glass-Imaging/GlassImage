@@ -109,6 +109,20 @@ struct rgba_type {
 };
 
 template <typename T>
+struct argb_type {
+    typedef pixel<T, 4> pixel_type;
+    union {
+        pixel_type v;
+        struct {
+            T alpha, red, green, blue;
+        };
+        struct {
+            T w, x, y, z;
+        };
+    };
+};
+
+template <typename T>
 struct basic_pixel : public T {
     constexpr static size_t channels = T::pixel_type::channels;
     constexpr static int bit_depth = T::pixel_type::bit_depth;
@@ -153,16 +167,19 @@ typedef basic_pixel<luma_type<uint8_t>> luma_pixel;
 typedef basic_pixel<luma_alpha_type<uint8_t>> luma_alpha_pixel;
 typedef basic_pixel<rgb_type<uint8_t>> rgb_pixel;
 typedef basic_pixel<rgba_type<uint8_t>> rgba_pixel;
+typedef basic_pixel<argb_type<uint8_t>> argb_pixel;
 
 typedef basic_pixel<luma_type<uint16_t>> luma_pixel_16;
 typedef basic_pixel<luma_alpha_type<uint16_t>> luma_alpha_pixel_16;
 typedef basic_pixel<rgb_type<uint16_t>> rgb_pixel_16;
 typedef basic_pixel<rgba_type<uint16_t>> rgba_pixel_16;
+typedef basic_pixel<argb_type<uint16_t>> argb_pixel_16;
 
 typedef basic_pixel<luma_type<float>> luma_pixel_fp32;
 typedef basic_pixel<luma_alpha_type<float>> luma_alpha_pixel_fp32;
 typedef basic_pixel<rgb_type<float>> rgb_pixel_fp32;
 typedef basic_pixel<rgba_type<float>> rgba_pixel_fp32;
+typedef basic_pixel<argb_type<float>> argb_pixel_fp32;
 
 typedef basic_pixel<luma_type<float>> pixel_fp32;
 typedef basic_pixel<luma_alpha_type<float>> pixel_fp32_2;
