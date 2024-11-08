@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D161FD3C2BBF861600D51680 /* libjpeg.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D161FD3B2BBF861600D51680 /* libjpeg.dylib */; };
+		D161FD3E2BBF862B00D51680 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D161FD3D2BBF862B00D51680 /* libz.dylib */; };
+		D161FD402BBF865B00D51680 /* libpng.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D161FD3F2BBF865B00D51680 /* libpng.dylib */; };
+		D161FD422BBF866C00D51680 /* libtiff.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D161FD412BBF866C00D51680 /* libtiff.dylib */; };
 		E5FD22E32AB8FE490001D329 /* gls_geometry.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E5FD22D22AB8FE490001D329 /* gls_geometry.hpp */; };
 		E5FD22E42AB8FE490001D329 /* gls_ocl.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E5FD22D32AB8FE490001D329 /* gls_ocl.hpp */; };
 		E5FD22E52AB8FE490001D329 /* gls_linalg.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E5FD22D42AB8FE490001D329 /* gls_linalg.hpp */; };
@@ -38,14 +42,14 @@
 		E5FD230F2AB9084C0001D329 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5FD230E2AB9084C0001D329 /* Metal.framework */; };
 		E5FD23112AB908560001D329 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5FD23102AB908560001D329 /* OpenCL.framework */; };
 		E5FD23132AB908670001D329 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5FD23122AB908670001D329 /* Foundation.framework */; };
-		E5FD23192AB909810001D329 /* libpng16.16.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E5FD23152AB909810001D329 /* libpng16.16.dylib */; };
-		E5FD231A2AB909810001D329 /* libtiff.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E5FD23162AB909810001D329 /* libtiff.6.dylib */; };
-		E5FD231B2AB909810001D329 /* libz.1.2.13.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E5FD23172AB909810001D329 /* libz.1.2.13.dylib */; };
-		E5FD231C2AB909810001D329 /* libjpeg.8.2.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E5FD23182AB909810001D329 /* libjpeg.8.2.2.dylib */; };
 		E5FD23572ABA3B760001D329 /* gls_auto_ptr.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E5FD23562ABA3B760001D329 /* gls_auto_ptr.hpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D161FD3B2BBF861600D51680 /* libjpeg.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libjpeg.dylib; path = "../../../../../../../../opt/homebrew/Cellar/jpeg-turbo/3.0.0/lib/libjpeg.dylib"; sourceTree = "<group>"; };
+		D161FD3D2BBF862B00D51680 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = ../../../../../../../../opt/homebrew/Cellar/zlib/1.3/lib/libz.dylib; sourceTree = "<group>"; };
+		D161FD3F2BBF865B00D51680 /* libpng.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpng.dylib; path = ../../../../../../../../opt/homebrew/Cellar/libpng/1.6.40/lib/libpng.dylib; sourceTree = "<group>"; };
+		D161FD412BBF866C00D51680 /* libtiff.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libtiff.dylib; path = ../../../../../../../../opt/homebrew/Cellar/libtiff/4.6.0/lib/libtiff.dylib; sourceTree = "<group>"; };
 		E5FD22C42AB8FBD20001D329 /* libGlassImageLibV2.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libGlassImageLibV2.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		E5FD22D22AB8FE490001D329 /* gls_geometry.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gls_geometry.hpp; path = ../../../../include/gls_geometry.hpp; sourceTree = "<group>"; };
 		E5FD22D32AB8FE490001D329 /* gls_ocl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gls_ocl.hpp; path = ../../../../include/gls_ocl.hpp; sourceTree = "<group>"; };
@@ -79,10 +83,6 @@
 		E5FD230E2AB9084C0001D329 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		E5FD23102AB908560001D329 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
 		E5FD23122AB908670001D329 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		E5FD23152AB909810001D329 /* libpng16.16.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpng16.16.dylib; path = ../../../../../../../opt/homebrew/Cellar/libpng/1.6.39/lib/libpng16.16.dylib; sourceTree = "<group>"; };
-		E5FD23162AB909810001D329 /* libtiff.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libtiff.6.dylib; path = ../../../../../../../opt/homebrew/Cellar/libtiff/4.5.0/lib/libtiff.6.dylib; sourceTree = "<group>"; };
-		E5FD23172AB909810001D329 /* libz.1.2.13.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.2.13.dylib; path = ../../../../../../../opt/homebrew/Cellar/zlib/1.2.13/lib/libz.1.2.13.dylib; sourceTree = "<group>"; };
-		E5FD23182AB909810001D329 /* libjpeg.8.2.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libjpeg.8.2.2.dylib; path = "../../../../../../../opt/homebrew/Cellar/jpeg-turbo/2.1.5.1/lib/libjpeg.8.2.2.dylib"; sourceTree = "<group>"; };
 		E5FD23562ABA3B760001D329 /* gls_auto_ptr.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = gls_auto_ptr.hpp; path = ../../../../include/gls_auto_ptr.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -91,12 +91,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E5FD23192AB909810001D329 /* libpng16.16.dylib in Frameworks */,
-				E5FD231A2AB909810001D329 /* libtiff.6.dylib in Frameworks */,
-				E5FD231B2AB909810001D329 /* libz.1.2.13.dylib in Frameworks */,
-				E5FD231C2AB909810001D329 /* libjpeg.8.2.2.dylib in Frameworks */,
+				D161FD3C2BBF861600D51680 /* libjpeg.dylib in Frameworks */,
+				D161FD422BBF866C00D51680 /* libtiff.dylib in Frameworks */,
+				D161FD3E2BBF862B00D51680 /* libz.dylib in Frameworks */,
 				E5FD23132AB908670001D329 /* Foundation.framework in Frameworks */,
 				E5FD23112AB908560001D329 /* OpenCL.framework in Frameworks */,
+				D161FD402BBF865B00D51680 /* libpng.dylib in Frameworks */,
 				E5FD230F2AB9084C0001D329 /* Metal.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -161,10 +161,10 @@
 		E5FD230D2AB9084C0001D329 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				E5FD23182AB909810001D329 /* libjpeg.8.2.2.dylib */,
-				E5FD23152AB909810001D329 /* libpng16.16.dylib */,
-				E5FD23162AB909810001D329 /* libtiff.6.dylib */,
-				E5FD23172AB909810001D329 /* libz.1.2.13.dylib */,
+				D161FD412BBF866C00D51680 /* libtiff.dylib */,
+				D161FD3F2BBF865B00D51680 /* libpng.dylib */,
+				D161FD3D2BBF862B00D51680 /* libz.dylib */,
+				D161FD3B2BBF861600D51680 /* libjpeg.dylib */,
 				E5FD23122AB908670001D329 /* Foundation.framework */,
 				E5FD23102AB908560001D329 /* OpenCL.framework */,
 				E5FD230E2AB9084C0001D329 /* Metal.framework */,
@@ -422,7 +422,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 4A4DGXV9V7;
+				DEVELOPMENT_TEAM = X83R3255ML;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
@@ -431,10 +431,10 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					/opt/homebrew/Cellar/libpng/1.6.39/lib,
-					/opt/homebrew/Cellar/libtiff/4.5.0/lib,
-					/opt/homebrew/Cellar/zlib/1.2.13/lib,
-					"/opt/homebrew/Cellar/jpeg-turbo/2.1.5.1/lib",
+					/opt/homebrew/Cellar/libpng/1.6.40/lib,
+					/opt/homebrew/Cellar/libtiff/4.6.0/lib,
+					/opt/homebrew/Cellar/zlib/1.3/lib,
+					"/opt/homebrew/Cellar/jpeg-turbo/3.0.0/lib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -445,7 +445,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 4A4DGXV9V7;
+				DEVELOPMENT_TEAM = X83R3255ML;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
@@ -454,10 +454,10 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					/opt/homebrew/Cellar/libpng/1.6.39/lib,
-					/opt/homebrew/Cellar/libtiff/4.5.0/lib,
-					/opt/homebrew/Cellar/zlib/1.2.13/lib,
-					"/opt/homebrew/Cellar/jpeg-turbo/2.1.5.1/lib",
+					/opt/homebrew/Cellar/libpng/1.6.40/lib,
+					/opt/homebrew/Cellar/libtiff/4.6.0/lib,
+					/opt/homebrew/Cellar/zlib/1.3/lib,
+					"/opt/homebrew/Cellar/jpeg-turbo/3.0.0/lib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

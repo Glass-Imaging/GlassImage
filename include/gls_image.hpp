@@ -27,6 +27,8 @@
 #include <span>
 #include <string>
 #include <vector>
+#include <fstream>
+#include <iostream>
 
 #include "gls_geometry.hpp"
 #include "gls_image_jpeg.h"
@@ -109,6 +111,20 @@ struct rgba_type {
 };
 
 template <typename T>
+struct argb_type {
+    typedef pixel<T, 4> pixel_type;
+    union {
+        pixel_type v;
+        struct {
+            T alpha, red, green, blue;
+        };
+        struct {
+            T w, x, y, z;
+        };
+    };
+};
+
+template <typename T>
 struct basic_pixel : public T {
     constexpr static size_t channels = T::pixel_type::channels;
     constexpr static int bit_depth = T::pixel_type::bit_depth;
@@ -153,16 +169,19 @@ typedef basic_pixel<luma_type<uint8_t>> luma_pixel;
 typedef basic_pixel<luma_alpha_type<uint8_t>> luma_alpha_pixel;
 typedef basic_pixel<rgb_type<uint8_t>> rgb_pixel;
 typedef basic_pixel<rgba_type<uint8_t>> rgba_pixel;
+typedef basic_pixel<argb_type<uint8_t>> argb_pixel;
 
 typedef basic_pixel<luma_type<uint16_t>> luma_pixel_16;
 typedef basic_pixel<luma_alpha_type<uint16_t>> luma_alpha_pixel_16;
 typedef basic_pixel<rgb_type<uint16_t>> rgb_pixel_16;
 typedef basic_pixel<rgba_type<uint16_t>> rgba_pixel_16;
+typedef basic_pixel<argb_type<uint16_t>> argb_pixel_16;
 
 typedef basic_pixel<luma_type<float>> luma_pixel_fp32;
 typedef basic_pixel<luma_alpha_type<float>> luma_alpha_pixel_fp32;
 typedef basic_pixel<rgb_type<float>> rgb_pixel_fp32;
 typedef basic_pixel<rgba_type<float>> rgba_pixel_fp32;
+typedef basic_pixel<argb_type<float>> argb_pixel_fp32;
 
 typedef basic_pixel<luma_type<float>> pixel_fp32;
 typedef basic_pixel<luma_alpha_type<float>> pixel_fp32_2;
@@ -582,6 +601,28 @@ class image : public basic_image<T> {
         gls::write_dng_file(filename, basic_image<T>::width, basic_image<T>::height, T::channels, T::bit_depth,
                             compression, dng_metadata, exif_metadata, row_pointer);
     }
+
+    static unique_ptr read_raw_dump(const std::string& filename,
+                                              const int width,
+                                              const int height,
+                                              const int bytes_per_pixel) {
+
+        std::cout << "Reading raw dump file: " << filename << std::endl;
+
+        auto image = std::make_unique<gls::image<gls::luma_pixel_16>>(width, height);
+        // read bytes from file
+        std::ifstream file(filename, std::ios::binary);
+        if (!file) {
+            std::cout << "Cannot open the image file: " << filename << std::endl;
+            return nullptr;
+        }
+        file.read((char*)image->pixels().data(), width * height * bytes_per_pixel);
+
+        file.close();
+
+        return image;
+    }
+
 };
 
 template <typename T>

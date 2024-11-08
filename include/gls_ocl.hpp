@@ -12,6 +12,7 @@
 #include <map>
 #include <fstream>
 #include <iostream>
+#include "gls_logging.h"
 
 #define CL_HPP_ENABLE_EXCEPTIONS
 
@@ -26,6 +27,9 @@
 
 #elif __ANDROID__
 
+//#define USE_ASSET_MANAGER // Use asset manager to load OpenCL kernels
+//#define USE_TEXT_SHADERS
+
 #define CL_TARGET_OPENCL_VERSION 200
 #define CL_HPP_TARGET_OPENCL_VERSION 200
 
@@ -36,6 +40,7 @@
 
 #include <CL/cl_ext.h>
 #include <CL/opencl.hpp>
+#include <android/log.h>
 
 // clang-format on
 
@@ -98,6 +103,11 @@ class OCLContext : public GpuContext {
     cl::Context _clContext;
     cl::Program _program;
     const std::string _shadersRootPath;
+
+#if defined(__ANDROID__) && defined(USE_ASSET_MANAGER)
+        std::map<std::string, std::string> cl_shaders;
+         std::map<std::string, std::vector<unsigned char>> cl_bytecode;
+#endif
 
 public:
     OCLContext(const std::vector<std::string>& programs, const std::string& shadersRootPath = "") : _shadersRootPath(shadersRootPath) {
@@ -165,8 +175,15 @@ public:
         std::cout << "- CL_DEVICE_EXTENSIONS: " << d.getInfo<CL_DEVICE_EXTENSIONS>() << std::endl;
 #endif
 #endif
-        loadPrograms(programs);
+//       TODO: FIGURE OUT WHY THIS IS COMMENTED IN DOUG's version
+//        loadPrograms(programs);
     }
+
+#if defined(__ANDROID__) && defined(USE_ASSET_MANAGER)
+        std::map<std::string, std::string>* getShadersMap() { return &cl_shaders; }
+         std::map<std::string, std::vector<unsigned char>>* getBytecodeMap() { return &cl_bytecode; }
+#endif
+
 
     // OCLContext(const std::string& shadersRootPath = "") : OCLContext({}, shadersRootPath) { }
 
@@ -245,6 +262,7 @@ public:
     std::string OpenCLSource(const std::string& shaderName) {
 #if defined(__ANDROID__) && defined(USE_ASSET_MANAGER)
         return cl_shaders[shaderName];
+
 #else
         std::ifstream file(_shadersRootPath + "OpenCL/" + shaderName, std::ios::in | std::ios::ate);
         if (file.is_open()) {
@@ -259,18 +277,129 @@ public:
 #endif
     }
 
-    void loadPrograms(const std::vector<std::string>& programNames) {
+    std::vector<unsigned char> OpenCLBinary(const std::string& shaderName) {
+#if defined(__ANDROID__) && defined(USE_ASSET_MANAGER)
+            return cl_bytecode[shaderName];
+#else
+            std::ifstream file(_shadersRootPath + "OpenCLBinaries/" + shaderName,
+                           std::ios::in | std::ios::binary | std::ios::ate);
+        if (file.is_open()) {
+            std::streampos size = file.tellg();
+            std::vector<unsigned char> memblock((int)size);
+            file.seekg(0, std::ios::beg);
+            file.read((char*)memblock.data(), size);
+            file.close();
+            return memblock;
+        }
+        return std::vector<unsigned char>();
+#endif
+        }
+
+    void loadProgramsFromFullStringSource(const::std::vector<std::string>& programSources) {
+        cl::Program program;
+        cl::Device device;
         try {
-            cl::Device device = cl::Device::getDefault();
+            device = cl::Device::getDefault();
+            program = cl::Program(programSources);
+            program.build(device, cl_options);
+            _program = program;
+        }
+        catch (const cl::BuildError& e) {
+            LOG_ERROR("GLS_OCL") << "OpenCL Build Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
+            // Print build info for all devices
+            for (auto& pair : e.getBuildLog()) {
+                std::cerr << pair.second << std::endl;
+            }
+
+            std::string name  = device.getInfo<CL_DEVICE_NAME>();
+            std::string buildlog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
+            LOG_ERROR("GLS_OCL") <<  "Build log for: " << name.c_str() << ": " << buildlog.c_str() << std::endl;
+
+            throw std::runtime_error("OpenCL Build Error");
+        }
+        catch (const cl::Error& e) {
+            LOG_ERROR("GLS_OCL") << "OpenCL Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
+
+            throw std::runtime_error("OpenCL Error");
+        }
+    }
+
+    void loadPrograms(const std::vector<std::string>& programNames) {
+        cl::Program program;
+        cl::Device device;
+        try {
+            device = cl::Device::getDefault();
+#if (defined(USE_TEXT_SHADERS))
+
 
             std::vector<std::string> sources;
             for (const auto& p : programNames) {
+
                 const auto& source = OpenCLSource(p + ".cl");
+                __android_log_print(ANDROID_LOG_INFO, "foo",  "OpenCL Source:  %s", source.c_str());
+//                std::cout << "OpenCL Source: " << source << std::endl;
                 sources.push_back(source);
             }
 
-            cl::Program program = cl::Program(sources);
+            program = cl::Program(sources);
+#else
+//            cl::Program::Binaries
+            std::vector<std::vector<unsigned char>> binary_list = {};
+            for (const auto& p : programNames) {
+//                std::cout << "Opening: " << p << std::endl;
+                std::vector<unsigned char> binary = OpenCLBinary(p + ".o");
+                binary_list.push_back(binary);
+            }
+//            std::vector<unsigned char> binary_element;
+//            std::vector<std::vector<unsigned char>> combined_binary_list(1, binary_element);
+            std::vector<std::vector<unsigned char>> combined_binary_list;
+//            int ctr = 0;
+//            for(int i = 0; i < binary_list.size(); i++){
+//                std::vector<unsigned char> b = binary_list[i];
+//                __android_log_print(ANDROID_LOG_INFO, "OpenCL",  "Binary %d Size: %d", ctr, (int) b.size());
+//                for(int j = 0; j < b.size(); j++){
+//                    combined_binary_list[0].push_back(binary_list[i][j]);
+//                }
+//                ctr++;
+////                break;
+//            }
+
+            std::vector<unsigned char> combined_binary;
+//            combined_binary.
+            for (const auto& binaryContent : binary_list) {
+                combined_binary.insert(combined_binary.end(), binaryContent.begin(), binaryContent.end());
+                __android_log_print(ANDROID_LOG_INFO, "OpenCL",  "Combined Binary Size: %d", (int) combined_binary.size());
+            }
+            combined_binary_list.push_back(combined_binary);
+            __android_log_print(ANDROID_LOG_INFO, "OpenCL",  "Combined_binary_list_size: %d", (int) combined_binary.size());
+
+
+            // cl::Program expects to get the same number of devices in this device list as there are binaries in the binary list
+            std::vector<cl::Device> devices(combined_binary_list.size(), device);
+
+            __android_log_print(ANDROID_LOG_INFO, "OpenCL",  "--------------Loading OpenCL Binaries---------");
+            std::cout << "--------------Loading OpenCL Binaries---------" << std::endl;
+//            program = cl::Program(_clContext, {device, device}, binary_list);
+            std::vector< cl_int > error_codes(binary_list.size());
+            program = cl::Program(_clContext, devices, combined_binary_list, &error_codes);
+//            program = cl::Program(_clContext, {device}, {combined_binary}, &error_codes);
+            __android_log_print(ANDROID_LOG_INFO, "OpenCL",  "--------------Loaded OpenCL Binaries---------");
+            std::cout << "--------------Loaded OpenCL Binaries---------" << std::endl;
+            for(int i = 0; i < error_codes.size(); i++) {
+                __android_log_print(ANDROID_LOG_INFO, "foo",
+                                    "OpenCL Program Error Codes: %s", clStatusToString(error_codes[i]).c_str());
+            }
+
+//            cl::Program program = cl::Program(_clContext, {device}, {OpenCLBinary(programNames[0] + ".o")});
+
+#endif
+
             program.build(device, cl_options);
+
+//            std::string name  = device.getInfo<CL_DEVICE_NAME>();
+//            std::string buildlog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
+//            __android_log_print(ANDROID_LOG_INFO, "foo",  "Build log for: %s: %s", name.c_str(), buildlog.c_str());
+
             _program = program;
         } catch (const cl::BuildError& e) {
             std::cerr << "OpenCL Build Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
@@ -278,12 +407,27 @@ public:
             for (auto& pair : e.getBuildLog()) {
                 std::cerr << pair.second << std::endl;
             }
+
+            std::string name  = device.getInfo<CL_DEVICE_NAME>();
+            std::string buildlog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
+//            std::cerr << "Build log for " << name << ":" << std::endl
+//                      << buildlog << std::endl;
+            __android_log_print(ANDROID_LOG_INFO, "foo",  "Build log for: %s: %s", name.c_str(), buildlog.c_str());
+
             throw std::runtime_error("OpenCL Build Error");
+        }
+        catch (const cl::Error& e) {
+            std::cerr << "OpenCL Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
+            __android_log_print(ANDROID_LOG_INFO, "foo",  "OpenCL Error - %s: %s",
+                                e.what(), clStatusToString(e.err()).c_str());
+
+            throw std::runtime_error("OpenCL Error");
         }
     }
 
     virtual void waitForCompletion() override {
         cl::finish();
+//        __android_log_print(ANDROID_LOG_INFO, "OpenCL Debug",  "Error code: %d", errcode);
     }
 
     virtual platform_buffer* new_platform_buffer(size_t size, bool readOnly) override {
@@ -326,6 +470,8 @@ public:
             queue.enqueueNDRangeKernel(kernel, cl::NullRange, global_workgroup_size);
         } catch (const cl::Error& e) {
             std::cerr << "OpenCL Kernel Error - " << kernelName << " - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
+            __android_log_print(ANDROID_LOG_INFO, "foo",  "OpenCL Kernel Error %s - %s: %s",
+                                kernelName.c_str(), e.what(), clStatusToString(e.err()).c_str());
             throw std::runtime_error("OpenCL Kernel Error");
         }
     }
