@@ -92,6 +92,8 @@ class platform_texture;
 class texture {
 public:
     enum channel_type {
+        UNSIGNED_INT8,
+        UNSIGNED_INT16,
         UNORM_INT8,
         UNORM_INT16,
         UNSIGNED_INT32,
@@ -111,10 +113,12 @@ public:
             switch (dataType) {
                 case UNORM_INT8:
                 case SNORM_INT8:
+                case UNSIGNED_INT8:
                     type_size = 1;
                     break;
                 case UNORM_INT16:
                 case SNORM_INT16:
+                case UNSIGNED_INT16:
                 case FLOAT16:
                     type_size = 2;
                     break;
@@ -171,8 +175,10 @@ inline texture::format texture::TextureFormat() {
 #if USE_FP16_FLOATS && !(__APPLE__ && __x86_64__)
                            : std::is_same<typename T::value_type, gls::float16_t>::value ? FLOAT16
 #endif
-                           : std::is_same<typename T::value_type, uint8_t>::value  ? UNORM_INT8
-                           : std::is_same<typename T::value_type, uint16_t>::value ? UNORM_INT16
+                        //    : std::is_same<typename T::value_type, uint8_t>::value  ? UNORM_INT8
+                           : std::is_same<typename T::value_type, uint8_t>::value  ? UNSIGNED_INT8
+                        //    : std::is_same<typename T::value_type, uint16_t>::value ? UNORM_INT16
+                           : std::is_same<typename T::value_type, uint16_t>::value ? UNSIGNED_INT16
                            : std::is_same<typename T::value_type, uint32_t>::value ? UNSIGNED_INT32
                            : std::is_same<typename T::value_type, int8_t>::value   ? SNORM_INT8
                            : std::is_same<typename T::value_type, int16_t>::value  ? SNORM_INT16
@@ -203,8 +209,10 @@ DECLARE_TYPE_FORMATS(float, FLOAT32)
 DECLARE_TYPE_FORMATS(float16_t, FLOAT16)
 #endif
 
-DECLARE_TYPE_FORMATS(uint8_t, UNORM_INT8)
-DECLARE_TYPE_FORMATS(uint16_t, UNORM_INT16)
+// DECLARE_TYPE_FORMATS(uint8_t, UNORM_INT8)
+DECLARE_TYPE_FORMATS(uint8_t, UNSIGNED_INT8)
+// DECLARE_TYPE_FORMATS(uint16_t, UNORM_INT16)
+DECLARE_TYPE_FORMATS(uint16_t, UNSIGNED_INT16)
 DECLARE_TYPE_FORMATS(uint32_t, UNSIGNED_INT32)
 
 DECLARE_TYPE_FORMATS(int8_t, SNORM_INT8)

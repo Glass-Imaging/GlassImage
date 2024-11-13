@@ -49,8 +49,10 @@ class cl_image : public basic_image<T> {
                                std::is_same<typename T::value_type, gls::float16_t>::value ? CL_HALF_FLOAT
                                :
 #endif
-                               std::is_same<typename T::value_type, uint8_t>::value    ? CL_UNORM_INT8
-                               : std::is_same<typename T::value_type, uint16_t>::value ? CL_UNORM_INT16
+                            //    std::is_same<typename T::value_type, uint8_t>::value    ? CL_UNORM_INT8
+                               std::is_same<typename T::value_type, uint8_t>::value    ? CL_UNSIGNED_INT8
+                            //    : std::is_same<typename T::value_type, uint16_t>::value ? CL_UNORM_INT16
+                               : std::is_same<typename T::value_type, uint16_t>::value ? CL_UNSIGNED_INT16
                                : std::is_same<typename T::value_type, uint32_t>::value ? CL_UNSIGNED_INT32
                                : std::is_same<typename T::value_type, int8_t>::value   ? CL_SNORM_INT8
                                : std::is_same<typename T::value_type, int16_t>::value  ? CL_SNORM_INT16
@@ -84,8 +86,10 @@ DECLARE_TYPE_FORMATS(float, CL_FLOAT)
 DECLARE_TYPE_FORMATS(gls::float16_t, CL_HALF_FLOAT)
 #endif
 
-DECLARE_TYPE_FORMATS(uint8_t, CL_UNORM_INT8)
-DECLARE_TYPE_FORMATS(uint16_t, CL_UNORM_INT16)
+// DECLARE_TYPE_FORMATS(uint8_t, CL_UNORM_INT8)
+DECLARE_TYPE_FORMATS(uint8_t, CL_UNSIGNED_INT8)
+// DECLARE_TYPE_FORMATS(uint16_t, CL_UNORM_INT16)
+DECLARE_TYPE_FORMATS(uint16_t, CL_UNSIGNED_INT16)
 DECLARE_TYPE_FORMATS(uint32_t, CL_UNSIGNED_INT32)
 
 DECLARE_TYPE_FORMATS(int8_t, CL_SNORM_INT8)

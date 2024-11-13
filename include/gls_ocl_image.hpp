@@ -55,8 +55,10 @@ public:
     #if USE_FP16_FLOATS && !(__APPLE__ && __x86_64__)
                                : format.dataType == FLOAT16 ? CL_HALF_FLOAT
     #endif
-                               : format.dataType == UNORM_INT8     ? CL_UNORM_INT8
-                               : format.dataType == UNORM_INT16    ? CL_UNORM_INT16
+                            //    : format.dataType == UNORM_INT8     ? CL_UNORM_INT8
+                               : format.dataType == UNSIGNED_INT8     ? CL_UNSIGNED_INT8
+                            //    : format.dataType == UNORM_INT16    ? CL_UNORM_INT16
+                               : format.dataType == UNSIGNED_INT16    ? CL_UNSIGNED_INT16
                                : format.dataType == UNSIGNED_INT32 ? CL_UNSIGNED_INT32
                                : format.dataType == SNORM_INT8     ? CL_SNORM_INT8
                                : format.dataType == SNORM_INT16    ? CL_SNORM_INT16
