@@ -44,15 +44,18 @@ class cl_image : public basic_image<T> {
                       std::is_same<typename T::value_type, int32_t>::value);
 
         cl_channel_order order = T::channels == 1 ? CL_R : T::channels == 2 ? CL_RG : CL_RGBA;
-        cl_channel_type type = std::is_same<typename T::value_type, float>::value ? CL_FLOAT :
+        cl_channel_type type = std::is_same<typename T::value_type, float>::value ? CL_FLOAT
 #if USE_FP16_FLOATS && !(__APPLE__ && __x86_64__)
-                               std::is_same<typename T::value_type, gls::float16_t>::value ? CL_HALF_FLOAT
-                               :
+                               : std::is_same<typename T::value_type, gls::float16_t>::value ? CL_HALF_FLOAT
 #endif
-                            //    std::is_same<typename T::value_type, uint8_t>::value    ? CL_UNORM_INT8
-                               std::is_same<typename T::value_type, uint8_t>::value    ? CL_UNSIGNED_INT8
-                            //    : std::is_same<typename T::value_type, uint16_t>::value ? CL_UNORM_INT16
+
+#ifdef OPENCL_MAP_UINT_NORMED
+                               : std::is_same<typename T::value_type, uint8_t>::value  ? CL_UNORM_INT8
+                               : std::is_same<typename T::value_type, uint16_t>::value ? CL_UNORM_INT16
+#else
+                               : std::is_same<typename T::value_type, uint8_t>::value  ? CL_UNSIGNED_INT8
                                : std::is_same<typename T::value_type, uint16_t>::value ? CL_UNSIGNED_INT16
+#endif
                                : std::is_same<typename T::value_type, uint32_t>::value ? CL_UNSIGNED_INT32
                                : std::is_same<typename T::value_type, int8_t>::value   ? CL_SNORM_INT8
                                : std::is_same<typename T::value_type, int16_t>::value  ? CL_SNORM_INT16
@@ -64,21 +67,21 @@ class cl_image : public basic_image<T> {
 
 // Other Supported OpenCL mappings
 
-#define DECLARE_TYPE_FORMATS(data_type, channel_type)                      \
-template <>                                                                \
-inline cl::ImageFormat cl_image<data_type>::ImageFormat() {                \
-    return cl::ImageFormat(CL_R, channel_type);                            \
-}                                                                          \
-                                                                           \
-template <>                                                                \
-inline cl::ImageFormat cl_image<std::array<data_type, 2>>::ImageFormat() { \
-    return cl::ImageFormat(CL_RG, channel_type);                           \
-}                                                                          \
-                                                                           \
-template <>                                                                \
-inline cl::ImageFormat cl_image<std::array<data_type, 4>>::ImageFormat() { \
-    return cl::ImageFormat(CL_RGBA, channel_type);                         \
-}
+#define DECLARE_TYPE_FORMATS(data_type, channel_type)                          \
+    template <>                                                                \
+    inline cl::ImageFormat cl_image<data_type>::ImageFormat() {                \
+        return cl::ImageFormat(CL_R, channel_type);                            \
+    }                                                                          \
+                                                                               \
+    template <>                                                                \
+    inline cl::ImageFormat cl_image<std::array<data_type, 2>>::ImageFormat() { \
+        return cl::ImageFormat(CL_RG, channel_type);                           \
+    }                                                                          \
+                                                                               \
+    template <>                                                                \
+    inline cl::ImageFormat cl_image<std::array<data_type, 4>>::ImageFormat() { \
+        return cl::ImageFormat(CL_RGBA, channel_type);                         \
+    }
 
 DECLARE_TYPE_FORMATS(float, CL_FLOAT)
 

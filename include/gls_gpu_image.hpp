@@ -13,7 +13,7 @@
 
 #include "gls_image.hpp"
 
-template<class T, class U>
+template <class T, class U>
 concept Derived = std::is_base_of<U, T>::value;
 
 namespace gls {
@@ -21,15 +21,14 @@ namespace gls {
 class platform_buffer;
 
 class buffer {
-public:
-    virtual ~buffer() { }
+   public:
+    virtual ~buffer() {}
 
-    virtual const platform_buffer* operator() () const = 0;
+    virtual const platform_buffer* operator()() const = 0;
 };
 
 class platform_buffer : public buffer {
-public:
-
+   public:
     virtual size_t bufferSize() const = 0;
 
     virtual void* mapBuffer() const = 0;
@@ -39,40 +38,33 @@ public:
 
 template <typename T>
 class gpu_buffer : public buffer {
-protected:
+   protected:
     const std::unique_ptr<platform_buffer> _buffer;
 
-    struct mapped_span: public std::span<T> {
-    private:
+    struct mapped_span : public std::span<T> {
+       private:
         std::function<void(void* ptr)> _cleanup;
 
-    public:
+       public:
         mapped_span(T* data, size_t size, std::function<void(void* ptr)> cleanup)
-        : std::span<T>(data, size), _cleanup(cleanup) { }
+            : std::span<T>(data, size), _cleanup(cleanup) {}
 
-        virtual ~mapped_span() {
-            _cleanup(this->data());
-        }
+        virtual ~mapped_span() { _cleanup(this->data()); }
     };
 
-public:
-    gpu_buffer(platform_buffer* buffer) : _buffer(buffer) { }
+   public:
+    gpu_buffer(platform_buffer* buffer) : _buffer(buffer) {}
 
-    virtual const platform_buffer* operator() () const {
-        return _buffer.get();
-    }
+    virtual const platform_buffer* operator()() const { return _buffer.get(); }
 
     typedef std::unique_ptr<gpu_buffer<T>> unique_ptr;
 
-    size_t size() const {
-        return _buffer->bufferSize() / sizeof(T);
-    }
+    size_t size() const { return _buffer->bufferSize() / sizeof(T); }
 
     // Returns a self unmapping span, data is guaranteed to be mapped within the span's lifetime
     std::span<T> contents() const {
-        return mapped_span((T*) _buffer->mapBuffer(), _buffer->bufferSize() / sizeof(T), [this] (void* ptr) {
-            _buffer->unmapBuffer(ptr);
-        });
+        return mapped_span((T*)_buffer->mapBuffer(), _buffer->bufferSize() / sizeof(T),
+                           [this](void* ptr) { _buffer->unmapBuffer(ptr); });
     }
 
     // convenience data setter s to avoid mapping/unmapping the buffer by hand
@@ -90,7 +82,7 @@ public:
 class platform_texture;
 
 class texture {
-public:
+   public:
     enum channel_type {
         UNSIGNED_INT8,
         UNSIGNED_INT16,
@@ -131,19 +123,19 @@ public:
             return type_size * channels;
         }
 
-        format(int _channels, channel_type _dataType) : channels(_channels), dataType(_dataType) { }
+        format(int _channels, channel_type _dataType) : channels(_channels), dataType(_dataType) {}
     };
 
     template <typename T>
     static inline format TextureFormat();
 
-    virtual const platform_texture* operator() () const = 0;
+    virtual const platform_texture* operator()() const = 0;
 
-    virtual ~texture() { }
+    virtual ~texture() {}
 };
 
 class platform_texture : public texture {
-public:
+   public:
     virtual int texture_width() const = 0;
 
     virtual int texture_height() const = 0;
@@ -160,31 +152,33 @@ public:
 template <typename T>
 inline texture::format texture::TextureFormat() {
     static_assert(T::channels == 1 || T::channels == 2 || T::channels == 4);
-    static_assert(std::is_same<typename T::value_type, float>::value ||
+    static_assert(
+        std::is_same<typename T::value_type, float>::value ||
 #if USE_FP16_FLOATS && !(__APPLE__ && __x86_64__)
-                  std::is_same<typename T::value_type, gls::float16_t>::value ||
+        std::is_same<typename T::value_type, gls::float16_t>::value ||
 #endif
-                  std::is_same<typename T::value_type, uint8_t>::value ||
-                  std::is_same<typename T::value_type, uint16_t>::value ||
-                  std::is_same<typename T::value_type, uint32_t>::value ||
-                  std::is_same<typename T::value_type, int8_t>::value ||
-                  std::is_same<typename T::value_type, int16_t>::value ||
-                  std::is_same<typename T::value_type, int32_t>::value);
+        std::is_same<typename T::value_type, uint8_t>::value || std::is_same<typename T::value_type, uint16_t>::value ||
+        std::is_same<typename T::value_type, uint32_t>::value || std::is_same<typename T::value_type, int8_t>::value ||
+        std::is_same<typename T::value_type, int16_t>::value || std::is_same<typename T::value_type, int32_t>::value);
 
     channel_type type = std::is_same<typename T::value_type, float>::value ? FLOAT32
 #if USE_FP16_FLOATS && !(__APPLE__ && __x86_64__)
-                           : std::is_same<typename T::value_type, gls::float16_t>::value ? FLOAT16
+                        : std::is_same<typename T::value_type, gls::float16_t>::value ? FLOAT16
 #endif
-                        //    : std::is_same<typename T::value_type, uint8_t>::value  ? UNORM_INT8
-                           : std::is_same<typename T::value_type, uint8_t>::value  ? UNSIGNED_INT8
-                        //    : std::is_same<typename T::value_type, uint16_t>::value ? UNORM_INT16
-                           : std::is_same<typename T::value_type, uint16_t>::value ? UNSIGNED_INT16
-                           : std::is_same<typename T::value_type, uint32_t>::value ? UNSIGNED_INT32
-                           : std::is_same<typename T::value_type, int8_t>::value   ? SNORM_INT8
-                           : std::is_same<typename T::value_type, int16_t>::value  ? SNORM_INT16
-                                                                                   : SIGNED_INT32;
 
-    return format { T::channels, type };
+#ifdef OPENCL_MAP_UINT_NORMED
+                        : std::is_same<typename T::value_type, uint8_t>::value  ? UNORM_INT8
+                        : std::is_same<typename T::value_type, uint16_t>::value ? UNORM_INT16
+#else
+                        : std::is_same<typename T::value_type, uint8_t>::value  ? UNSIGNED_INT8
+                        : std::is_same<typename T::value_type, uint16_t>::value ? UNSIGNED_INT16
+#endif
+                        : std::is_same<typename T::value_type, uint32_t>::value ? UNSIGNED_INT32
+                        : std::is_same<typename T::value_type, int8_t>::value   ? SNORM_INT8
+                        : std::is_same<typename T::value_type, int16_t>::value  ? SNORM_INT16
+                                                                                : SIGNED_INT32;
+
+    return format{T::channels, type};
 }
 
 #define DECLARE_TYPE_FORMATS(data_type, channel_type)                           \
@@ -209,10 +203,13 @@ DECLARE_TYPE_FORMATS(float, FLOAT32)
 DECLARE_TYPE_FORMATS(float16_t, FLOAT16)
 #endif
 
-// DECLARE_TYPE_FORMATS(uint8_t, UNORM_INT8)
+#ifdef OPENCL_MAP_UINT_NORMED
+DECLARE_TYPE_FORMATS(uint8_t, UNORM_INT8)
+DECLARE_TYPE_FORMATS(uint16_t, UNORM_INT16)
+#else
 DECLARE_TYPE_FORMATS(uint8_t, UNSIGNED_INT8)
-// DECLARE_TYPE_FORMATS(uint16_t, UNORM_INT16)
 DECLARE_TYPE_FORMATS(uint16_t, UNSIGNED_INT16)
+#endif
 DECLARE_TYPE_FORMATS(uint32_t, UNSIGNED_INT32)
 
 DECLARE_TYPE_FORMATS(int8_t, SNORM_INT8)
@@ -225,25 +222,20 @@ template <typename T>
 struct mapped_image : public image<T> {
     std::function<void(void* ptr)> _cleanup;
 
-    mapped_image(int _width, int _height, int _stride, std::span<T> data, std::function<void(void* ptr)> cleanup) :
-    image<T>(_width, _height, _stride, data),
-    _cleanup(cleanup)
-    { }
+    mapped_image(int _width, int _height, int _stride, std::span<T> data, std::function<void(void* ptr)> cleanup)
+        : image<T>(_width, _height, _stride, data), _cleanup(cleanup) {}
 
-    ~mapped_image() {
-        _cleanup((*this)[0]);
-    }
+    ~mapped_image() { _cleanup((*this)[0]); }
 };
 
 template <typename T>
 class gpu_image : public basic_image<T>, public virtual texture {
-protected:
+   protected:
     const std::unique_ptr<platform_texture> _texture;
 
-public:
-    gpu_image(int _width, int _height, platform_texture* texture) :
-    basic_image<T>(_width, _height),
-    _texture(texture) { }
+   public:
+    gpu_image(int _width, int _height, platform_texture* texture)
+        : basic_image<T>(_width, _height), _texture(texture) {}
 
     typedef std::unique_ptr<gpu_image<T>> unique_ptr;
 
@@ -278,19 +270,16 @@ public:
         auto mappedTexture = _texture->mapTexture();
 
         return mapped_image<T>(basic_image<T>::width, basic_image<T>::height, _texture->texture_stride(),
-                             std::span<T>((T*)mappedTexture.data(), mappedTexture.size() / sizeof(T)), [this] (void* ptr) {
-            _texture->unmapTexture(ptr);
-        });
+                               std::span<T>((T*)mappedTexture.data(), mappedTexture.size() / sizeof(T)),
+                               [this](void* ptr) { _texture->unmapTexture(ptr); });
     }
 
-    virtual const platform_texture* operator() () const override {
-        return _texture.get();
-    }
+    virtual const platform_texture* operator()() const override { return _texture.get(); }
 };
 
 class GpuCommandEncoder {
-public:
-    virtual ~GpuCommandEncoder() { }
+   public:
+    virtual ~GpuCommandEncoder() {}
 
     virtual void setBytes(const void* parameter, size_t parameter_size, unsigned index) = 0;
 
@@ -300,8 +289,8 @@ public:
 };
 
 class GpuContext {
-public:
-    virtual ~GpuContext() { }
+   public:
+    virtual ~GpuContext() {}
 
     template <typename T>
     typename gpu_image<T>::unique_ptr new_gpu_image_2d(int _width, int _height) {
@@ -337,7 +326,7 @@ public:
     template <typename T>
     typename gpu_buffer<T>::unique_ptr new_buffer(const std::vector<T>& data, bool readOnly = false) {
         auto b = std::make_unique<gpu_buffer<T>>(new_platform_buffer(sizeof(T) * data.size(), readOnly));
-        b->setData(std::span<T>((T*) data.data(), (size_t) data.size()));
+        b->setData(std::span<T>((T*)data.data(), (size_t)data.size()));
         return b;
     }
 
@@ -362,12 +351,12 @@ public:
 
     void enqueue(const std::string& kernelName, const gls::size& gridSize,
                  std::function<void(GpuCommandEncoder*)> encodeKernelParameters) {
-        enqueue(kernelName, gridSize, encodeKernelParameters, [](){});
+        enqueue(kernelName, gridSize, encodeKernelParameters, []() {});
     }
 
     void enqueue(const std::string& kernelName, const gls::size& gridSize, const gls::size& threadGroupSize,
                  std::function<void(GpuCommandEncoder*)> encodeKernelParameters) {
-        enqueue(kernelName, gridSize, threadGroupSize, encodeKernelParameters, [](){});
+        enqueue(kernelName, gridSize, threadGroupSize, encodeKernelParameters, []() {});
     }
 
     virtual void waitForCompletion() = 0;
@@ -419,17 +408,15 @@ class Kernel {
     }
 
     // All kernel parameters are passed by const reference
-    void operator()(GpuContext* context, const gls::size& gridSize,
-                    const gls::size& threadGroupSize, const Ts&... ts) const {
-        context->enqueue(_kernelName, gridSize, threadGroupSize, [&, this](GpuCommandEncoder* encoder) {
-            setArgs<0>(encoder, std::forward<const Ts>(ts)...);
-        });
+    void operator()(GpuContext* context, const gls::size& gridSize, const gls::size& threadGroupSize,
+                    const Ts&... ts) const {
+        context->enqueue(_kernelName, gridSize, threadGroupSize,
+                         [&, this](GpuCommandEncoder* encoder) { setArgs<0>(encoder, std::forward<const Ts>(ts)...); });
     }
 
     void operator()(GpuContext* context, const gls::size& gridSize, const Ts&... ts) const {
-        context->enqueue(_kernelName, gridSize, [&, this](GpuCommandEncoder* encoder) {
-            setArgs<0>(encoder, std::forward<const Ts>(ts)...);
-        });
+        context->enqueue(_kernelName, gridSize,
+                         [&, this](GpuCommandEncoder* encoder) { setArgs<0>(encoder, std::forward<const Ts>(ts)...); });
     }
 };
 }  // namespace gls
