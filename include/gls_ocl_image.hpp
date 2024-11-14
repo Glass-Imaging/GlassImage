@@ -11,37 +11,29 @@
 #include <exception>
 #include <map>
 
-#include "gls_image.hpp"
-#include "gls_gpu_image.hpp"
 #include "gls_cl.hpp"
+#include "gls_gpu_image.hpp"
+#include "gls_image.hpp"
 
 namespace gls {
 
 class ocl_texture : public virtual platform_texture {
-protected:
+   protected:
     cl::Buffer _buffer;
     cl::Image2D _image;
 
-public:
-    cl::Image2D image() const {
-        return _image;
-    }
+   public:
+    cl::Image2D image() const { return _image; }
 
-    int texture_width() const override {
-        return (int) _image.getImageInfo<CL_IMAGE_WIDTH>();
-    }
+    int texture_width() const override { return (int)_image.getImageInfo<CL_IMAGE_WIDTH>(); }
 
-    int texture_height() const override {
-        return (int) _image.getImageInfo<CL_IMAGE_HEIGHT>();
-    }
+    int texture_height() const override { return (int)_image.getImageInfo<CL_IMAGE_HEIGHT>(); }
 
     int texture_stride() const override {
-        return (int) _image.getImageInfo<CL_IMAGE_ROW_PITCH>() / _image.getImageInfo<CL_IMAGE_ELEMENT_SIZE>();
+        return (int)_image.getImageInfo<CL_IMAGE_ROW_PITCH>() / _image.getImageInfo<CL_IMAGE_ELEMENT_SIZE>();
     }
 
-    int pixelSize() const override {
-        return (int) _image.getImageInfo<CL_IMAGE_ELEMENT_SIZE>();
-    }
+    int pixelSize() const override { return (int)_image.getImageInfo<CL_IMAGE_ELEMENT_SIZE>(); }
 
     static int pixelSize(const cl::ImageFormat& format);
 
@@ -52,11 +44,18 @@ public:
 
         cl_channel_order order = format.channels == 1 ? CL_R : format.channels == 2 ? CL_RG : CL_RGBA;
         cl_channel_type type = format.dataType == FLOAT32 ? CL_FLOAT
-    #if USE_FP16_FLOATS && !(__APPLE__ && __x86_64__)
+#if USE_FP16_FLOATS && !(__APPLE__ && __x86_64__)
                                : format.dataType == FLOAT16 ? CL_HALF_FLOAT
-    #endif
-                               : format.dataType == UNORM_INT8     ? CL_UNORM_INT8
-                               : format.dataType == UNORM_INT16    ? CL_UNORM_INT16
+#endif
+
+#ifdef OPENCL_MAP_UINT_NORMED
+                               : format.dataType == UNORM_INT8  ? CL_UNORM_INT8
+                               : format.dataType == UNORM_INT16 ? CL_UNORM_INT16
+
+#else
+                               : format.dataType == UNSIGNED_INT8  ? CL_UNSIGNED_INT8
+                               : format.dataType == UNSIGNED_INT16 ? CL_UNSIGNED_INT16
+#endif
                                : format.dataType == UNSIGNED_INT32 ? CL_UNSIGNED_INT32
                                : format.dataType == SNORM_INT8     ? CL_SNORM_INT8
                                : format.dataType == SNORM_INT16    ? CL_SNORM_INT16
@@ -77,7 +76,7 @@ public:
         cl::CommandQueue queue = cl::CommandQueue::getDefault();
         size_t buffer_size = pixelSize() * texture_stride() * texture_height();
         void* mapped_data = queue.enqueueMapBuffer(_buffer, true, CL_MAP_READ | CL_MAP_WRITE, 0, buffer_size);
-        return std::span<uint8_t>((uint8_t*) mapped_data, buffer_size);
+        return std::span<uint8_t>((uint8_t*)mapped_data, buffer_size);
     }
 
     void unmapTexture(void* ptr) const override {
@@ -85,25 +84,19 @@ public:
         queue.enqueueUnmapMemObject(ocl_texture::_buffer, ptr);
     }
 
-    virtual const class platform_texture* operator() () const override {
-        return this;
-    }
+    virtual const class platform_texture* operator()() const override { return this; }
 };
 
 class ocl_buffer : public platform_buffer {
     const cl::Buffer _buffer;
 
-public:
-    ocl_buffer(cl::Context context, size_t lenght, bool readOnly) :
-        _buffer(cl::Buffer(context, readOnly ? CL_MEM_READ_ONLY : CL_MEM_READ_WRITE, lenght)) { }
+   public:
+    ocl_buffer(cl::Context context, size_t lenght, bool readOnly)
+        : _buffer(cl::Buffer(context, readOnly ? CL_MEM_READ_ONLY : CL_MEM_READ_WRITE, lenght)) {}
 
-    cl::Buffer buffer() const {
-        return _buffer;
-    }
+    cl::Buffer buffer() const { return _buffer; }
 
-    virtual size_t bufferSize() const override {
-        return (int) _buffer.getInfo<CL_MEM_SIZE>();
-    }
+    virtual size_t bufferSize() const override { return (int)_buffer.getInfo<CL_MEM_SIZE>(); }
 
     virtual void* mapBuffer() const override {
         cl::CommandQueue queue = cl::CommandQueue::getDefault();
@@ -115,9 +108,7 @@ public:
         queue.enqueueUnmapMemObject(_buffer, ptr);
     }
 
-    virtual const class platform_buffer* operator() () const override {
-        return this;
-    }
+    virtual const class platform_buffer* operator()() const override { return this; }
 };
 
 }  // namespace gls
