@@ -57,7 +57,8 @@ struct AndroidLogBuf : public std::streambuf {
 
 std::ostream __log_prefix(android_LogPriority level, const std::string& TAG) {
     static auto buf = AndroidLogBuf();
-    return std::ostream(&buf(level, TAG));
+    // Prepend Gls to every log tag to make it easier to filter
+    return std::ostream(&buf(level, "Gls " + TAG));
 }
 
 #else

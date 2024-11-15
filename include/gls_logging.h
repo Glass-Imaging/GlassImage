@@ -42,9 +42,20 @@ inline std::ostream& __log_null(std::ostream& os) { return os; }
 
 std::ostream __log_prefix(android_LogPriority level, const std::string& TAG);
 
+// Only log non external logs if INTERNAL_LOGS_ENABLED is defined
+#ifdef INTERNAL_LOGS_ENABLED
 #define LOG_INFO(TAG) __log_prefix(ANDROID_LOG_INFO, TAG)
 #define LOG_ERROR(TAG) __log_prefix(ANDROID_LOG_ERROR, TAG)
 #define LOG_DEBUG(TAG) __log_prefix(ANDROID_LOG_DEBUG, TAG)
+#else 
+#define LOG_INFO(TAG) __log_null(gls::null)
+#define LOG_ERROR(TAG) __log_null(gls::null)
+#define LOG_DEBUG(TAG) __log_null(gls::null)
+#endif
+
+#define EXTERNAL_LOG_INFO(TAG) __log_prefix(ANDROID_LOG_INFO, TAG)
+#define EXTERNAL_LOG_ERROR(TAG) __log_prefix(ANDROID_LOG_ERROR, TAG)
+#define EXTERNAL_LOG_DEBUG(TAG) __log_prefix(ANDROID_LOG_DEBUG, TAG)
 
 #else
 
@@ -54,6 +65,10 @@ std::ostream& __log_prefix(std::ostream& os);
 #define LOG_INFO(TAG) (LOG_STREAM(gls::LOG_LEVEL_INFO) << "I/" << TAG << ": ")
 #define LOG_ERROR(TAG) (LOG_STREAM(gls::LOG_LEVEL_ERROR) << "E/" << TAG << ": ")
 #define LOG_DEBUG(TAG) (LOG_STREAM(gls::LOG_LEVEL_DEBUG) << "I/" << TAG << ": ")
+
+#define EXTERNAL_LOG_INFO(TAG) (LOG_STREAM(gls::LOG_LEVEL_INFO) << "I/" << TAG << ": ")
+#define EXTERNAL_LOG_ERROR(TAG) (LOG_STREAM(gls::LOG_LEVEL_ERROR) << "E/" << TAG << ": ")
+#define EXTERNAL_LOG_DEBUG(TAG) (LOG_STREAM(gls::LOG_LEVEL_DEBUG) << "I/" << TAG << ": ")
 
 #endif
 
