@@ -31,9 +31,11 @@
 #include <iostream>
 
 #include "gls_geometry.hpp"
+#ifdef BUILD_WITH_IMAGE_IO_LIBS 
 #include "gls_image_jpeg.h"
 #include "gls_image_png.h"
 #include "gls_image_tiff.h"
+#endif
 
 #if defined(__linux__) && !defined(__ANDROID__)
 #define __TRUE_LINUX__
@@ -348,6 +350,7 @@ class image : public basic_image<T> {
 
     const constexpr size_t size_in_bytes() const { return _data.size() * basic_image<T>::pixel_size; }
 
+#ifdef BUILD_WITH_IMAGE_IO_LIBS
     // image factory from PNG file
     constexpr static unique_ptr read_png_file(const std::string& filename) {
         unique_ptr image = nullptr;
@@ -622,6 +625,104 @@ class image : public basic_image<T> {
 
         return image;
     }
+#else 
+    constexpr static unique_ptr read_png_file(const std::string& filename) {
+        assert(false && "Image IO disabed by BUILD_WITH_IMAGE_IO_LIBS flag. Please enable it to use this function.");
+        return nullptr;
+    }
+
+    constexpr void write_png_file(const std::string& filename, bool skip_alpha,
+                                  const std::vector<uint8_t>* icc_profile_data, int compression_level = 0) const {
+        assert(false && "Image IO disabed by BUILD_WITH_IMAGE_IO_LIBS flag. Please enable it to use this function.");
+    }
+
+    constexpr void write_png_file(const std::string& filename, bool skip_alpha, int compression_level = 0) const { 
+        assert(false && "Image IO disabed by BUILD_WITH_IMAGE_IO_LIBS flag. Please enable it to use this function.");
+    }
+
+    constexpr void write_png_file(const std::string& filename, int compression_level = 0) const {
+        assert(false && "Image IO disabed by BUILD_WITH_IMAGE_IO_LIBS flag. Please enable it to use this function.");
+    }
+
+    // Image factory from JPEG file
+    constexpr static unique_ptr read_jpeg_file(const std::string& filename) {
+        assert(false && "Image IO disabed by BUILD_WITH_IMAGE_IO_LIBS flag. Please enable it to use this function.");
+    }
+
+    // Write image to JPEG file
+    constexpr void write_jpeg_file(const std::string& filename, int quality) const {
+        assert(false && "Image IO disabed by BUILD_WITH_IMAGE_IO_LIBS flag. Please enable it to use this function.");
+    }
+
+    // Do not include extension
+    void write_data_file(const std::string& filename) const {
+        assert(false && "Image IO disabed by BUILD_WITH_IMAGE_IO_LIBS flag. Please enable it to use this function.");
+    }
+
+    void read_in_data_file(const std::string& filename) {
+        assert(false && "Image IO disabed by BUILD_WITH_IMAGE_IO_LIBS flag. Please enable it to use this function.");
+    }
+
+    // Helper function for read_tiff_file and read_dng_file
+    constexpr static bool process_tiff_strip(image* destination, int tiff_bitspersample, int tiff_samplesperpixel,
+                                             int destination_row, int strip_width, int strip_height, int crop_x,
+                                             int crop_y, uint8_t* tiff_buffer) {
+        assert(false && "Image IO disabed by BUILD_WITH_IMAGE_IO_LIBS flag. Please enable it to use this function.");
+        return false;
+    };
+
+    // Image factory from TIFF file
+    constexpr static unique_ptr read_tiff_file(const std::string& filename,
+                                               std::function<unique_ptr(int width, int height)> image_allocator,
+                                               tiff_metadata* metadata = nullptr) {
+        assert(false && "Image IO disabed by BUILD_WITH_IMAGE_IO_LIBS flag. Please enable it to use this function.");
+        return nullptr; 
+    }
+
+
+    constexpr static unique_ptr read_tiff_file(const std::string& filename, tiff_metadata* metadata = nullptr) {
+        assert(false && "Image IO disabed by BUILD_WITH_IMAGE_IO_LIBS flag. Please enable it to use this function.");
+        return nullptr; 
+    }
+
+    /*
+    // Write image to TIFF file
+    constexpr void write_tiff_file(const std::string& filename, tiff_compression compression = tiff_compression::NONE,
+                                   tiff_metadata* metadata = nullptr, const std::vector<uint8_t>* icc_profile_data = nullptr) const { }
+                                   */
+
+    // Image factory from DNG file
+    constexpr static unique_ptr read_dng_file(const std::string& filename,
+                                              std::function<unique_ptr(int width, int height)> image_allocator,
+                                              tiff_metadata* dng_metadata = nullptr,
+                                              tiff_metadata* exif_metadata = nullptr) {
+        assert(false && "Image IO disabed by BUILD_WITH_IMAGE_IO_LIBS flag. Please enable it to use this function.");
+        return nullptr;
+    }
+
+    constexpr static unique_ptr read_dng_file(const std::string& filename,
+                                              tiff_metadata* dng_metadata = nullptr,
+                                              tiff_metadata* exif_metadata = nullptr) {
+        assert(false && "Image IO disabed by BUILD_WITH_IMAGE_IO_LIBS flag. Please enable it to use this function.");
+        return nullptr; 
+    }
+
+    /*
+    // Write image to DNG file
+    constexpr void write_dng_file(const std::string& filename, tiff_compression compression = tiff_compression::NONE,
+                                  const tiff_metadata* dng_metadata = nullptr,
+                                  const tiff_metadata* exif_metadata = nullptr) const { }
+                                  */
+
+    static unique_ptr read_raw_dump(const std::string& filename,
+                                              const int width,
+                                              const int height,
+                                              const int bytes_per_pixel) {
+        assert(false && "Image IO disabed by BUILD_WITH_IMAGE_IO_LIBS flag. Please enable it to use this function.");
+        return nullptr; 
+    }
+
+#endif
 
 };
 
