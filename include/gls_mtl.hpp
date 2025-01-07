@@ -103,6 +103,10 @@ public:
         return _device.get();
     }
 
+    MTL::CommandQueue* commandQueue() const {
+        return _commandQueue.get();
+    }
+
     MTL::ComputePipelineState* newKernelPipelineState(const std::string& kernelName) const {
         NS::Error* error = nullptr;
         auto kernel = NS::TransferPtr(_computeLibrary->newFunction(NS::String::string(kernelName.c_str(), NS::UTF8StringEncoding)));
