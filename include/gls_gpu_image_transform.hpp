@@ -89,7 +89,7 @@ public:
      * @param output Destination for the processed result
      * @return true if processing succeeded, false otherwise
      */
-    virtual bool apply(const gpu_image<InputType>& input, 
+    virtual bool submit(const gpu_image<InputType>& input, 
                       gpu_image<OutputType>& output) = 0;
 
     /**
@@ -103,15 +103,15 @@ public:
      * @return std::pair<bool, unique_ptr<gpu_image<OutputType>>> Success flag and the processed result
      */
     virtual std::pair<bool, typename gpu_image<OutputType>::unique_ptr> 
-    apply(const gpu_image<InputType>& input) {
+    submit(const gpu_image<InputType>& input) {
         auto output = createOutImage(input.size());
-        bool success = apply(input, *output);
+        bool success = submit(input, *output);
         return std::make_pair(success, std::move(output));
     }
 
     /**
-     * @brief Alias for apply() that processes an input image and writes to an output image
-     * 
+     * @brief Alias for submit() that processes an input image and writes to an output image
+     *
      * This can make the call to a transform more compact with transform(input, output).
      * 
      * @param input Source image to process
@@ -120,11 +120,11 @@ public:
      */
     bool operator()(const gpu_image<InputType>& input, 
                    gpu_image<OutputType>& output) {
-        return apply(input, output);
+        return submit(input, output);
     }
 
     /**
-     * @brief Alias for apply() that processes an input image and returns a new image
+     * @brief Alias for submit() that processes an input image and returns a new image
      * 
      * This can make the call to a transform more compact with transform(input, output).
      * 
@@ -133,7 +133,7 @@ public:
      */
     std::pair<bool, typename gpu_image<OutputType>::unique_ptr> 
     operator()(const gpu_image<InputType>& input) {
-        return apply(input);
+        return submit(input);
     }
 
     /**
