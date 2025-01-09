@@ -59,9 +59,11 @@ public:
      * Override this method if your transform needs to prepare resources before processing.
      * 
      * @param inSize The dimensions of input images that will be processed
+     * @return true if preallocation was successfull
+     * @return false if preallocation failed
      */
-    virtual void preallocate(const gls::size& inSize) {
-        // Default: no preallocation needed
+    virtual bool preallocate(const gls::size& inSize) {
+        return true; // Default: no preallocation needed
     }
 
     /**
@@ -125,7 +127,7 @@ public:
 
     /**
      * @brief Alias for submit() that processes an input image and returns a new image
-     * 
+     *
      * This can make the call to a transform more compact with transform(input, output).
      * 
      * @param input Source image to process
@@ -142,7 +144,9 @@ public:
      * By default, does nothing since most transforms don't need resource cleanup.
      * Override this method if your transform needs to free resources explicitly.
      */
-    virtual void releaseResources() { }
+    virtual bool releaseResources() {
+        return true; // Default: no allocated resources
+    }
 };
 
 } // namespace gls
