@@ -18,47 +18,65 @@ namespace gls {
  */
 template<typename InputType, typename OutputType = InputType>
 class GpuImageTransform {
+protected:
+    // Protected member to store the GPU context
+    GpuContext* _context;
+
 public:
+    GpuImageTransform(GpuContext* context) : _context(context) {}
     virtual ~GpuImageTransform() = default;
 
     /**
      * @brief Calculate the output dimensions for a given input size
      * 
+     * By default, returns the same size as the input. Override this method
+     * if your transform changes the image dimensions (e.g., scaling, cropping).
+     * 
      * @param inSize The dimensions of the input image
      * @return gls::size The dimensions of the output image that will be produced
      */
-    virtual gls::size getOutSize(const gls::size& inSize) const = 0;
+    virtual gls::size getOutSize(const gls::size& inSize) const {
+        return inSize;  // Default: output same size as input
+    }
 
     /**
      * @brief Create a new output image with the correct format and dimensions
      * 
-     * Creates and returns a new gpu_image configured with the appropriate format
-     * and dimensions for this transform's output. The caller takes ownership
-     * of the returned image. The output format is guaranteed to match OutputType.
+     * By default, creates a new gpu_image of OutputType with dimensions from getOutSize.
+     * Override this method if your transform needs special output image configuration.
      * 
      * @param inSize The dimensions of the input image that will be processed
      * @return unique_ptr to a newly allocated image suitable for output
      */
-    virtual typename gpu_image<OutputType>::unique_ptr createOutImage(const gls::size& inSize) const = 0;
+    virtual typename gpu_image<OutputType>::unique_ptr createOutImage(const gls::size& inSize) const {
+        return _context->template new_gpu_image_2d<OutputType>(getOutSize(inSize));
+    }
 
     /**
      * @brief Preallocate GPU resources for processing images of the specified size
      * 
-     * This method allows implementations to allocate buffers, create pipeline states,
-     * and prepare any other resources needed for processing images of the given size.
+     * By default, does nothing since most transforms don't need preallocation.
+     * Override this method if your transform needs to prepare resources before processing.
      * 
      * @param inSize The dimensions of input images that will be processed
      */
-    virtual void preallocate(const gls::size& inSize) = 0;
+    virtual void preallocate(const gls::size& inSize) {
+        // Default: no preallocation needed
+    }
 
     /**
      * @brief Check if resources are currently preallocated for the specified size
+     * 
+     * By default, returns true since most transforms don't need preallocation.
+     * Override this method if your transform uses preallocated resources.
      * 
      * @param inSize The dimensions to check for preallocation
      * @return true if resources are preallocated for the given size
      * @return false if resources need to be preallocated before processing
      */
-    virtual bool isPreallocated(const gls::size& inSize) const = 0;
+    virtual bool isPreallocated(const gls::size& inSize) const {
+        return true;  // Default: no preallocation needed
+    }
 
     /**
      * @brief Process an input image and write the result to an output image
@@ -71,8 +89,8 @@ public:
      * @param output Destination for the processed result
      * @return true if processing succeeded, false otherwise
      */
-    virtual bool operator()(const gpu_image<InputType>& input, 
-                          gpu_image<OutputType>& output) = 0;
+    virtual bool apply(const gpu_image<InputType>& input, 
+                      gpu_image<OutputType>& output) = 0;
 
     /**
      * @brief Process an input image and return the result as a new image
@@ -85,17 +103,44 @@ public:
      * @return std::pair<bool, unique_ptr<gpu_image<OutputType>>> Success flag and the processed result
      */
     virtual std::pair<bool, typename gpu_image<OutputType>::unique_ptr> 
-    operator()(const gpu_image<InputType>& input) {
+    apply(const gpu_image<InputType>& input) {
         auto output = createOutImage(input.size());
-        bool success = operator()(input, *output);
+        bool success = apply(input, *output);
         return std::make_pair(success, std::move(output));
+    }
+
+    /**
+     * @brief Alias for apply() that processes an input image and writes to an output image
+     * 
+     * This can make the call to a transform more compact with transform(input, output).
+     * 
+     * @param input Source image to process
+     * @param output Destination for the processed result
+     * @return true if processing succeeded, false otherwise
+     */
+    bool operator()(const gpu_image<InputType>& input, 
+                   gpu_image<OutputType>& output) {
+        return apply(input, output);
+    }
+
+    /**
+     * @brief Alias for apply() that processes an input image and returns a new image
+     * 
+     * This can make the call to a transform more compact with transform(input, output).
+     * 
+     * @param input Source image to process
+     * @return std::pair<bool, unique_ptr<gpu_image<OutputType>>> Success flag and the processed result
+     */
+    std::pair<bool, typename gpu_image<OutputType>::unique_ptr> 
+    operator()(const gpu_image<InputType>& input) {
+        return apply(input);
     }
 
     /**
      * @brief Release any preallocated resources
      * 
-     * Optional method to free GPU resources. Default implementation does nothing.
-     * Implementations should override this if they need explicit cleanup.
+     * By default, does nothing since most transforms don't need resource cleanup.
+     * Override this method if your transform needs to free resources explicitly.
      */
     virtual void releaseResources() { }
 };
