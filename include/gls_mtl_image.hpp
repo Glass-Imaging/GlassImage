@@ -55,7 +55,17 @@ public:
 
     static uint32_t computeStride(MTL::Device* device, MTL::PixelFormat pixelFormat, int _width);
 
+    // Constructor for creating from scratch
     mtl_texture(MTL::Device* device, int _width, int _height, format pixelFormat);
+
+    // Constructor for wrapping existing texture
+    // TODO: Test. mtl_buffer was tested, this one was not.
+    mtl_texture(MTL::Texture* existingTexture) : _texture(NS::RetainPtr(existingTexture)) {
+        // If the texture is backed by a buffer, get it
+        if (existingTexture->buffer()) {
+            _buffer = NS::RetainPtr(existingTexture->buffer());
+        }
+    }
 
     const MTL::Buffer* buffer() const { return _buffer.get(); }
 
@@ -77,8 +87,12 @@ public:
 struct mtl_buffer : public platform_buffer {
     const NS::SharedPtr<MTL::Buffer> _buffer;
 
+    // Constructor for creating from scratch
     mtl_buffer(MTL::Device* device, size_t lenght) :
         _buffer(NS::TransferPtr(device->newBuffer(lenght, MTL::ResourceStorageModeShared))) { }
+
+    // Constructor for wrapping existing buffer
+    mtl_buffer(MTL::Buffer* existingBuffer) : _buffer(NS::RetainPtr(existingBuffer)) { }
 
     virtual size_t bufferSize() const override {
         return _buffer->length();
