@@ -411,7 +411,7 @@ class Kernel {
     void operator()(GpuContext* context, const gls::size& gridSize, const gls::size& threadGroupSize,
                     const Ts&... ts) const {
         context->enqueue(_kernelName, gridSize, threadGroupSize,
-                         [&, this](GpuCommandEncoder* encoder) { setArgs<0>(encoder, std::forward<const Ts>(ts)...); });                      
+                         [&, this](GpuCommandEncoder* encoder) { setArgs<0>(encoder, std::forward<const Ts>(ts)...); });  
     }
 
     void operator()(GpuContext* context, const gls::size& gridSize, const Ts&... ts) const {
