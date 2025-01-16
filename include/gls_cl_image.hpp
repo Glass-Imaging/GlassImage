@@ -266,6 +266,15 @@ class cl_image_2d_array : public cl_image<T> {
                               image<T>::width * image<T>::height * image<T>::pixel_size, other.pixels().data());
     }
 
+    void copyPixelsFrom(const image<T>& other, const size_t layer) const {
+        assert(other.width == image<T>::width && other.height == image<T>::height);
+        assert(layer < depth);
+        cl::enqueueWriteImage(_image, true, {0, 0, layer},
+                              {(size_t)image<T>::width, (size_t)image<T>::height, static_cast<size_t>(1)},
+                              image<T>::pixel_size * image<T>::width,
+                              image<T>::width * image<T>::height * image<T>::pixel_size, other.pixels().data());
+    }
+
     void copyPixelsTo(image<T>* other) const {
         assert(other->width == image<T>::width && other->height == image<T>::height * depth);
         cl::enqueueReadImage(_image, true, {0, 0, 0},

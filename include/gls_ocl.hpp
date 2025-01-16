@@ -192,7 +192,6 @@ public:
     }
 
     cl::Context clContext() { return _clContext; }
-
     cl::Program clProgram() { return _program; }
 
     inline static std::vector<int> computeDivisors(const size_t val) {
