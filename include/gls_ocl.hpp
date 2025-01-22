@@ -296,13 +296,15 @@ public:
 #endif
         }
 
-    void loadProgramsFromFullStringSource(const::std::vector<std::string>& programSources) {
+    void loadProgramsFromFullStringSource(const::std::vector<std::string>& programSources, const std::string compileOptions="") {
         cl::Program program;
         cl::Device device;
         try {
+            const std::string combinedOptions = std::string(cl_options) + compileOptions;
+
             device = cl::Device::getDefault();
             program = cl::Program(programSources);
-            program.build(device, cl_options);
+            program.build(device, combinedOptions.c_str());
             _program = program;
         }
         catch (const cl::BuildError& e) {
@@ -394,7 +396,6 @@ public:
 //            cl::Program program = cl::Program(_clContext, {device}, {OpenCLBinary(programNames[0] + ".o")});
 
 #endif
-
             program.build(device, cl_options);
 
 //            std::string name  = device.getInfo<CL_DEVICE_NAME>();
