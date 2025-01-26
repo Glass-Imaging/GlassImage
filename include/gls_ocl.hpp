@@ -300,7 +300,7 @@ public:
         cl::Program program;
         cl::Device device;
         try {
-            const std::string combinedOptions = std::string(cl_options) + compileOptions;
+            const std::string combinedOptions = std::string(cl_options) + " " + compileOptions;
 
             device = cl::Device::getDefault();
             program = cl::Program(programSources);
