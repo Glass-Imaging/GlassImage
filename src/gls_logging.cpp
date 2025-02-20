@@ -14,6 +14,7 @@
 // limitations under the License.
 
 #include "gls_logging.h"
+#include <mutex>
 
 namespace gls {
 
@@ -31,6 +32,7 @@ struct AndroidLogBuf : public std::streambuf {
     AndroidLogBuf() = default;
 
     std::streambuf& operator()(android_LogPriority PRIORITY, const std::string TAG) {
+        std::lock_guard<std::mutex> lock(_mutex);
         _PRIORITY = PRIORITY;
         _TAG = TAG;
         return *this;
@@ -38,11 +40,13 @@ struct AndroidLogBuf : public std::streambuf {
 
    protected:
     std::streamsize xsputn(const char_type* s, std::streamsize n) override {
+        std::lock_guard<std::mutex> lock(_mutex);
         _buf.sputn(s, n);
         return n;
     }
 
     int_type overflow(int_type ch) override {
+        std::lock_guard<std::mutex> lock(_mutex);
         _buf.sputc(ch);
         __android_log_print(_PRIORITY, _TAG.c_str(), "%s", _buf.str().c_str());
         _buf.str("");
@@ -53,6 +57,7 @@ struct AndroidLogBuf : public std::streambuf {
     android_LogPriority _PRIORITY = ANDROID_LOG_INFO;
     std::string _TAG = "Default";
     std::stringbuf _buf;
+    std::mutex _mutex;
 };
 
 std::ostream __log_prefix(android_LogPriority level, const std::string& TAG) {
