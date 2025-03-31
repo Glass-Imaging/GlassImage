@@ -625,6 +625,17 @@ class image : public basic_image<T> {
 
         return image;
     }
+
+    constexpr void drawCircle(int x, int y, int radius, const T& color) {
+        for (int i = -radius; i <= radius; i++) {
+            for (int j = -radius; j <= radius; j++) {
+                if (i * i + j * j <= radius * radius) {
+                    (*this)[y + i][x + j] = color;
+                }
+            }
+        }
+    }
+
 #else 
     constexpr static unique_ptr read_png_file(const std::string& filename) {
         assert(false && "Image IO disabed by BUILD_WIHTOUTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
