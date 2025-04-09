@@ -2,7 +2,6 @@
 #define gls_gpu_transform_hpp
 
 #include "gls_gpu_image.hpp"
-#include <utility>
 
 namespace gls {
 
