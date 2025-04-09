@@ -35,15 +35,13 @@ public:
     // Take ownership via bridging
     #ifdef __OBJC__
     static mtl_resource bridging_retain(typename mtl_bridge<T>::objc_type obj) {
-        return mtl_resource((T*)CFBridgingRetain(obj));
+        return mtl_resource(reinterpret_cast<T*>((__bridge_retained void*)obj));
     }
     #endif
     
     ~mtl_resource() {
         if (resource) {
-            #ifdef __OBJC__
             CFRelease(resource);
-            #endif
             resource = nullptr;
         }
     }
@@ -53,7 +51,7 @@ public:
         resource = other.resource;
         if (resource) {
             #ifdef __OBJC__
-            CFRetain(resource);
+            resource = (__bridge T*)CFRetain((__bridge CFTypeRef)resource);
             #endif
         }
     }
@@ -61,15 +59,11 @@ public:
     mtl_resource& operator=(const mtl_resource& other) {
         if (this != &other) {
             if (resource) {
-                #ifdef __OBJC__
                 CFRelease(resource);
-                #endif
             }
             resource = other.resource;
             if (resource) {
-                #ifdef __OBJC__
                 CFRetain(resource);
-                #endif
             }
         }
         return *this;
@@ -83,9 +77,7 @@ public:
     mtl_resource& operator=(mtl_resource&& other) noexcept {
         if (this != &other) {
             if (resource) {
-                #ifdef __OBJC__
                 CFRelease(resource);
-                #endif
             }
             resource = other.resource;
             other.resource = nullptr;
