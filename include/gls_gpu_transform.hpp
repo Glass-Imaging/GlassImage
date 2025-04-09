@@ -82,16 +82,14 @@ public:
 };
 
 /**
- * @brief Specialized interface for GPU-based image transformations
+ * @brief Base class for GPU image transformations that implement the GpuTransform interface
  * 
- * This interface extends the base GpuTransform for operations specifically on gpu_images.
- * It adds image-specific functionality while maintaining the core transform interface.
  * 
  * @tparam PixelInputType The pixel type for input images (e.g., rgba_pixel_fp16)
  * @tparam PixelOutputType The pixel type for output images, defaults to same as input
  */
 template<typename PixelInputType, typename PixelOutputType = PixelInputType>
-class GpuImageTransform : public GpuTransform<gpu_image<PixelInputType>, gpu_image<PixelOutputType>> {
+class GpuImageTransform : public GpuTransform<gpu_image<PixelInputType>, gpu_image<PixelOutputType> > {
 protected:
     GpuContext* _context;
 
