@@ -327,6 +327,42 @@ public:
         }
     }
 
+    void loadProgramsFromBinaries(std::vector<std::vector<unsigned char>> binaries) {
+        cl::Program program;
+        cl::Device device;
+        try {
+            std::vector<cl::Device> devices(binaries.size(), cl::Device::getDefault());
+
+            std::vector<cl_int> binaryStatus(binaries.size());
+            cl_int err;
+            cl::Program program =
+                cl::Program(cl::Context::getDefault(), devices, (cl::Program::Binaries)binaries, &binaryStatus, &err);
+            program.build();
+            _program = program;
+
+            if (err != CL_SUCCESS) {
+                LOG_INFO("GLS_OCL") << "Error creating program: " << clStatusToString(err) << std::endl;
+            }
+        } catch (const cl::BuildError& e) {
+            LOG_ERROR("GLS_OCL") << "OpenCL Build Error - " << e.what() << ": " << clStatusToString(e.err())
+                                 << std::endl;
+            // Print build info for all devices
+            for (auto& pair : e.getBuildLog()) {
+                std::cerr << pair.second << std::endl;
+            }
+
+            std::string name = device.getInfo<CL_DEVICE_NAME>();
+            std::string buildlog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
+            LOG_ERROR("GLS_OCL") << "Build log for: " << name.c_str() << ": " << buildlog.c_str() << std::endl;
+
+            throw std::runtime_error("OpenCL Build Error");
+        } catch (const cl::Error& e) {
+            LOG_ERROR("GLS_OCL") << "OpenCL Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
+
+            throw std::runtime_error("OpenCL Error");
+        }
+    }
+
     void loadPrograms(const std::vector<std::string>& programNames) {
         cl::Program program;
         cl::Device device;
