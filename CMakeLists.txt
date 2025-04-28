@@ -1,13 +1,7 @@
-project("glass_image")
+cmake_minimum_required(VERSION 3.22)
 
-if(PROJECT_NAME STREQUAL CMAKE_PROJECT_NAME)
-    cmake_minimum_required(VERSION 3.27)
-    set(CMAKE_CXX_STANDARD 20)
-    
-    # TODO: Split Mac / Linux
-    set(CMAKE_C_COMPILER clang)
-    set(CMAKE_CXX_COMPILER clang++)
-    message("Using compilers: ${CMAKE_C_COMPILER} / ${CMAKE_CXX_COMPILER}.")    
-endif()
+project("glass_image")
+# Options
+option(GLASS_IMAGE_BUILD_IMAGE_IO "Build with image I/O libraries." OFF)
 
 add_subdirectory(src)

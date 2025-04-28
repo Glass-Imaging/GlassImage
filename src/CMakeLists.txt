@@ -21,7 +21,7 @@ target_include_directories(
 )
 
 # Possibly build with image I/O libraries.
-if(BUILD_IMAGE_IO)
+if(GLASS_IMAGE_BUILD_IMAGE_IO)
     message("Building with Image IO Libraries")
 
     # Add Homebrew zlib library path for macOS
