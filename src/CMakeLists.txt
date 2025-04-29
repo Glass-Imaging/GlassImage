@@ -25,7 +25,7 @@ if(GLASS_IMAGE_BUILD_IMAGE_IO)
     message("Building with Image IO Libraries")
 
     # Add Homebrew zlib library path for macOS
-    if(CMAKE_SYSTEM_NAME STREQUAL "MacOS")
+    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         set(ZLIB_ROOT /opt/homebrew/opt/zlib)
         set(PNG_ROOT /opt/homebrew/opt/libpng)
         set(JPEG_ROOT /opt/homebrew/opt/jpeg)

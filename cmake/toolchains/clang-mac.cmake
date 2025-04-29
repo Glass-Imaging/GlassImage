@@ -1,5 +1,5 @@
 # System
-set(CMAKE_SYSTEM_NAME MacOS)
+set(CMAKE_SYSTEM_NAME Darwin)
 
 # Compiler
 set(CMAKE_C_COMPILER clang)
