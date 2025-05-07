@@ -77,6 +77,13 @@ public:
         _kernelStateMap = std::make_unique<std::map<const std::string, NS::SharedPtr<MTL::ComputePipelineState>>>();
     }
 
+    MetalContext(NS::SharedPtr<MTL::Device> device, NS::SharedPtr<MTL::Library> library) : 
+        _device(device), 
+        _computeLibrary(library),
+        _commandQueue(NS::TransferPtr(_device->newCommandQueue())),
+        _kernelStateMap(std::make_unique<std::map<const std::string, NS::SharedPtr<MTL::ComputePipelineState>>>()) {
+    }
+
     virtual ~MetalContext() {
         waitForCompletion();
     }
@@ -101,6 +108,10 @@ public:
 
     MTL::Device* device() const {
         return _device.get();
+    }
+
+    MTL::CommandQueue* commandQueue() const {
+        return _commandQueue.get();
     }
 
     MTL::ComputePipelineState* newKernelPipelineState(const std::string& kernelName) const {
