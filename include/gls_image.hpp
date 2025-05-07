@@ -31,7 +31,7 @@
 #include <iostream>
 
 #include "gls_geometry.hpp"
-#ifndef BUILD_WITHOUT_IMAGE_IO_LIBS 
+#ifndef BUILD_WITHOUT_IMAGE_IO_LIBS
 #include "gls_image_jpeg.h"
 #include "gls_image_png.h"
 #include "gls_image_tiff.h"
@@ -636,7 +636,41 @@ class image : public basic_image<T> {
         }
     }
 
-#else 
+    constexpr void drawLine(int x1, int y1, int x2, int y2, const T& color) {
+        // Bresenham's line algorithm
+        // https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
+        int dx = std::abs(x2 - x1);
+        int dy = std::abs(y2 - y1);
+        int sx = (x1 < x2) ? 1 : -1;
+        int sy = (y1 < y2) ? 1 : -1;
+        int err = dx - dy;
+
+        int x = x1;
+        int y = y1;
+
+        while (true) {
+            // Check if the point is within the image bounds
+            if (x >= 0 && x < basic_image<T>::width && y >= 0 && y < basic_image<T>::height) {
+                (*this)[y][x] = color;
+            }
+
+            if (x == x2 && y == y2) {
+                break;
+            }
+
+            int e2 = 2 * err;
+            if (e2 > -dy) {
+                err -= dy;
+                x += sx;
+            }
+            if (e2 < dx) {
+                err += dx;
+                y += sy;
+            }
+        }
+    }
+
+#else
     constexpr static unique_ptr read_png_file(const std::string& filename) {
         assert(false && "Image IO disabed by BUILD_WIHTOUTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
         return nullptr;
@@ -647,7 +681,7 @@ class image : public basic_image<T> {
         assert(false && "Image IO disabed by BUILD_WIHTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
     }
 
-    constexpr void write_png_file(const std::string& filename, bool skip_alpha, int compression_level = 0) const { 
+    constexpr void write_png_file(const std::string& filename, bool skip_alpha, int compression_level = 0) const {
         assert(false && "Image IO disabed by BUILD_WIHTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
     }
 
@@ -687,13 +721,13 @@ class image : public basic_image<T> {
                                                std::function<unique_ptr(int width, int height)> image_allocator,
                                                tiff_metadata* metadata = nullptr) {
         assert(false && "Image IO disabed by BUILD_WIHTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
-        return nullptr; 
+        return nullptr;
     }
 
 
     constexpr static unique_ptr read_tiff_file(const std::string& filename, tiff_metadata* metadata = nullptr) {
         assert(false && "Image IO disabed by BUILD_WIHTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
-        return nullptr; 
+        return nullptr;
     }
 
     /*
@@ -715,7 +749,7 @@ class image : public basic_image<T> {
                                               tiff_metadata* dng_metadata = nullptr,
                                               tiff_metadata* exif_metadata = nullptr) {
         assert(false && "Image IO disabed by BUILD_WIHTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
-        return nullptr; 
+        return nullptr;
     }
 
     /*
@@ -730,7 +764,7 @@ class image : public basic_image<T> {
                                               const int height,
                                               const int bytes_per_pixel) {
         assert(false && "Image IO disabed by BUILD_WIHTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
-        return nullptr; 
+        return nullptr;
     }
 
 #endif
