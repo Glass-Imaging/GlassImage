@@ -146,7 +146,7 @@ inline Vector<N, value_type> operator+(const Vector<N, value_type>& a, const Vec
     auto ita = a.begin();
     auto itb = b.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&](value_type& r) { r = *ita++ + *itb++; });
+    std::ranges::for_each(result.begin(), result.end(), [&](value_type& r) { r = *ita++ + *itb++; });
     return result;
 }
 
@@ -156,7 +156,7 @@ inline Vector<N, value_type> operator-(const Vector<N, value_type>& a, const Vec
     auto ita = a.begin();
     auto itb = b.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&](value_type& r) { r = *ita++ - *itb++; });
+    std::ranges::for_each(result.begin(), result.end(), [&](value_type& r) { r = *ita++ - *itb++; });
     return result;
 }
 
@@ -166,7 +166,7 @@ inline Vector<N, value_type> operator*(const Vector<N, value_type>& a, const Vec
     auto ita = a.begin();
     auto itb = b.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&](value_type& r) { r = *ita++ * *itb++; });
+    std::ranges::for_each(result.begin(), result.end(), [&](value_type& r) { r = *ita++ * *itb++; });
     return result;
 }
 
@@ -186,7 +186,7 @@ inline Vector<N, value_type> operator/(const Vector<N, value_type>& a, const Vec
     auto ita = a.begin();
     auto itb = b.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&](value_type& r) { r = *ita++ / *itb++; });
+    std::ranges::for_each(result.begin(), result.end(), [&](value_type& r) { r = *ita++ / *itb++; });
     return result;
 }
 
@@ -195,7 +195,7 @@ template <size_t N, typename value_type>
 inline Vector<N, value_type> operator+(const Vector<N, value_type>& v, value_type a) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = *itv++ + a; });
+    std::ranges::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = *itv++ + a; });
     return result;
 }
 
@@ -210,7 +210,7 @@ template <size_t N, typename value_type>
 inline Vector<N, value_type> operator-(const Vector<N, value_type>& v, value_type a) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = *itv++ - a; });
+    std::ranges::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = *itv++ - a; });
     return result;
 }
 
@@ -219,7 +219,7 @@ template <size_t N, typename value_type>
 inline Vector<N, value_type> operator-(value_type a, const Vector<N, value_type>& v) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = a - *itv++; });
+    std::ranges::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = a - *itv++; });
     return result;
 }
 
@@ -228,7 +228,7 @@ template <size_t N, typename value_type>
 inline Vector<N, value_type> operator*(const Vector<N, value_type>& v, value_type a) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = *itv++ * a; });
+    std::ranges::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = *itv++ * a; });
     return result;
 }
 
@@ -243,7 +243,7 @@ template <size_t N, typename value_type>
 inline Vector<N, value_type> operator/(const Vector<N, value_type>& v, value_type a) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = *itv++ / a; });
+    std::ranges::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = *itv++ / a; });
     return result;
 }
 
@@ -252,7 +252,7 @@ template <size_t N, typename value_type>
 inline Vector<N, value_type> operator/(value_type a, const Vector<N, value_type>& v) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = a / *itv++; });
+    std::ranges::for_each(result.begin(), result.end(), [&a, &itv](value_type& r) { r = a / *itv++; });
     return result;
 }
 
@@ -260,7 +260,7 @@ template <size_t N, typename value_type>
 inline Vector<N, value_type> abs(const Vector<N, value_type>& v) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&itv](value_type& r) { r = std::abs(*itv++); });
+    std::ranges::for_each(result.begin(), result.end(), [&itv](value_type& r) { r = std::abs(*itv++); });
     return result;
 }
 
@@ -269,7 +269,7 @@ template <size_t N, typename value_type>
 inline Vector<N, value_type> max(const Vector<N, value_type>& v, value_type a) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [a, &itv](value_type& r) { r = std::max(*itv++, a); });
+    std::ranges::for_each(result.begin(), result.end(), [a, &itv](value_type& r) { r = std::max(*itv++, a); });
     return result;
 }
 
@@ -278,7 +278,7 @@ template <size_t N, typename value_type>
 inline Vector<N, value_type> min(const Vector<N, value_type>& v, value_type a) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [a, &itv](value_type& r) { r = std::min(*itv++, a); });
+    std::ranges::for_each(result.begin(), result.end(), [a, &itv](value_type& r) { r = std::min(*itv++, a); });
     return result;
 }
 
@@ -287,7 +287,8 @@ template <size_t N, typename value_type>
 inline Vector<N, value_type> clamp(const Vector<N, value_type>& v, value_type lo, value_type hi) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [lo, hi, &itv](value_type& r) { r = std::min(std::max(*itv++, lo), hi); });
+    std::ranges::for_each(result.begin(), result.end(),
+                          [lo, hi, &itv](value_type& r) { r = std::min(std::max(*itv++, lo), hi); });
     return result;
 }
 
@@ -296,7 +297,7 @@ template <size_t N, typename value_type>
 inline Vector<N, value_type> sqrt(const Vector<N, value_type>& v) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&itv](value_type& r) { r = std::sqrt(*itv++); });
+    std::ranges::for_each(result.begin(), result.end(), [&itv](value_type& r) { r = std::sqrt(*itv++); });
     return result;
 }
 
@@ -314,7 +315,7 @@ template <size_t N, typename value_type>
 inline Vector<N, value_type> apply(value_type (*f)(value_type), const Vector<N, value_type>& v) {
     auto itv = v.begin();
     Vector<N, value_type> result;
-    std::for_each(result.begin(), result.end(), [&itv, f](value_type& r) { r = f(*itv++); });
+    std::ranges::for_each(result.begin(), result.end(), [&itv, f](value_type& r) { r = f(*itv++); });
     return result;
 }
 
@@ -322,7 +323,7 @@ template <size_t N>
 inline Vector<N, bool> operator!(const Vector<N, bool>& a) {
     auto ita = a.begin();
     Vector<N, bool> result;
-    std::for_each(result.begin(), result.end(), [&](bool& r) { r = !*ita++; });
+    std::ranges::for_each(result.begin(), result.end(), [&](bool& r) { r = !*ita++; });
     return result;
 }
 
@@ -332,7 +333,7 @@ inline Vector<N, bool> operator<(const Vector<N, value_type>& a, const Vector<N,
     auto ita = a.begin();
     auto itb = b.begin();
     Vector<N, bool> result;
-    std::for_each(result.begin(), result.end(), [&](bool& r) { r = *ita++ < *itb++; });
+    std::ranges::for_each(result.begin(), result.end(), [&](bool& r) { r = *ita++ < *itb++; });
     return result;
 }
 
@@ -356,7 +357,7 @@ inline Vector<N, bool> operator==(const Vector<N, value_type>& a, const Vector<N
     auto ita = a.begin();
     auto itb = b.begin();
     Vector<N, bool> result;
-    std::for_each(result.begin(), result.end(), [&](bool& r) { r = *ita++ == *itb++; });
+    std::ranges::for_each(result.begin(), result.end(), [&](bool& r) { r = *ita++ == *itb++; });
     return result;
 }
 
@@ -369,21 +370,21 @@ template <size_t N, typename value_type>
 inline Vector<N, bool> isnan(const Vector<N, value_type>& a) {
     auto ita = a.begin();
     Vector<N, bool> result;
-    std::for_each(result.begin(), result.end(), [&](bool& r) { r = std::isnan(*ita++); });
+    std::ranges::for_each(result.begin(), result.end(), [&](bool& r) { r = std::isnan(*ita++); });
     return result;
 }
 
 template <size_t N>
 inline bool all(const Vector<N, bool>& a) {
     bool result = true;
-    std::for_each(a.begin(), a.end(), [&result](const bool& v) { result = result && v; });
+    std::ranges::for_each(a.begin(), a.end(), [&result](const bool& v) { result = result && v; });
     return result;
 }
 
 template <size_t N>
 inline bool any(const Vector<N, bool>& a) {
     bool result = false;
-    std::for_each(a.begin(), a.end(), [&result](const bool& v) { result = result || v; });
+    std::ranges::for_each(a.begin(), a.end(), [&result](const bool& v) { result = result || v; });
     return result;
 }
 
