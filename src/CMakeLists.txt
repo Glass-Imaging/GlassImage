@@ -12,12 +12,15 @@ add_library(
     $<$<BOOL:${DEFINE_ANDROID_TOOLCHAIN}>:/gls_android_support.cpp>
 )
 
+target_include_directories( GlassImage SYSTEM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../android/support_libs/headers )
+target_include_directories( GlassImage SYSTEM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../OpenCLHeaders )
+
 target_include_directories(
     GlassImage
     PUBLIC
     ../include
-    ../android/support_libs/headers
-    ../OpenCLHeaders
+    # ../android/support_libs/headers
+    # ../OpenCLHeaders
 )
 
 # Possibly build with image I/O libraries.
