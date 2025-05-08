@@ -219,19 +219,16 @@ The full code from main.cpp shows how everything connects together:
     }
 ```
 
-## Compilation under Linux
-GlassImage can be compiled as a library and test executable on Linux using the following procedure.
-- Install the required jpeg-dev, libz-dev, libpng-dev, libtiff-dev and so on
-- Provide an up-to-date compiler, e.g. gcc 10
-- Provide an up-to-date version of the clang compiler (e.g. 10 and above)
-- Copy OpenCL C++ header `opencl.hpp` https://github.com/KhronosGroup/OpenCL-CLHPP/blob/main/include/CL/opencl.hpp into include path
-- Compile libtiff ourselves with `cmake -Djbig=OFF -Djpeg=OFF -Dzstd=OFF ..` to prevent linker errors
+## Compilation
+### MacOS
+```
+cmake -B build . --preset mac
+cmake --build build --parallel 8 --target GlassImage
+```
 
-````
-# To build the GlassImage library (libglsImage.a):
-cd linux
-./buildGlassImageLib.sh
-
-# Results will be in the build folder. Optionally to compile and run the test app:
-./glsTest.sh
-````
+### Cross-compile to Android
+Make sure the toolchain file is correct in your preset.
+```
+cmake -B build . --preset android
+cmake --build build --parallel 8 --target GlassImage
+```
