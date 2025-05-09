@@ -82,25 +82,3 @@ elseif(GLASS_IMAGE_BUILD_IMAGE_IO AND CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         TIFF::TIFF
     )
 endif()
-
-# set_target_properties( 
-#     GlassImage
-#     PROPERTIES
-#     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build"
-# )
-
-add_executable(
-    OclCheck
-    ocl_check.cpp
-)
-
-target_include_directories(
-    OclCheck
-    PRIVATE
-    ../include
-)
-
-target_link_libraries(
-    OclCheck
-    GlassImage
-)
