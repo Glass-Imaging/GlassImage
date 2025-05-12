@@ -5,7 +5,6 @@ add_library(
     gls_cl_error.cpp
     gls_color_science.cpp
     gls_icd_wrapper.cpp
-    gls_logging.cpp
     gls_ocl.cpp
 
     # Only adding this if building for Android.
@@ -19,8 +18,7 @@ target_include_directories(
     GlassImage
     PUBLIC
     ../include
-    # ../android/support_libs/headers
-    # ../OpenCLHeaders
+    ../dependencies/internal/GlassLogging/include
 )
 
 # Possibly build with image I/O libraries.
@@ -47,6 +45,7 @@ if(GLASS_IMAGE_BUILD_IMAGE_IO AND (CMAKE_SYSTEM_NAME STREQUAL "Android"))
         ${CMAKE_CURRENT_SOURCE_DIR}/../android/support_libs/jni/${ANDROID_ABI}/libjpeg-turbo.a
         ${CMAKE_CURRENT_SOURCE_DIR}/../android/support_libs/jni/${ANDROID_ABI}/libtiff.a
         ${CMAKE_CURRENT_SOURCE_DIR}/../android/support_libs/jni/${ANDROID_ABI}/libtiffxx.a
+        GlassLogging
     )    
 
 elseif(GLASS_IMAGE_BUILD_IMAGE_IO AND CMAKE_SYSTEM_NAME STREQUAL "Darwin")
@@ -80,5 +79,11 @@ elseif(GLASS_IMAGE_BUILD_IMAGE_IO AND CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         PNG::PNG
         JPEG::JPEG
         TIFF::TIFF
+        GlassLogging
     )
+else()
+target_link_libraries(
+    GlassImage
+    GlassLogging
+)
 endif()

@@ -13,11 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "gls_cl.hpp"
+
 #include <fstream>
 #include <iostream>
 #include <map>
 
-#include "gls_cl.hpp"
 #include "gls_logging.h"
 
 namespace gls {
@@ -45,13 +46,14 @@ OpenCLContext::OpenCLContext(const std::string& shadersRootPath, bool quiet) : _
 
     if (!quiet) {
         cl::Device d = cl::Device::getDefault();
-        LOG_INFO(TAG) << "OpenCL Default Device: " << d.getInfo<CL_DEVICE_NAME>() << std::endl;
-        LOG_INFO(TAG) << "- Device Version: " << d.getInfo<CL_DEVICE_VERSION>() << std::endl;
-        LOG_INFO(TAG) << "- Driver Version: " << d.getInfo<CL_DRIVER_VERSION>() << std::endl;
-        LOG_INFO(TAG) << "- OpenCL C Version: " << d.getInfo<CL_DEVICE_OPENCL_C_VERSION>() << std::endl;
-        LOG_INFO(TAG) << "- Compute Units: " << d.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
-        LOG_INFO(TAG) << "- CL_DEVICE_MAX_WORK_GROUP_SIZE: " << d.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
-        LOG_INFO(TAG) << "- CL_DEVICE_EXTENSIONS: " << d.getInfo<CL_DEVICE_EXTENSIONS>() << std::endl;
+        gls::logging::LogInfo(TAG) << "OpenCL Default Device: " << d.getInfo<CL_DEVICE_NAME>() << std::endl;
+        gls::logging::LogInfo(TAG) << "- Device Version: " << d.getInfo<CL_DEVICE_VERSION>() << std::endl;
+        gls::logging::LogInfo(TAG) << "- Driver Version: " << d.getInfo<CL_DRIVER_VERSION>() << std::endl;
+        gls::logging::LogInfo(TAG) << "- OpenCL C Version: " << d.getInfo<CL_DEVICE_OPENCL_C_VERSION>() << std::endl;
+        gls::logging::LogInfo(TAG) << "- Compute Units: " << d.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
+        gls::logging::LogInfo(TAG) << "- CL_DEVICE_MAX_WORK_GROUP_SIZE: " << d.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>()
+                                   << std::endl;
+        gls::logging::LogInfo(TAG) << "- CL_DEVICE_EXTENSIONS: " << d.getInfo<CL_DEVICE_EXTENSIONS>() << std::endl;
     }
 }
 
@@ -84,13 +86,14 @@ OpenCLContext::OpenCLContext(const std::string& shadersRootPath, bool quiet) : _
 
     cl::Device d = cl::Device::getDefault();
     if (!quiet) {
-        LOG_INFO(TAG) << "- Device: " << d.getInfo<CL_DEVICE_NAME>() << std::endl;
-        LOG_INFO(TAG) << "- Device Version: " << d.getInfo<CL_DEVICE_VERSION>() << std::endl;
-        LOG_INFO(TAG) << "- Driver Version: " << d.getInfo<CL_DRIVER_VERSION>() << std::endl;
-        LOG_INFO(TAG) << "- OpenCL C Version: " << d.getInfo<CL_DEVICE_OPENCL_C_VERSION>() << std::endl;
-        LOG_INFO(TAG) << "- Compute Units: " << d.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
-        LOG_INFO(TAG) << "- CL_DEVICE_MAX_WORK_GROUP_SIZE: " << d.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
-        LOG_INFO(TAG) << "- CL_DEVICE_EXTENSIONS: " << d.getInfo<CL_DEVICE_EXTENSIONS>() << std::endl;
+        gls::logging::LogInfo(TAG) << "- Device: " << d.getInfo<CL_DEVICE_NAME>() << std::endl;
+        gls::logging::LogInfo(TAG) << "- Device Version: " << d.getInfo<CL_DEVICE_VERSION>() << std::endl;
+        gls::logging::LogInfo(TAG) << "- Driver Version: " << d.getInfo<CL_DRIVER_VERSION>() << std::endl;
+        gls::logging::LogInfo(TAG) << "- OpenCL C Version: " << d.getInfo<CL_DEVICE_OPENCL_C_VERSION>() << std::endl;
+        gls::logging::LogInfo(TAG) << "- Compute Units: " << d.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
+        gls::logging::LogInfo(TAG) << "- CL_DEVICE_MAX_WORK_GROUP_SIZE: " << d.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>()
+                                   << std::endl;
+        gls::logging::LogInfo(TAG) << "- CL_DEVICE_EXTENSIONS: " << d.getInfo<CL_DEVICE_EXTENSIONS>() << std::endl;
     }
 
     // opencl.hpp relies on a default context
@@ -143,16 +146,17 @@ int OpenCLContext::saveBinaryFile(const std::string& path, const std::vector<uns
         file.close();
         return 0;
     }
-    LOG_ERROR(TAG) << "Couldn't open file " << path << std::endl;
+    gls::logging::LogError(TAG) << "Couldn't open file " << path << std::endl;
     return -1;
 }
 
 // Static
 void OpenCLContext::handleProgramException(const cl::BuildError& e) {
-    LOG_ERROR(TAG) << "OpenCL Build Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
+    gls::logging::LogError(TAG) << "OpenCL Build Error - " << e.what() << ": " << clStatusToString(e.err())
+                                << std::endl;
     // Print build info for all devices
     for (auto& pair : e.getBuildLog()) {
-        LOG_ERROR(TAG) << pair.second << std::endl;
+        gls::logging::LogError(TAG) << pair.second << std::endl;
     }
 }
 
@@ -203,7 +207,7 @@ int OpenCLContext::buildProgram(cl::Program& program) {
         program.build(cl_options);
         for (auto& pair : program.getBuildInfo<CL_PROGRAM_BUILD_LOG>()) {
             if (!pair.second.empty() && pair.second != "Pass") {
-                LOG_INFO(TAG) << "OpenCL Build: " << pair.second << std::endl;
+                gls::logging::LogInfo(TAG) << "OpenCL Build: " << pair.second << std::endl;
             }
         }
     } catch (const cl::BuildError& e) {
@@ -258,7 +262,7 @@ cl::NDRange OpenCLContext::computeWorkGroupSizes(size_t width, size_t height) {
             }
         }
     }
-    //    LOG_INFO(TAG) << "computeWorkGroupSizes for " << width << ", " << height << ": "
+    //    gls::logging::LogInfo(TAG) << "computeWorkGroupSizes for " << width << ", " << height << ": "
     //                  << width_divisor << ", " << height_divisor
     //                  << " (" << width_divisor * height_divisor << ") of " <<  max_workgroup_size << std::endl;
     return cl::NDRange(width_divisor, height_divisor);

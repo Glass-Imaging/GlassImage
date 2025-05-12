@@ -7,15 +7,14 @@
 
 #include <string>
 
-#include "gls_cl.hpp"
-#include "gls_logging.h"
-#include "gls_cl_image.hpp"
-
 #include "cl_pipeline.h"
+#include "gls_cl.hpp"
+#include "gls_cl_image.hpp"
+#include "gls_logging.h"
 
 static const char* TAG = "CLImage Test";
 
-int main(int argc, const char * argv[]) {
+int main(int argc, const char* argv[]) {
     printf("Hello CLImage!\n");
 
     if (argc > 1) {
@@ -26,7 +25,8 @@ int main(int argc, const char * argv[]) {
         // Read the input file into an image object
         auto inputImage = gls::image<gls::rgba_pixel>::read_tiff_file(argv[1]);
 
-        LOG_INFO(TAG) << "inputImage size: " << inputImage->width << " x " << inputImage->height << std::endl;
+        gls::logging::LogDebug(TAG) << "inputImage size: " << inputImage->width << " x " << inputImage->height
+                                    << std::endl;
 
         // Load image data in OpenCL image texture
         gls::cl_image_2d<gls::rgba_pixel> clInputImage(clContext, *inputImage);
@@ -36,9 +36,9 @@ int main(int argc, const char * argv[]) {
 
         // Execute OpenCL Blur algorithm
         if (blur(&glsContext, clInputImage, &clOutputImage) == 0) {
-            LOG_INFO(TAG) << "All done with Blur" << std::endl;
+            gls::logging::LogDebug(TAG) << "All done with Blur" << std::endl;
         } else {
-            LOG_ERROR(TAG) << "Something wrong with the Blur." << std::endl;
+            gls::logging::LogError(TAG) << "Something wrong with the Blur." << std::endl;
         }
 
         // Use OpenCL's memory mapping for zero-copy image Output

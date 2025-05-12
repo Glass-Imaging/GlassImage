@@ -36,7 +36,7 @@ int bindOpenCLLibrary() {
     static bool opencl_loaded = false;
 
     if (opencl_loaded) {
-        LOG_INFO(TAG) << "OpenCL already loaded" << std::endl;
+        gls::logging::LogDebug(TAG) << "OpenCL already loaded" << std::endl;
         return 0;
     }
 
@@ -50,16 +50,16 @@ int bindOpenCLLibrary() {
     }
 
     std::string error(dlerror());
-    LOG_ERROR(TAG) << "Can not open OpenCL library on this device - " << error << std::endl;
+    gls::logging::LogError(TAG) << "Can not open OpenCL library on this device - " << error << std::endl;
     return -1;
 }
 
-#define bindEntry(name)                                                             \
-    {                                                                               \
-        name = reinterpret_cast<cl_api_##name>(dlsym(libopencl, #name));            \
-        if (!name) {                                                                \
-            LOG_INFO(TAG) << "Couldn't bind OpenCL API entry: " #name << std::endl; \
-        }                                                                           \
+#define bindEntry(name)                                                                           \
+    {                                                                                             \
+        name = reinterpret_cast<cl_api_##name>(dlsym(libopencl, #name));                          \
+        if (!name) {                                                                              \
+            gls::logging::LogDebug(TAG) << "Couldn't bind OpenCL API entry: " #name << std::endl; \
+        }                                                                                         \
     }
 
 // Bind up to OpenCL 2.0 by default

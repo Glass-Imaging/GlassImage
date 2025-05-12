@@ -7,21 +7,10 @@
     },
     "configurePresets": [
         {
-            "name": "mac",
-            "displayName": "MacOS",
-            "description": "Compile for Darwin with Clang",
-            "toolchainFile": "cmake/toolchains/clang-mac.cmake",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_CXX_FLAGS": "-std=c++23 -stdlib=libc++ -O3",
-                "CMAKE_SYSTEM_NAME": "Darwin",
-                "GLASS_IMAGE_BUILD_IMAGE_IO": "ON"
-            }
-        },
-        {
             "name": "android",
             "displayName": "Android",
             "description": "Cross-compile to Android with Clang",
+            "binaryDir": "${sourceDir}/build",
             "toolchainFile": "/Users/manuel/Library/Android/sdk/ndk/28.0.12433566/build/cmake/android.toolchain.cmake",
             "cacheVariables": {
                 "ANDROID_ABI": "arm64-v8a",
@@ -30,7 +19,24 @@
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_CXX_FLAGS": "-std=c++23 -stdlib=libc++ -O3",
                 "CMAKE_SYSTEM_NAME": "Android",
-                "GLASS_IMAGE_BUILD_IMAGE_IO": "ON"
+                "GLASS_IMAGE_BUILD_IMAGE_IO": "ON",
+                "GLASS_LOGGING_SHOW_INTERNAL": "ON",
+                "GLASS_LOGGING_USE_ANDROID_LOG": "OFF"
+            }
+        },
+        {
+            "name": "mac",
+            "displayName": "MacOS",
+            "description": "Compile for Darwin with Clang",
+            "binaryDir": "${sourceDir}/build",
+            "toolchainFile": "cmake/toolchains/clang-mac.cmake",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_CXX_FLAGS": "-std=c++23 -stdlib=libc++ -O3",
+                "CMAKE_SYSTEM_NAME": "Darwin",
+                "GLASS_IMAGE_BUILD_IMAGE_IO": "ON",
+                "GLASS_LOGGING_SHOW_INTERNAL": "ON",
+                "GLASS_LOGGING_USE_ANDROID_LOG": "OFF"
             }
         }
     ]
