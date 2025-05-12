@@ -1,3 +1,4 @@
+# Target GlassImage
 add_library(
     GlassImage
     STATIC
@@ -21,7 +22,7 @@ target_include_directories(
     ../dependencies/internal/GlassLogging/include
 )
 
-# Possibly build with image I/O libraries.
+## Possibly build with image I/O libraries.
 if(GLASS_IMAGE_BUILD_IMAGE_IO AND (CMAKE_SYSTEM_NAME STREQUAL "Android"))
     message("Building with Image IO Libraries for Android")
 
@@ -87,3 +88,21 @@ target_link_libraries(
     GlassLogging
 )
 endif()
+
+# Target GlassImageTest
+add_executable(
+    GlassImageTest
+    glass_image_test.cpp
+)
+
+target_include_directories(
+    GlassImageTest
+    PUBLIC
+    ../include
+    ../dependencies/internal/GlassLogging/include
+)
+
+target_link_libraries(
+    GlassImageTest
+    GlassImage
+)
