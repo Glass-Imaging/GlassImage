@@ -1,3 +1,6 @@
 [submodule "metal-cpp"]
 	path = metal-cpp
 	url = https://github.com/bkaradzic/metal-cpp
+[submodule "dependencies/internal/GlassLogging"]
+	path = dependencies/internal/GlassLogging
+	url = https://github.com/Glass-Imaging/GlassLogging.git

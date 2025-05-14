@@ -15,6 +15,8 @@
  * limitations under the License.
  ******************************************************************************/
 
+#include "gls_android_support.h"
+
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
 #include <jni.h>
@@ -23,7 +25,6 @@
 #include <string>
 #include <vector>
 
-#include "gls_android_support.h"
 #include "gls_logging.h"
 
 namespace gls {
@@ -44,7 +45,7 @@ void loadOpenCLShaders(JNIEnv* env, jobject assetManager, std::map<std::string, 
     while ((asset_filename = AAssetDir_getNextFileName(assetDir)) != nullptr) {
         std::string filename(asset_filename);
         if (filename.ends_with(".cl")) {
-            LOG_INFO(TAG) << "Loading OpenCL shader: " << filename << std::endl;
+            gls::logging::LogDebug(TAG) << "Loading OpenCL shader: " << filename << std::endl;
             std::string filePath = /* "OpenCL/" + */ filename;
             AAsset* asset = AAssetManager_open(mgr, filePath.c_str(), AASSET_MODE_BUFFER);
             off_t assetLength = AAsset_getLength(asset);
@@ -65,7 +66,7 @@ void loadOpenCLBytecode(JNIEnv* env, jobject assetManager,
     while ((asset_filename = AAssetDir_getNextFileName(assetDir)) != nullptr) {
         std::string filename(asset_filename);
         if (filename.ends_with(".o")) {
-            LOG_INFO(TAG) << "Loading OpenCL binary shader: " << filename << std::endl;
+            gls::logging::LogDebug(TAG) << "Loading OpenCL binary shader: " << filename << std::endl;
             std::string filePath = /* "OpenCL/" + */ filename;
             AAsset* asset = AAssetManager_open(mgr, filePath.c_str(), AASSET_MODE_BUFFER);
             off_t assetLength = AAsset_getLength(asset);

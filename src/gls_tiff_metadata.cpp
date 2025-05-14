@@ -13,14 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "gls_tiff_metadata.hpp"
+
 #include <iostream>
 
 #include "gls_logging.h"
-#include "gls_tiff_metadata.hpp"
 
 static const char* TAG = "DEMOSAIC";
 
-//#define DEBUG_TIFF_TAGS 1
+// #define DEBUG_TIFF_TAGS 1
 
 namespace gls {
 
@@ -193,12 +194,12 @@ void readExifMetaData(TIFF* tif, tiff_metadata* exif_metadata) {
         // Go to the EXIF directory
         toff_t exif_offset;
         if (TIFFGetField(tif, TIFFTAG_EXIFIFD, &exif_offset)) {
-            LOG_INFO(TAG) << "Reading EXIF metadata..." << std::endl;
+            gls::logging::LogDebug(TAG) << "Reading EXIF metadata..." << std::endl;
             TIFFReadEXIFDirectory(tif, exif_offset);
 
             readAllTIFFTags(tif, exif_metadata);
 
-            LOG_INFO(TAG) << "Read " << exif_metadata->size() << " EXIF metadata entries." << std::endl;
+            gls::logging::LogDebug(TAG) << "Read " << exif_metadata->size() << " EXIF metadata entries." << std::endl;
         }
     }
 }
@@ -209,7 +210,7 @@ void writeExifMetadata(TIFF* tif, const tiff_metadata* exif_metadata) {
     if (TIFFCreateEXIFDirectory(tif) != 0) {
         std::cerr << "TIFFCreateEXIFDirectory() failed." << std::endl;
     } else {
-        LOG_INFO(TAG) << "Saving " << exif_metadata->size() << " EXIF metadata entries." << std::endl;
+        gls::logging::LogDebug(TAG) << "Saving " << exif_metadata->size() << " EXIF metadata entries." << std::endl;
         for (auto entry : *exif_metadata) {
             writeMetadataForTag(tif, exif_metadata, entry.first);
         }

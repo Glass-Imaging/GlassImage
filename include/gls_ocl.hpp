@@ -307,8 +307,8 @@ class OCLContext : public GpuContext {
             program.build(device, combinedOptions.c_str());
             _program = program;
         } catch (const cl::BuildError& e) {
-            LOG_ERROR("GLS_OCL") << "OpenCL Build Error - " << e.what() << ": " << clStatusToString(e.err())
-                                 << std::endl;
+            gls::logging::LogError("GLS_OCL")
+                << "OpenCL Build Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
             // Print build info for all devices
             for (auto& pair : e.getBuildLog()) {
                 std::cerr << pair.second << std::endl;
@@ -316,11 +316,13 @@ class OCLContext : public GpuContext {
 
             std::string name = device.getInfo<CL_DEVICE_NAME>();
             std::string buildlog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
-            LOG_ERROR("GLS_OCL") << "Build log for: " << name.c_str() << ": " << buildlog.c_str() << std::endl;
+            gls::logging::LogError("GLS_OCL")
+                << "Build log for: " << name.c_str() << ": " << buildlog.c_str() << std::endl;
 
             throw std::runtime_error("OpenCL Build Error");
         } catch (const cl::Error& e) {
-            LOG_ERROR("GLS_OCL") << "OpenCL Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
+            gls::logging::LogError("GLS_OCL")
+                << "OpenCL Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
 
             throw std::runtime_error("OpenCL Error");
         }
@@ -340,11 +342,11 @@ class OCLContext : public GpuContext {
             _program = program;
 
             if (err != CL_SUCCESS) {
-                LOG_INFO("GLS_OCL") << "Error creating program: " << clStatusToString(err) << std::endl;
+                gls::logging::LogInfo("GLS_OCL") << "Error creating program: " << clStatusToString(err) << std::endl;
             }
         } catch (const cl::BuildError& e) {
-            LOG_ERROR("GLS_OCL") << "OpenCL Build Error - " << e.what() << ": " << clStatusToString(e.err())
-                                 << std::endl;
+            gls::logging::LogError("GLS_OCL")
+                << "OpenCL Build Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
             // Print build info for all devices
             for (auto& pair : e.getBuildLog()) {
                 std::cerr << pair.second << std::endl;
@@ -352,11 +354,13 @@ class OCLContext : public GpuContext {
 
             std::string name = device.getInfo<CL_DEVICE_NAME>();
             std::string buildlog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
-            LOG_ERROR("GLS_OCL") << "Build log for: " << name.c_str() << ": " << buildlog.c_str() << std::endl;
+            gls::logging::LogError("GLS_OCL")
+                << "Build log for: " << name.c_str() << ": " << buildlog.c_str() << std::endl;
 
             throw std::runtime_error("OpenCL Build Error");
         } catch (const cl::Error& e) {
-            LOG_ERROR("GLS_OCL") << "OpenCL Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
+            gls::logging::LogError("GLS_OCL")
+                << "OpenCL Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
 
             throw std::runtime_error("OpenCL Error");
         }
@@ -412,8 +416,8 @@ class OCLContext : public GpuContext {
             // __android_log_print(ANDROID_LOG_INFO, "OpenCL", "Combined_binary_list_size: %d",
             //                     (int)combined_binary.size());
 
-            // cl::Program expects to get the same number of devices in this device list as there are binaries in the
-            // binary list
+            // cl::Program expects to get the same number of devices in this device list as there are binaries in
+            // the binary list
             std::vector<cl::Device> devices(combined_binary_list.size(), device);
 
             // __android_log_print(ANDROID_LOG_INFO, "OpenCL", "--------------Loading OpenCL Binaries---------");
@@ -452,7 +456,8 @@ class OCLContext : public GpuContext {
             std::string buildlog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
             //            std::cerr << "Build log for " << name << ":" << std::endl
             //                      << buildlog << std::endl;
-            // __android_log_print(ANDROID_LOG_INFO, "foo", "Build log for: %s: %s", name.c_str(), buildlog.c_str());
+            // __android_log_print(ANDROID_LOG_INFO, "foo", "Build log for: %s: %s", name.c_str(),
+            // buildlog.c_str());
 
             throw std::runtime_error("OpenCL Build Error");
         } catch (const cl::Error& e) {
@@ -510,8 +515,8 @@ class OCLContext : public GpuContext {
         } catch (const cl::Error& e) {
             std::cerr << "OpenCL Kernel Error - " << kernelName << " - " << e.what() << ": "
                       << clStatusToString(e.err()) << std::endl;
-            LOG_ERROR("GLS-OCL") << "OpenCL Kernel Error: " << kernelName.c_str() << e.what()
-                                 << clStatusToString(e.err()).c_str() << std::endl;
+            gls::logging::LogError("GLS-OCL") << "OpenCL Kernel Error: " << kernelName.c_str() << e.what()
+                                              << clStatusToString(e.err()).c_str() << std::endl;
             // __android_log_print(ANDROID_LOG_INFO, "foo", "OpenCL Kernel Error %s - %s: %s", kernelName.c_str(),
             //                     e.what(), clStatusToString(e.err()).c_str());
             throw std::runtime_error("OpenCL Kernel Error");
