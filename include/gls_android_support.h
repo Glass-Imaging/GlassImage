@@ -23,6 +23,7 @@
 #include <cassert>
 #include <map>
 #include <span>
+#include <vector>
 
 namespace gls {
 
