@@ -19,7 +19,6 @@ target_include_directories(
     GlassImage
     PUBLIC
     ../include
-    ../dependencies/internal/GlassLogging/include
 )
 
 ## Possibly build with image I/O libraries.
@@ -99,7 +98,6 @@ target_include_directories(
     GlassImageTest
     PUBLIC
     ../include
-    ../dependencies/internal/GlassLogging/include
 )
 
 target_link_libraries(
