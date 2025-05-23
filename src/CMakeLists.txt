@@ -100,7 +100,15 @@ target_include_directories(
     ../include
 )
 
-target_link_libraries(
-    GlassImageTest
-    GlassImage
-)
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    target_link_libraries(
+        GlassImageTest 
+        GlassImage
+        "-framework OpenCL"
+    )
+else()
+    target_link_libraries(
+        GlassImageTest 
+        GlassImage
+    )
+endif()
