@@ -16,22 +16,21 @@
 #ifndef GLS_IMAGE_H
 #define GLS_IMAGE_H
 
-#include <sys/types.h>
 #include <string.h>
-#include <fstream>
-#include <sstream>
+#include <sys/types.h>
 
 #include <cassert>
+#include <fstream>
 #include <functional>
+#include <iostream>
 #include <memory>
 #include <span>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <fstream>
-#include <iostream>
 
 #include "gls_geometry.hpp"
-#ifndef BUILD_WITHOUT_IMAGE_IO_LIBS 
+#ifdef GLASS_IMAGE_BUILD_IMAGE_IO
 #include "gls_image_jpeg.h"
 #include "gls_image_png.h"
 #include "gls_image_tiff.h"
@@ -45,24 +44,30 @@
 #endif
 #endif
 
-namespace gls {
+namespace gls
+{
 
 template <typename T, size_t N>
-struct pixel : public std::array<T, N> {
+struct pixel : public std::array<T, N>
+{
     constexpr const static size_t channels = N;
     constexpr const static int bit_depth = 8 * sizeof(T);
     typedef T value_type;
 };
 
 template <typename T>
-struct luma_type {
+struct luma_type
+{
     typedef pixel<T, 1> pixel_type;
-    union {
+    union
+    {
         pixel_type v;
-        struct {
+        struct
+        {
             T luma;
         };
-        struct {
+        struct
+        {
             T x;
         };
     };
@@ -71,85 +76,107 @@ struct luma_type {
 };
 
 template <typename T>
-struct luma_alpha_type {
+struct luma_alpha_type
+{
     typedef pixel<T, 2> pixel_type;
-    union {
+    union
+    {
         pixel_type v;
-        struct {
+        struct
+        {
             T luma, alpha;
         };
-        struct {
+        struct
+        {
             T x, y;
         };
     };
 };
 
 template <typename T>
-struct rgb_type {
+struct rgb_type
+{
     typedef pixel<T, 3> pixel_type;
-    union {
+    union
+    {
         pixel_type v;
-        struct {
+        struct
+        {
             T red, green, blue;
         };
-        struct {
+        struct
+        {
             T x, y, z;
         };
     };
 };
 
 template <typename T>
-struct rgba_type {
+struct rgba_type
+{
     typedef pixel<T, 4> pixel_type;
-    union {
+    union
+    {
         pixel_type v;
-        struct {
+        struct
+        {
             T red, green, blue, alpha;
         };
-        struct {
+        struct
+        {
             T x, y, z, w;
         };
     };
 };
 
 template <typename T>
-struct argb_type {
+struct argb_type
+{
     typedef pixel<T, 4> pixel_type;
-    union {
+    union
+    {
         pixel_type v;
-        struct {
+        struct
+        {
             T alpha, red, green, blue;
         };
-        struct {
+        struct
+        {
             T w, x, y, z;
         };
     };
 };
 
 template <typename T>
-struct basic_pixel : public T {
+struct basic_pixel : public T
+{
     constexpr static size_t channels = T::pixel_type::channels;
     constexpr static int bit_depth = T::pixel_type::bit_depth;
     typedef typename T::pixel_type::value_type value_type;
 
     constexpr basic_pixel() {}
-    constexpr basic_pixel(value_type value) {
+    constexpr basic_pixel(value_type value)
+    {
         static_assert(channels == 1);
         this->v[0] = value;
     }
     constexpr basic_pixel(value_type _v[channels]) { std::copy(&_v[0], &_v[channels], this->v.begin()); }
-    constexpr basic_pixel(const std::array<value_type, channels>& _v) {
+    constexpr basic_pixel(const std::array<value_type, channels>& _v)
+    {
         std::copy(_v.begin(), _v.end(), this->v.begin());
     }
 
     template <typename T2>
-    constexpr basic_pixel(const std::array<T2, channels>& _v) {
-        for (int i = 0; i < channels; i++) {
+    constexpr basic_pixel(const std::array<T2, channels>& _v)
+    {
+        for (int i = 0; i < channels; i++)
+        {
             this->v[i] = _v[i];
         }
     }
 
-    constexpr basic_pixel(std::initializer_list<value_type> list) {
+    constexpr basic_pixel(std::initializer_list<value_type> list)
+    {
         assert(list.size() == channels);
         std::copy(list.begin(), list.end(), this->v.begin());
     }
@@ -159,9 +186,11 @@ struct basic_pixel : public T {
 };
 
 template <typename T>
-constexpr basic_pixel<T> lerp(const basic_pixel<T>& p1, const basic_pixel<T>& p2, float alpha) {
+constexpr basic_pixel<T> lerp(const basic_pixel<T>& p1, const basic_pixel<T>& p2, float alpha)
+{
     basic_pixel<T> result;
-    for (int c = 0; c < T::pixel_type::channels; c++) {
+    for (int c = 0; c < T::pixel_type::channels; c++)
+    {
         result[c] = (typename T::pixel_type::value_type)(p1[c] + alpha * (p2[c] - p1[c]));
     }
     return result;
@@ -216,7 +245,8 @@ typedef basic_pixel<rgba_type<float_type>> pixel_float4;
 class tiff_metadata;
 
 template <typename T>
-class basic_image {
+class basic_image
+{
    public:
     const int width;
     const int height;
@@ -234,17 +264,22 @@ class basic_image {
     constexpr basic_image(gls::size _dimensions) : width(_dimensions.width), height(_dimensions.height) {}
 };
 
-template<typename T, typename = void>
-struct has_channels : std::false_type {};
+template <typename T, typename = void>
+struct has_channels : std::false_type
+{
+};
 
-template<typename T>
-struct has_channels<T, std::void_t<decltype(T::channels)>> : std::true_type {};
+template <typename T>
+struct has_channels<T, std::void_t<decltype(T::channels)>> : std::true_type
+{
+};
 
 // std::vector is convenient but it is expensive as it initializes memory
 #define USE_STD_VECTOR_ALLOCATION false
 
 template <typename T>
-class image : public basic_image<T> {
+class image : public basic_image<T>
+{
    public:
     const int stride;
     typedef std::unique_ptr<image<T>> unique_ptr;
@@ -264,11 +299,13 @@ class image : public basic_image<T> {
           stride(_stride),
 #if USE_STD_VECTOR_ALLOCATION
           _data_store(std::make_unique<std::vector<T>>(_stride * _height)),
-          _data(_data_store->data(), _data_store->size()) {
+          _data(_data_store->data(), _data_store->size())
+    {
     }
 #else
           _data_store(new T[_stride * _height]),
-          _data(_data_store, _stride * _height) {
+          _data(_data_store, _stride * _height)
+    {
     }
 
     virtual ~image() { delete _data_store; }
@@ -280,7 +317,8 @@ class image : public basic_image<T> {
 
     // Data is owned by caller, the image is only a wrapper around it
     constexpr image(int _width, int _height, int _stride, std::span<T> data)
-        : basic_image<T>(_width, _height), stride(_stride), _data(data) {
+        : basic_image<T>(_width, _height), stride(_stride), _data(data)
+    {
         assert(_stride * _height <= data.size());
     }
 
@@ -288,7 +326,8 @@ class image : public basic_image<T> {
 
     constexpr image(image* _base, int _x, int _y, int _width, int _height)
         : image<T>(_width, _height, _base->stride,
-                   std::span(_base->_data.data() + _y * _base->stride + _x, _base->stride * _height)) {
+                   std::span(_base->_data.data() + _y * _base->stride + _x, _base->stride * _height))
+    {
         assert(_x + _width <= _base->width && _y + _height <= _base->height);
     }
 
@@ -296,12 +335,15 @@ class image : public basic_image<T> {
 
     constexpr image(const image& _base, int _x, int _y, int _width, int _height)
         : image<T>(_width, _height, _base.stride,
-                   std::span(_base._data.data() + _y * _base.stride + _x, _base.stride * _height)) {
+                   std::span(_base._data.data() + _y * _base.stride + _x, _base.stride * _height))
+    {
         assert(_x + _width <= _base.width && _y + _height <= _base.height);
     }
 
     constexpr image(const image& _base, const rectangle& _crop)
-        : image(_base, _crop.x, _crop.y, _crop.width, _crop.height) {}
+        : image(_base, _crop.x, _crop.y, _crop.width, _crop.height)
+    {
+    }
 
     // row access
     constexpr T* operator[](int row) { return &_data[stride * row]; }
@@ -310,39 +352,55 @@ class image : public basic_image<T> {
 
     const constexpr std::span<T> pixels() const { return _data; }
 
-    constexpr const T& getPixel(int x, int y) const {
-        if (y < 0) {
-            y = std::min(-y, basic_image<T>::height-1);
-        } else if (y > basic_image<T>::height-1) {
-            y = 2 * (basic_image<T>::height-1) - y;
+    constexpr const T& getPixel(int x, int y) const
+    {
+        if (y < 0)
+        {
+            y = std::min(-y, basic_image<T>::height - 1);
         }
-        if (x < 0) {
-            x = std::min(-x, basic_image<T>::width-1);
-        } else if (x > basic_image<T>::width-1) {
-            x = 2 * (basic_image<T>::width-1) - x;
+        else if (y > basic_image<T>::height - 1)
+        {
+            y = 2 * (basic_image<T>::height - 1) - y;
+        }
+        if (x < 0)
+        {
+            x = std::min(-x, basic_image<T>::width - 1);
+        }
+        else if (x > basic_image<T>::width - 1)
+        {
+            x = 2 * (basic_image<T>::width - 1) - x;
         }
         return (*this)[y][x];
     }
 
-    constexpr void apply(std::function<void(const T& pixel)> process) const {
-        for (int y = 0; y < basic_image<T>::height; y++) {
-            for (int x = 0; x < basic_image<T>::width; x++) {
+    constexpr void apply(std::function<void(const T& pixel)> process) const
+    {
+        for (int y = 0; y < basic_image<T>::height; y++)
+        {
+            for (int x = 0; x < basic_image<T>::width; x++)
+            {
                 process((*this)[y][x]);
             }
         }
     }
 
-    constexpr void apply(std::function<void(const T& pixel, int x, int y)> process) const {
-        for (int y = 0; y < basic_image<T>::height; y++) {
-            for (int x = 0; x < basic_image<T>::width; x++) {
+    constexpr void apply(std::function<void(const T& pixel, int x, int y)> process) const
+    {
+        for (int y = 0; y < basic_image<T>::height; y++)
+        {
+            for (int x = 0; x < basic_image<T>::width; x++)
+            {
                 process((*this)[y][x], x, y);
             }
         }
     }
 
-    constexpr void apply(std::function<void(T* pixel, int x, int y)> process) {
-        for (int y = 0; y < basic_image<T>::height; y++) {
-            for (int x = 0; x < basic_image<T>::width; x++) {
+    constexpr void apply(std::function<void(T* pixel, int x, int y)> process)
+    {
+        for (int y = 0; y < basic_image<T>::height; y++)
+        {
+            for (int x = 0; x < basic_image<T>::width; x++)
+            {
                 process(&(*this)[y][x], x, y);
             }
         }
@@ -350,16 +408,20 @@ class image : public basic_image<T> {
 
     const constexpr size_t size_in_bytes() const { return _data.size() * basic_image<T>::pixel_size; }
 
-#ifndef BUILD_WITHOUT_IMAGE_IO_LIBS
+#ifdef GLASS_IMAGE_BUILD_IMAGE_IO
     // image factory from PNG file
-    constexpr static unique_ptr read_png_file(const std::string& filename) {
+    constexpr static unique_ptr read_png_file(const std::string& filename)
+    {
         unique_ptr image = nullptr;
 
-        auto image_allocator = [&image](int width, int height, std::vector<uint8_t*>* row_pointers) -> bool {
-            if ((image = std::make_unique<gls::image<T>>(width, height)) == nullptr) {
+        auto image_allocator = [&image](int width, int height, std::vector<uint8_t*>* row_pointers) -> bool
+        {
+            if ((image = std::make_unique<gls::image<T>>(width, height)) == nullptr)
+            {
                 return false;
             }
-            for (int i = 0; i < height; ++i) {
+            for (int i = 0; i < height; ++i)
+            {
                 (*row_pointers)[i] = (uint8_t*)(*image)[i];
             }
             return true;
@@ -374,29 +436,35 @@ class image : public basic_image<T> {
     // compression_level range: [0-9], 0 -> no compression (default), 1 -> *fast* compression, otherwise useful range:
     // [3-6]
     constexpr void write_png_file(const std::string& filename, bool skip_alpha,
-                                  const std::vector<uint8_t>* icc_profile_data, int compression_level = 0) const {
+                                  const std::vector<uint8_t>* icc_profile_data, int compression_level = 0) const
+    {
         auto row_pointer = [this](int row) -> uint8_t* { return (uint8_t*)(*this)[row]; };
         gls::write_png_file(filename, basic_image<T>::width, basic_image<T>::height, T::channels, T::bit_depth,
                             skip_alpha, compression_level, icc_profile_data, row_pointer);
     }
 
-    constexpr void write_png_file(const std::string& filename, bool skip_alpha, int compression_level = 0) const {
-        write_png_file(filename, skip_alpha, /*icc_profile_data=*/ nullptr, compression_level);
+    constexpr void write_png_file(const std::string& filename, bool skip_alpha, int compression_level = 0) const
+    {
+        write_png_file(filename, skip_alpha, /*icc_profile_data=*/nullptr, compression_level);
     }
 
-    constexpr void write_png_file(const std::string& filename, int compression_level = 0) const {
-        write_png_file(filename, /*skip_alpha=*/ false, /*icc_profile_data=*/ nullptr, compression_level);
+    constexpr void write_png_file(const std::string& filename, int compression_level = 0) const
+    {
+        write_png_file(filename, /*skip_alpha=*/false, /*icc_profile_data=*/nullptr, compression_level);
     }
 
     // Image factory from JPEG file
-    constexpr static unique_ptr read_jpeg_file(const std::string& filename) {
+    constexpr static unique_ptr read_jpeg_file(const std::string& filename)
+    {
         static_assert(basic_image<T>::channels == 1 || basic_image<T>::channels == 3,
                       "The JPEG codec only supports 1-channel or 3-channel images.");
 
         unique_ptr image = nullptr;
 
-        auto image_allocator = [&image](int width, int height) -> std::span<uint8_t> {
-            if ((image = std::make_unique<gls::image<T>>(width, height)) == nullptr) {
+        auto image_allocator = [&image](int width, int height) -> std::span<uint8_t>
+        {
+            if ((image = std::make_unique<gls::image<T>>(width, height)) == nullptr)
+            {
                 return std::span<uint8_t>();
             }
             return std::span<uint8_t>((uint8_t*)(*image)[0], sizeof(T) * width * height);
@@ -408,38 +476,48 @@ class image : public basic_image<T> {
     }
 
     // Write image to JPEG file
-    constexpr void write_jpeg_file(const std::string& filename, int quality) const {
+    constexpr void write_jpeg_file(const std::string& filename, int quality) const
+    {
         static_assert(basic_image<T>::channels == 1 || basic_image<T>::channels == 3,
                       "The JPEG codec only supports 1-channel or 3-channel images.");
 
-        auto image_data = [this]() -> std::span<uint8_t> {
-            return std::span<uint8_t>((uint8_t*)this->_data.data(), sizeof(T) * this->_data.size());
-        };
+        auto image_data = [this]() -> std::span<uint8_t>
+        { return std::span<uint8_t>((uint8_t*)this->_data.data(), sizeof(T) * this->_data.size()); };
         gls::write_jpeg_file(filename, basic_image<T>::width, basic_image<T>::height, stride, T::channels, T::bit_depth,
                              image_data, quality);
     }
 
     // Do not include extension
-    void write_data_file(const std::string& filename) const {
+    void write_data_file(const std::string& filename) const
+    {
         int channels = 1;
         int bit_depth = 1;
 
-        if constexpr (has_channels<T>::value) {
+        if constexpr (has_channels<T>::value)
+        {
             channels = T::channels;
             bit_depth = int(sizeof(T) / channels);
-        } else {
+        }
+        else
+        {
             channels = 1;
             bit_depth = sizeof(T);
         }
 
         std::ostringstream oss;
-        oss << filename << "_w[" << this->width << "]_h[" << this->height << "]_c[" << channels << "]_b[" << bit_depth << "].raw";
+        oss << filename << "_w[" << this->width << "]_h[" << this->height << "]_c[" << channels << "]_b[" << bit_depth
+            << "].raw";
         std::ofstream file(oss.str(), std::ios::binary);
-        if (!file) {
+        if (!file)
+        {
             std::cout << "Cannot open file :: " << filename << std::endl;
-        } else {
-            // Cannot just use pixels b/c pixels points to underlying data, so of a view is used it will not be reflected in pixels
-            for(int i=0; i<this->height; ++i) {
+        }
+        else
+        {
+            // Cannot just use pixels b/c pixels points to underlying data, so of a view is used it will not be
+            // reflected in pixels
+            for (int i = 0; i < this->height; ++i)
+            {
                 auto row = std::span((*this)[i], this->width);
                 auto byteSpan = std::as_bytes(row);
                 const char* imgData = reinterpret_cast<const char*>(byteSpan.data());
@@ -450,22 +528,27 @@ class image : public basic_image<T> {
         }
     }
 
-    void read_in_data_file(const std::string& filename) {
+    void read_in_data_file(const std::string& filename)
+    {
         std::ifstream file(filename, std::ios::binary);
 
         int channels = 1;
         int bit_depth = 1;
 
-        if constexpr (has_channels<T>::value) {
+        if constexpr (has_channels<T>::value)
+        {
             channels = T::channels;
             bit_depth = int(sizeof(T) / channels);
-        } else {
+        }
+        else
+        {
             channels = 1;
             bit_depth = sizeof(T);
         }
 
         // Check if the file was opened successfully
-        if (!file) {
+        if (!file)
+        {
             std::cout << "Cannot open file " << filename << std::endl;
             return;
         }
@@ -477,16 +560,20 @@ class image : public basic_image<T> {
 
         long image_size = this->width * this->height * bit_depth;
 
-        if(image_size != file_size) {
+        if (image_size != file_size)
+        {
             std::cout << "WARNING: Image size does not equal file size. Only reading by the smaller value" << std::endl;
         }
 
         auto size = std::min(file_size, image_size);
 
         // Read the file into the buffer
-        if (file.read((char*) this->_data.data(), size)) {
+        if (file.read((char*)this->_data.data(), size))
+        {
             std::cout << "Successfully read file " << filename << std::endl;
-        } else {
+        }
+        else
+        {
             std::cout << "Error reading file." << std::endl;
         }
 
@@ -497,19 +584,23 @@ class image : public basic_image<T> {
     // Helper function for read_tiff_file and read_dng_file
     constexpr static bool process_tiff_strip(image* destination, int tiff_bitspersample, int tiff_samplesperpixel,
                                              int destination_row, int strip_width, int strip_height, int crop_x,
-                                             int crop_y, uint8_t* tiff_buffer) {
+                                             int crop_y, uint8_t* tiff_buffer)
+    {
         typedef typename T::value_type value_type;
 
-        std::function<value_type()> nextTiffPixelSame = [&tiff_buffer]() -> value_type {
+        std::function<value_type()> nextTiffPixelSame = [&tiff_buffer]() -> value_type
+        {
             value_type pixelValue = *((value_type*)tiff_buffer);
             tiff_buffer += sizeof(value_type);
             return pixelValue;
         };
-        std::function<value_type()> nextTiffPixel8to16 = [&tiff_buffer]() -> value_type {
+        std::function<value_type()> nextTiffPixel8to16 = [&tiff_buffer]() -> value_type
+        {
             return (value_type) * (tiff_buffer++) << 8;
             ;
         };
-        std::function<value_type()> nextTiffPixel16to8 = [&tiff_buffer]() -> value_type {
+        std::function<value_type()> nextTiffPixel16to8 = [&tiff_buffer]() -> value_type
+        {
             value_type pixelValue = (value_type)(*((uint16_t*)tiff_buffer) >> 8);
             tiff_buffer += sizeof(uint16_t);
             return pixelValue;
@@ -519,12 +610,18 @@ class image : public basic_image<T> {
                              : (tiff_bitspersample == 8)        ? nextTiffPixel8to16
                                                                 : nextTiffPixel16to8;
 
-        for (int y = 0; y < strip_height && y + destination_row - crop_y < destination->height; y++) {
-            for (int x = 0; x < strip_width; x++) {
-                for (int c = 0; c < std::min((int)tiff_samplesperpixel, (int)T::channels); c++) {
-                    if (x >= crop_x && y + destination_row >= crop_y && x - crop_x < destination->width) {
+        for (int y = 0; y < strip_height && y + destination_row - crop_y < destination->height; y++)
+        {
+            for (int x = 0; x < strip_width; x++)
+            {
+                for (int c = 0; c < std::min((int)tiff_samplesperpixel, (int)T::channels); c++)
+                {
+                    if (x >= crop_x && y + destination_row >= crop_y && x - crop_x < destination->width)
+                    {
                         (*destination)[y + destination_row - crop_y][x - crop_x][c] = nextTiffPixel();
-                    } else {
+                    }
+                    else
+                    {
                         nextTiffPixel();
                     }
                 }
@@ -536,15 +633,15 @@ class image : public basic_image<T> {
     // Image factory from TIFF file
     constexpr static unique_ptr read_tiff_file(const std::string& filename,
                                                std::function<unique_ptr(int width, int height)> image_allocator,
-                                               tiff_metadata* metadata = nullptr) {
+                                               tiff_metadata* metadata = nullptr)
+    {
         unique_ptr image = nullptr;
         gls::read_tiff_file(
-            filename, T::channels, T::bit_depth, metadata,
-            [&image, &image_allocator](int width, int height) -> bool {
-                return (image = image_allocator(width, height)) != nullptr;
-            },
+            filename, T::channels, T::bit_depth, metadata, [&image, &image_allocator](int width, int height) -> bool
+            { return (image = image_allocator(width, height)) != nullptr; },
             [&image](int tiff_bitspersample, int tiff_samplesperpixel, int row, int strip_width, int strip_height,
-                     int crop_x, int crop_y, uint8_t* tiff_buffer) -> bool {
+                     int crop_x, int crop_y, uint8_t* tiff_buffer) -> bool
+            {
                 return process_tiff_strip(image.get(), tiff_bitspersample, tiff_samplesperpixel, row,
                                           /*strip_width=*/image->width, strip_height,
                                           /*crop_x=*/0, /*crop_y=*/0, tiff_buffer);
@@ -552,15 +649,18 @@ class image : public basic_image<T> {
         return image;
     }
 
-    constexpr static unique_ptr read_tiff_file(const std::string& filename, tiff_metadata* metadata = nullptr) {
-        return read_tiff_file(filename, [] (int width, int height) -> unique_ptr {
-            return std::make_unique<gls::image<T>>(width, height);
-        }, metadata);
+    constexpr static unique_ptr read_tiff_file(const std::string& filename, tiff_metadata* metadata = nullptr)
+    {
+        return read_tiff_file(
+            filename, [](int width, int height) -> unique_ptr
+            { return std::make_unique<gls::image<T>>(width, height); }, metadata);
     }
 
     // Write image to TIFF file
     constexpr void write_tiff_file(const std::string& filename, tiff_compression compression = tiff_compression::NONE,
-                                   tiff_metadata* metadata = nullptr, const std::vector<uint8_t>* icc_profile_data = nullptr) const {
+                                   tiff_metadata* metadata = nullptr,
+                                   const std::vector<uint8_t>* icc_profile_data = nullptr) const
+    {
         typedef typename T::value_type value_type;
         auto row_pointer = [this](int row) -> value_type* { return (value_type*)(*this)[row]; };
         gls::write_tiff_file<value_type>(filename, basic_image<T>::width, basic_image<T>::height, T::channels,
@@ -571,15 +671,16 @@ class image : public basic_image<T> {
     constexpr static unique_ptr read_dng_file(const std::string& filename,
                                               std::function<unique_ptr(int width, int height)> image_allocator,
                                               tiff_metadata* dng_metadata = nullptr,
-                                              tiff_metadata* exif_metadata = nullptr) {
+                                              tiff_metadata* exif_metadata = nullptr)
+    {
         unique_ptr image = nullptr;
         gls::read_dng_file(
             filename, T::channels, T::bit_depth, dng_metadata, exif_metadata,
-            [&image, &image_allocator](int width, int height) -> bool {
-                return (image = image_allocator(width, height)) != nullptr;
-            },
+            [&image, &image_allocator](int width, int height) -> bool
+            { return (image = image_allocator(width, height)) != nullptr; },
             [&image](int tiff_bitspersample, int tiff_samplesperpixel, int row, int strip_width, int strip_height,
-                     int crop_x, int crop_y, uint8_t* tiff_buffer) -> bool {
+                     int crop_x, int crop_y, uint8_t* tiff_buffer) -> bool
+            {
                 return process_tiff_strip(image.get(), tiff_bitspersample, tiff_samplesperpixel, row,
                                           /*strip_width=*/strip_width, strip_height,
                                           /*crop_x=*/crop_x, /*crop_y=*/crop_y, tiff_buffer);
@@ -587,35 +688,35 @@ class image : public basic_image<T> {
         return image;
     }
 
-    constexpr static unique_ptr read_dng_file(const std::string& filename,
-                                              tiff_metadata* dng_metadata = nullptr,
-                                              tiff_metadata* exif_metadata = nullptr) {
-        return read_dng_file(filename, [] (int width, int height) -> unique_ptr {
-            return std::make_unique<gls::image<T>>(width, height);
-        }, dng_metadata, exif_metadata);
+    constexpr static unique_ptr read_dng_file(const std::string& filename, tiff_metadata* dng_metadata = nullptr,
+                                              tiff_metadata* exif_metadata = nullptr)
+    {
+        return read_dng_file(
+            filename, [](int width, int height) -> unique_ptr
+            { return std::make_unique<gls::image<T>>(width, height); }, dng_metadata, exif_metadata);
     }
 
     // Write image to DNG file
     constexpr void write_dng_file(const std::string& filename, tiff_compression compression = tiff_compression::NONE,
                                   const tiff_metadata* dng_metadata = nullptr,
-                                  const tiff_metadata* exif_metadata = nullptr) const {
+                                  const tiff_metadata* exif_metadata = nullptr) const
+    {
         typedef typename T::value_type value_type;
         auto row_pointer = [this](int row) -> value_type* { return (value_type*)(*this)[row]; };
         gls::write_dng_file(filename, basic_image<T>::width, basic_image<T>::height, T::channels, T::bit_depth,
                             compression, dng_metadata, exif_metadata, row_pointer);
     }
 
-    static unique_ptr read_raw_dump(const std::string& filename,
-                                              const int width,
-                                              const int height,
-                                              const int bytes_per_pixel) {
-
+    static unique_ptr read_raw_dump(const std::string& filename, const int width, const int height,
+                                    const int bytes_per_pixel)
+    {
         std::cout << "Reading raw dump file: " << filename << std::endl;
 
         auto image = std::make_unique<gls::image<gls::luma_pixel_16>>(width, height);
         // read bytes from file
         std::ifstream file(filename, std::ios::binary);
-        if (!file) {
+        if (!file)
+        {
             std::cout << "Cannot open the image file: " << filename << std::endl;
             return nullptr;
         }
@@ -626,96 +727,125 @@ class image : public basic_image<T> {
         return image;
     }
 
-    constexpr void drawCircle(int x, int y, int radius, const T& color) {
-        for (int i = -radius; i <= radius; i++) {
-            for (int j = -radius; j <= radius; j++) {
-                if (i * i + j * j <= radius * radius) {
+    constexpr void drawCircle(int x, int y, int radius, const T& color)
+    {
+        for (int i = -radius; i <= radius; i++)
+        {
+            for (int j = -radius; j <= radius; j++)
+            {
+                if (i * i + j * j <= radius * radius)
+                {
                     (*this)[y + i][x + j] = color;
                 }
             }
         }
     }
 
-#else 
-    constexpr static unique_ptr read_png_file(const std::string& filename) {
-        assert(false && "Image IO disabed by BUILD_WIHTOUTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
+#else
+    constexpr static unique_ptr read_png_file(const std::string& filename)
+    {
+        assert(false &&
+               "Image IO only enabled with GLASS_IMAGE_BUILD_IMAGE_IO flag. Please enable it to use this function.");
         return nullptr;
     }
 
     constexpr void write_png_file(const std::string& filename, bool skip_alpha,
-                                  const std::vector<uint8_t>* icc_profile_data, int compression_level = 0) const {
-        assert(false && "Image IO disabed by BUILD_WIHTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
+                                  const std::vector<uint8_t>* icc_profile_data, int compression_level = 0) const
+    {
+        assert(false &&
+               "Image IO only enabled with GLASS_IMAGE_BUILD_IMAGE_IO flag. Please enable it to use this function.");
     }
 
-    constexpr void write_png_file(const std::string& filename, bool skip_alpha, int compression_level = 0) const { 
-        assert(false && "Image IO disabed by BUILD_WIHTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
+    constexpr void write_png_file(const std::string& filename, bool skip_alpha, int compression_level = 0) const
+    {
+        assert(false &&
+               "Image IO only enabled with GLASS_IMAGE_BUILD_IMAGE_IO flag. Please enable it to use this function.");
     }
 
-    constexpr void write_png_file(const std::string& filename, int compression_level = 0) const {
-        assert(false && "Image IO disabed by BUILD_WIHTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
+    constexpr void write_png_file(const std::string& filename, int compression_level = 0) const
+    {
+        assert(false &&
+               "Image IO only enabled with GLASS_IMAGE_BUILD_IMAGE_IO flag. Please enable it to use this function.");
     }
 
     // Image factory from JPEG file
-    constexpr static unique_ptr read_jpeg_file(const std::string& filename) {
-        assert(false && "Image IO disabed by BUILD_WIHTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
+    constexpr static unique_ptr read_jpeg_file(const std::string& filename)
+    {
+        assert(false &&
+               "Image IO only enabled with GLASS_IMAGE_BUILD_IMAGE_IO flag. Please enable it to use this function.");
     }
 
     // Write image to JPEG file
-    constexpr void write_jpeg_file(const std::string& filename, int quality) const {
-        assert(false && "Image IO disabed by BUILD_WIHTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
+    constexpr void write_jpeg_file(const std::string& filename, int quality) const
+    {
+        assert(false &&
+               "Image IO only enabled with GLASS_IMAGE_BUILD_IMAGE_IO flag. Please enable it to use this function.");
     }
 
     // Do not include extension
-    void write_data_file(const std::string& filename) const {
-        assert(false && "Image IO disabed by BUILD_WIHTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
+    void write_data_file(const std::string& filename) const
+    {
+        assert(false &&
+               "Image IO only enabled with GLASS_IMAGE_BUILD_IMAGE_IO flag. Please enable it to use this function.");
     }
 
-    void read_in_data_file(const std::string& filename) {
-        assert(false && "Image IO disabed by BUILD_WIHTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
+    void read_in_data_file(const std::string& filename)
+    {
+        assert(false &&
+               "Image IO only enabled with GLASS_IMAGE_BUILD_IMAGE_IO flag. Please enable it to use this function.");
     }
 
     // Helper function for read_tiff_file and read_dng_file
     constexpr static bool process_tiff_strip(image* destination, int tiff_bitspersample, int tiff_samplesperpixel,
                                              int destination_row, int strip_width, int strip_height, int crop_x,
-                                             int crop_y, uint8_t* tiff_buffer) {
-        assert(false && "Image IO disabed by BUILD_WIHTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
+                                             int crop_y, uint8_t* tiff_buffer)
+    {
+        assert(false &&
+               "Image IO only enabled with GLASS_IMAGE_BUILD_IMAGE_IO flag. Please enable it to use this function.");
         return false;
     };
 
     // Image factory from TIFF file
     constexpr static unique_ptr read_tiff_file(const std::string& filename,
                                                std::function<unique_ptr(int width, int height)> image_allocator,
-                                               tiff_metadata* metadata = nullptr) {
-        assert(false && "Image IO disabed by BUILD_WIHTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
-        return nullptr; 
+                                               tiff_metadata* metadata = nullptr)
+    {
+        assert(false &&
+               "Image IO only enabled with GLASS_IMAGE_BUILD_IMAGE_IO flag. Please enable it to use this function.");
+        return nullptr;
     }
 
-
-    constexpr static unique_ptr read_tiff_file(const std::string& filename, tiff_metadata* metadata = nullptr) {
-        assert(false && "Image IO disabed by BUILD_WIHTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
-        return nullptr; 
+    constexpr static unique_ptr read_tiff_file(const std::string& filename, tiff_metadata* metadata = nullptr)
+    {
+        assert(false &&
+               "Image IO only enabled with GLASS_IMAGE_BUILD_IMAGE_IO flag. Please enable it to use this function.");
+        return nullptr;
     }
 
     /*
     // Write image to TIFF file
     constexpr void write_tiff_file(const std::string& filename, tiff_compression compression = tiff_compression::NONE,
-                                   tiff_metadata* metadata = nullptr, const std::vector<uint8_t>* icc_profile_data = nullptr) const { }
+                                   tiff_metadata* metadata = nullptr, const std::vector<uint8_t>* icc_profile_data =
+    nullptr) const { }
                                    */
 
     // Image factory from DNG file
     constexpr static unique_ptr read_dng_file(const std::string& filename,
                                               std::function<unique_ptr(int width, int height)> image_allocator,
                                               tiff_metadata* dng_metadata = nullptr,
-                                              tiff_metadata* exif_metadata = nullptr) {
-        assert(false && "Image IO disabed by BUILD_WIHTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
+                                              tiff_metadata* exif_metadata = nullptr)
+    {
+        assert(false &&
+               "Image IO only enabled with GLASS_IMAGE_BUILD_IMAGE_IO flag. Please enable it to use this function.");
         return nullptr;
     }
 
-    constexpr static unique_ptr read_dng_file(const std::string& filename,
-                                              tiff_metadata* dng_metadata = nullptr,
-                                              tiff_metadata* exif_metadata = nullptr) {
-        assert(false && "Image IO disabed by BUILD_WIHTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
-        return nullptr; 
+    constexpr static unique_ptr read_dng_file(const std::string& filename, tiff_metadata* dng_metadata = nullptr,
+                                              tiff_metadata* exif_metadata = nullptr)
+    {
+        assert(false &&
+               "Image IO only enabled with GLASS_IMAGE_BUILD_IMAGE_IO flag. Please enable it to use this function.");
+        return nullptr;
     }
 
     /*
@@ -725,26 +855,30 @@ class image : public basic_image<T> {
                                   const tiff_metadata* exif_metadata = nullptr) const { }
                                   */
 
-    static unique_ptr read_raw_dump(const std::string& filename,
-                                              const int width,
-                                              const int height,
-                                              const int bytes_per_pixel) {
-        assert(false && "Image IO disabed by BUILD_WIHTOUT_IMAGE_IO_LIBS flag. Please disable it to use this function.");
-        return nullptr; 
+    static unique_ptr read_raw_dump(const std::string& filename, const int width, const int height,
+                                    const int bytes_per_pixel)
+    {
+        assert(false &&
+               "Image IO only enabled with GLASS_IMAGE_BUILD_IMAGE_IO flag. Please enable it to use this function.");
+        return nullptr;
     }
 
 #endif
-
 };
 
 template <typename T>
-constexpr static inline void copyPixels(gls::image<T>* to, const gls::image<T>& from) {
+constexpr static inline void copyPixels(gls::image<T>* to, const gls::image<T>& from)
+{
     assert(to->width == from.width && to->height == from.height);
 
-    if (to->stride == from.stride) {
+    if (to->stride == from.stride)
+    {
         memcpy((void*)(*to)[0], (void*)from[0], to->stride * to->height * sizeof(T));
-    } else {
-        for (int j = 0; j < to->height; j++) {
+    }
+    else
+    {
+        for (int j = 0; j < to->height; j++)
+        {
             memcpy((void*)(*to)[j], (void*)from[j], to->width * sizeof(T));
         }
     }
