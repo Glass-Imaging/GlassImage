@@ -35,8 +35,9 @@ if(GLASS_IMAGE_BUILD_IMAGE_IO AND (CMAKE_SYSTEM_NAME STREQUAL "Android"))
         gls_tiff_metadata.cpp
     )    
 
-    add_library( libjpg STATIC IMPORTED )
-    set_target_properties( libjpg PROPERTIES IMPORTED_LOCATION ${GLASS_IMAGE_PATH}/android/support_libs/jni/${ANDROID_ABI}/libjpeg-turbo.a )
+    # TODO: What did this do? Is it needed?
+    # add_library( libjpg STATIC IMPORTED )
+    # set_target_properties( libjpg PROPERTIES IMPORTED_LOCATION ${GLASS_IMAGE_PATH}/android/support_libs/jni/${ANDROID_ABI}/libjpeg-turbo.a )
 
     target_link_libraries(
         GlassImage
@@ -82,10 +83,10 @@ elseif(GLASS_IMAGE_BUILD_IMAGE_IO AND CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         GlassLogging
     )
 else()
-target_link_libraries(
-    GlassImage
-    GlassLogging
-)
+    target_link_libraries(
+        GlassImage
+        GlassLogging
+    )
 endif()
 
 # Target GlassImageTest
