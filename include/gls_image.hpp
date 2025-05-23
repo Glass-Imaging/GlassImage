@@ -863,6 +863,12 @@ class image : public basic_image<T>
         return nullptr;
     }
 
+    constexpr void drawCircle(int x, int y, int radius, const T& color)
+    {
+        assert(false &&
+               "Image IO only enabled with GLASS_IMAGE_BUILD_IMAGE_IO flag. Please enable it to use this function.");
+    }
+
 #endif
 };
 
