@@ -91,8 +91,12 @@ class ocl_buffer : public platform_buffer {
     const cl::Buffer _buffer;
 
    public:
-    ocl_buffer(cl::Context context, size_t lenght, bool readOnly)
-        : _buffer(cl::Buffer(context, readOnly ? CL_MEM_READ_ONLY : CL_MEM_READ_WRITE, lenght)) {}
+    // Create new buffer
+    ocl_buffer(cl::Context context, size_t length, bool readOnly)
+        : _buffer(cl::Buffer(context, readOnly ? CL_MEM_READ_ONLY : CL_MEM_READ_WRITE, length)) {}
+    
+    // Wrap existing buffer (e.g., from QNN ION buffer)
+    ocl_buffer(const cl::Buffer& existingBuffer) : _buffer(existingBuffer) {}
 
     cl::Buffer buffer() const { return _buffer; }
 
