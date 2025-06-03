@@ -24,6 +24,7 @@ class ocl_texture : public virtual platform_texture {
 
    public:
     cl::Image2D image() const { return _image; }
+    cl::Buffer buffer() const { return _buffer; }
 
     int texture_width() const override { return (int)_image.getImageInfo<CL_IMAGE_WIDTH>(); }
 
