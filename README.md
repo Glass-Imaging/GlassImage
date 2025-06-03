@@ -84,7 +84,7 @@ from `cl_pipeline.cpp` illustrates how to use the `gls::cl_image` types in conju
                        input.getImage2D(), output->getImage2D());
             return 0;
         } catch (cl::Error& err) {
-            LOG_ERROR(TAG) << "Caught Exception: " << std::string(err.what())
+            gls::logging::LogError(TAG) << "Caught Exception: " << std::string(err.what())
                            << " - " << gls::clStatusToString(err.err())
                            << std::endl;
             return -1;
