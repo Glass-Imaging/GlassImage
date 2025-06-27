@@ -558,7 +558,7 @@ class image : public basic_image<T>
         long file_size = file.tellg();
         file.seekg(0, std::ios::beg);
 
-        long image_size = this->width * this->height * bit_depth;
+        long image_size = this->width * this->height * bit_depth * channels;
 
         if (image_size != file_size)
         {
