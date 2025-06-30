@@ -103,6 +103,7 @@ static const char* cl_options = "-cl-std=CL2.0 -Werror -cl-single-precision-cons
 class OCLContext : public GpuContext {
     cl::Context _clContext;
     cl::Program _program;
+    cl::CommandQueue _commandQueue;
     const std::string _shadersRootPath;
 
 #if defined(__ANDROID__) && defined(USE_ASSET_MANAGER)
@@ -111,7 +112,8 @@ class OCLContext : public GpuContext {
 #endif
 
    public:
-    OCLContext(const std::vector<std::string>& programs, const std::string& shadersRootPath = "")
+    OCLContext(const std::vector<std::string>& programs, const std::string& shadersRootPath = "", 
+               bool enableProfiling = false)
         : _shadersRootPath(shadersRootPath) {
 #if __ANDROID__
         // Load libOpenCL
@@ -177,6 +179,18 @@ class OCLContext : public GpuContext {
         std::cout << "- CL_DEVICE_EXTENSIONS: " << d.getInfo<CL_DEVICE_EXTENSIONS>() << std::endl;
 #endif
 #endif
+
+        // Initialize command queue with optional profiling
+        if (enableProfiling)
+        {
+            cl_command_queue_properties queueProperties = enableProfiling ? CL_QUEUE_PROFILING_ENABLE : 0;
+            _commandQueue = cl::CommandQueue(_clContext, cl::Device::getDefault(), queueProperties);
+        }
+        else
+        {
+            _commandQueue = cl::CommandQueue::getDefault();
+        }
+
         //       TODO: FIGURE OUT WHY THIS IS COMMENTED IN DOUG's version
         //        loadPrograms(programs);
     }
@@ -192,6 +206,7 @@ class OCLContext : public GpuContext {
 
     cl::Context clContext() { return _clContext; }
     cl::Program clProgram() { return _program; }
+    cl::CommandQueue clCommandQueue() { return _commandQueue; }
 
     inline static std::vector<int> computeDivisors(const size_t val) {
         std::vector<int> divisors;
@@ -497,15 +512,33 @@ class OCLContext : public GpuContext {
     }
 
     // Event-based enqueue methods for cross-queue synchronization
-    cl::Event enqueueWithEvent(const std::string& kernelName, const gls::size& gridSize, const gls::size& threadGroupSize,
-                               std::function<void(GpuCommandEncoder*)> encodeKernelParameters,
-                               std::function<void(void)> completionHandler = [](){}) {
+    cl::Event enqueueWithEvent(
+        const std::string& kernelName, const gls::size& gridSize, const gls::size& threadGroupSize,
+        std::function<void(GpuCommandEncoder*)> encodeKernelParameters,
+        std::function<void(void)> completionHandler = []() {})
+    {
+        return enqueueWithEvent(kernelName, gridSize, threadGroupSize, encodeKernelParameters, _commandQueue,
+                                completionHandler);
+    }
+
+    cl::Event enqueueWithEvent(
+        const std::string& kernelName, const gls::size& gridSize,
+        std::function<void(GpuCommandEncoder*)> encodeKernelParameters,
+        std::function<void(void)> completionHandler = []() {})
+    {
+        return enqueueWithEvent(kernelName, gridSize, encodeKernelParameters, _commandQueue, completionHandler);
+    }
+
+    // Event-based enqueue methods with custom command queue (DI)
+    cl::Event enqueueWithEvent(
+        const std::string& kernelName, const gls::size& gridSize, const gls::size& threadGroupSize,
+        std::function<void(GpuCommandEncoder*)> encodeKernelParameters, cl::CommandQueue& queue,
+        std::function<void(void)> completionHandler = []() {})
+    {
         cl::Kernel kernel(_program, kernelName.c_str());
         OCLCommandEncoder encoder(kernel);
 
         encodeKernelParameters(&encoder);
-
-        cl::CommandQueue queue = cl::CommandQueue::getDefault();
 
         cl::NDRange global_workgroup_size = cl::NDRange(gridSize.width, gridSize.height);
         cl::NDRange local_workgroup_size = cl::NDRange(threadGroupSize.width, threadGroupSize.height);
@@ -515,16 +548,16 @@ class OCLContext : public GpuContext {
         return event;
     }
 
-    cl::Event enqueueWithEvent(const std::string& kernelName, const gls::size& gridSize,
-                               std::function<void(GpuCommandEncoder*)> encodeKernelParameters,
-                               std::function<void(void)> completionHandler = [](){}) {
+    cl::Event enqueueWithEvent(
+        const std::string& kernelName, const gls::size& gridSize,
+        std::function<void(GpuCommandEncoder*)> encodeKernelParameters, cl::CommandQueue& queue,
+        std::function<void(void)> completionHandler = []() {})
+    {
         try {
             cl::Kernel kernel(_program, kernelName.c_str());
             OCLCommandEncoder encoder(kernel);
 
             encodeKernelParameters(&encoder);
-
-            cl::CommandQueue queue = cl::CommandQueue::getDefault();
 
             cl::NDRange global_workgroup_size = cl::NDRange(gridSize.width, gridSize.height);
 
