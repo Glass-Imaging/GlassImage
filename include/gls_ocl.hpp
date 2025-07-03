@@ -103,6 +103,7 @@ static const char* cl_options = "-cl-std=CL2.0 -Werror -cl-single-precision-cons
 class OCLContext : public GpuContext {
     cl::Context _clContext;
     cl::Program _program;
+    cl::CommandQueue _commandQueue;
     const std::string _shadersRootPath;
 
 #if defined(__ANDROID__) && defined(USE_ASSET_MANAGER)
@@ -111,7 +112,8 @@ class OCLContext : public GpuContext {
 #endif
 
    public:
-    OCLContext(const std::vector<std::string>& programs, const std::string& shadersRootPath = "")
+    OCLContext(const std::vector<std::string>& programs, const std::string& shadersRootPath = "", 
+               bool enableProfiling = false, bool useDedicatedQueue = false)
         : _shadersRootPath(shadersRootPath) {
 #if __ANDROID__
         // Load libOpenCL
@@ -177,6 +179,18 @@ class OCLContext : public GpuContext {
         std::cout << "- CL_DEVICE_EXTENSIONS: " << d.getInfo<CL_DEVICE_EXTENSIONS>() << std::endl;
 #endif
 #endif
+
+        // Initialize command queue - use dedicated queue if requested, otherwise default
+        if (useDedicatedQueue || enableProfiling)
+        {
+            cl_command_queue_properties queueProperties = enableProfiling ? CL_QUEUE_PROFILING_ENABLE : 0;
+            _commandQueue = cl::CommandQueue(_clContext, cl::Device::getDefault(), queueProperties);
+        }
+        else
+        {
+            _commandQueue = cl::CommandQueue::getDefault();
+        }
+
         //       TODO: FIGURE OUT WHY THIS IS COMMENTED IN DOUG's version
         //        loadPrograms(programs);
     }
@@ -192,6 +206,7 @@ class OCLContext : public GpuContext {
 
     cl::Context clContext() { return _clContext; }
     cl::Program clProgram() { return _program; }
+    cl::CommandQueue clCommandQueue() { return _commandQueue; }
 
     inline static std::vector<int> computeDivisors(const size_t val) {
         std::vector<int> divisors;
@@ -485,33 +500,78 @@ class OCLContext : public GpuContext {
     virtual void enqueue(const std::string& kernelName, const gls::size& gridSize, const gls::size& threadGroupSize,
                          std::function<void(GpuCommandEncoder*)> encodeKernelParameters,
                          std::function<void(void)> completionHandler) override {
-        cl::Kernel kernel(_program, kernelName.c_str());
-        OCLCommandEncoder encoder(kernel);
-
-        encodeKernelParameters(&encoder);
-
-        cl::CommandQueue queue = cl::CommandQueue::getDefault();
-
-        cl::NDRange global_workgroup_size = cl::NDRange(gridSize.width, gridSize.height);
-        cl::NDRange local_workgroup_size = cl::NDRange(threadGroupSize.width, threadGroupSize.height);
-
-        queue.enqueueNDRangeKernel(kernel, cl::NullRange, global_workgroup_size, local_workgroup_size);
+        // Call the event-based version and ignore the event for backward compatibility
+        enqueueWithEvent(kernelName, gridSize, threadGroupSize, encodeKernelParameters);
     }
 
     virtual void enqueue(const std::string& kernelName, const gls::size& gridSize,
                          std::function<void(GpuCommandEncoder*)> encodeKernelParameters,
                          std::function<void(void)> completionHandler) override {
+        // Call the event-based version and ignore the event for backward compatibility
+        enqueueWithEvent(kernelName, gridSize, encodeKernelParameters);
+    }
+
+    // Event-based enqueue methods for cross-queue synchronization
+    cl::Event enqueueWithEvent(
+        const std::string& kernelName, const gls::size& gridSize, const gls::size& threadGroupSize,
+        std::function<void(GpuCommandEncoder*)> encodeKernelParameters,
+        const std::vector<cl::Event>& waitEvents = {}, cl::Event* outputEvent = nullptr)
+    {
+        return enqueueWithEvent(kernelName, gridSize, threadGroupSize, encodeKernelParameters, _commandQueue,
+                                waitEvents, outputEvent);
+    }
+
+    cl::Event enqueueWithEvent(
+        const std::string& kernelName, const gls::size& gridSize,
+        std::function<void(GpuCommandEncoder*)> encodeKernelParameters,
+        const std::vector<cl::Event>& waitEvents = {}, cl::Event* outputEvent = nullptr)
+    {
+        return enqueueWithEvent(kernelName, gridSize, encodeKernelParameters, _commandQueue, waitEvents, outputEvent);
+    }
+
+    // Event-based enqueue methods with custom command queue (DI)
+    cl::Event enqueueWithEvent(
+        const std::string& kernelName, const gls::size& gridSize, const gls::size& threadGroupSize,
+        std::function<void(GpuCommandEncoder*)> encodeKernelParameters, cl::CommandQueue& queue,
+        const std::vector<cl::Event>& waitEvents = {}, cl::Event* outputEvent = nullptr)
+    {
+        cl::Kernel kernel(_program, kernelName.c_str());
+        OCLCommandEncoder encoder(kernel);
+
+        encodeKernelParameters(&encoder);
+
+        cl::NDRange global_workgroup_size = cl::NDRange(gridSize.width, gridSize.height);
+        cl::NDRange local_workgroup_size = cl::NDRange(threadGroupSize.width, threadGroupSize.height);
+
+        if (outputEvent) {
+            queue.enqueueNDRangeKernel(kernel, cl::NullRange, global_workgroup_size, local_workgroup_size, &waitEvents, outputEvent);
+            return *outputEvent;
+        } else {
+            cl::Event event;
+            queue.enqueueNDRangeKernel(kernel, cl::NullRange, global_workgroup_size, local_workgroup_size, &waitEvents, &event);
+            return event;
+        }
+    }
+
+    cl::Event enqueueWithEvent(
+        const std::string& kernelName, const gls::size& gridSize,
+        std::function<void(GpuCommandEncoder*)> encodeKernelParameters, cl::CommandQueue& queue,
+        const std::vector<cl::Event>& waitEvents = {}, cl::Event* outputEvent = nullptr)
+    {
         try {
             cl::Kernel kernel(_program, kernelName.c_str());
             OCLCommandEncoder encoder(kernel);
 
             encodeKernelParameters(&encoder);
 
-            cl::CommandQueue queue = cl::CommandQueue::getDefault();
-
             cl::NDRange global_workgroup_size = cl::NDRange(gridSize.width, gridSize.height);
 
-            queue.enqueueNDRangeKernel(kernel, cl::NullRange, global_workgroup_size);
+            if (!outputEvent) {
+                outputEvent = new cl::Event();
+            }
+            queue.enqueueNDRangeKernel(kernel, cl::NullRange, global_workgroup_size, cl::NullRange, &waitEvents, outputEvent);
+            return *outputEvent;
+
         } catch (const cl::Error& e) {
             std::cerr << "OpenCL Kernel Error - " << kernelName << " - " << e.what() << ": "
                       << clStatusToString(e.err()) << std::endl;
@@ -521,6 +581,93 @@ class OCLContext : public GpuContext {
             //                     e.what(), clStatusToString(e.err()).c_str());
             throw std::runtime_error("OpenCL Kernel Error");
         }
+    }
+
+
+};
+
+// OCL-specific kernel wrapper that supports event-based execution
+template <typename... Ts>
+class OCLKernel : public Kernel<Ts...> {
+private:
+    OCLContext* ocl_context_;
+
+public:
+    OCLKernel(OCLContext* context, const std::string& kernelName) 
+        : Kernel<Ts...>(context, kernelName), ocl_context_(context) {}
+
+    // Regular execution (inherited from base class)
+    using Kernel<Ts...>::operator();
+
+    // Event-based execution for cross-queue synchronization
+    cl::Event operator()(const gls::size& gridSize, const Ts&... ts) const {
+        return ocl_context_->enqueueWithEvent(
+            this->_kernelName,
+            gridSize,
+            [&, this](GpuCommandEncoder* encoder) { 
+                this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); 
+            }
+        );
+    }
+
+    cl::Event operator()(const gls::size& gridSize, const gls::size& threadGroupSize, const Ts&... ts) const {
+        return ocl_context_->enqueueWithEvent(
+            this->_kernelName,
+            gridSize,
+            threadGroupSize,
+            [&, this](GpuCommandEncoder* encoder) { 
+                this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); 
+            }
+        );
+    }
+
+    // Event-based execution with wait events
+    cl::Event operator()(const gls::size& gridSize, const std::vector<cl::Event>& waitEvents, const Ts&... ts) const {
+        return ocl_context_->enqueueWithEvent(
+            this->_kernelName,
+            gridSize,
+            [&, this](GpuCommandEncoder* encoder) { 
+                this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); 
+            },
+            waitEvents
+        );
+    }
+
+    cl::Event operator()(const gls::size& gridSize, const std::vector<cl::Event>& waitEvents, cl::Event* outputEvent, const Ts&... ts) const {
+        return ocl_context_->enqueueWithEvent(
+            this->_kernelName,
+            gridSize,
+            [&, this](GpuCommandEncoder* encoder) { 
+                this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); 
+            },
+            waitEvents,
+            outputEvent
+        );
+    }
+
+    cl::Event operator()(const gls::size& gridSize, const gls::size& threadGroupSize, const std::vector<cl::Event>& waitEvents, const Ts&... ts) const {
+        return ocl_context_->enqueueWithEvent(
+            this->_kernelName,
+            gridSize,
+            threadGroupSize,
+            [&, this](GpuCommandEncoder* encoder) { 
+                this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); 
+            },
+            waitEvents
+        );
+    }
+
+    cl::Event operator()(const gls::size& gridSize, const gls::size& threadGroupSize, const std::vector<cl::Event>& waitEvents, cl::Event* outputEvent, const Ts&... ts) const {
+        return ocl_context_->enqueueWithEvent(
+            this->_kernelName,
+            gridSize,
+            threadGroupSize,
+            [&, this](GpuCommandEncoder* encoder) { 
+                this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); 
+            },
+            waitEvents,
+            outputEvent
+        );
     }
 };
 

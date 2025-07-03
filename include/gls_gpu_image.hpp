@@ -364,8 +364,8 @@ class GpuContext {
 
 template <typename... Ts>
 class Kernel {
+   protected:
     const std::string _kernelName;
-
     template <int index, typename T0, typename... T1s>
     void setArgs(GpuCommandEncoder* encoder, const T0&& t0, const T1s&&... t1s) const {
         setParameter(encoder, t0, index);
