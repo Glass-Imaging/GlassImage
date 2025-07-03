@@ -113,7 +113,7 @@ class OCLContext : public GpuContext {
 
    public:
     OCLContext(const std::vector<std::string>& programs, const std::string& shadersRootPath = "", 
-               bool enableProfiling = false)
+               bool enableProfiling = false, bool useDedicatedQueue = false)
         : _shadersRootPath(shadersRootPath) {
 #if __ANDROID__
         // Load libOpenCL
@@ -180,8 +180,8 @@ class OCLContext : public GpuContext {
 #endif
 #endif
 
-        // Initialize command queue with optional profiling
-        if (enableProfiling)
+        // Initialize command queue - use dedicated queue if requested, otherwise default
+        if (useDedicatedQueue || enableProfiling)
         {
             cl_command_queue_properties queueProperties = enableProfiling ? CL_QUEUE_PROFILING_ENABLE : 0;
             _commandQueue = cl::CommandQueue(_clContext, cl::Device::getDefault(), queueProperties);
@@ -501,39 +501,39 @@ class OCLContext : public GpuContext {
                          std::function<void(GpuCommandEncoder*)> encodeKernelParameters,
                          std::function<void(void)> completionHandler) override {
         // Call the event-based version and ignore the event for backward compatibility
-        enqueueWithEvent(kernelName, gridSize, threadGroupSize, encodeKernelParameters, completionHandler);
+        enqueueWithEvent(kernelName, gridSize, threadGroupSize, encodeKernelParameters);
     }
 
     virtual void enqueue(const std::string& kernelName, const gls::size& gridSize,
                          std::function<void(GpuCommandEncoder*)> encodeKernelParameters,
                          std::function<void(void)> completionHandler) override {
         // Call the event-based version and ignore the event for backward compatibility
-        enqueueWithEvent(kernelName, gridSize, encodeKernelParameters, completionHandler);
+        enqueueWithEvent(kernelName, gridSize, encodeKernelParameters);
     }
 
     // Event-based enqueue methods for cross-queue synchronization
     cl::Event enqueueWithEvent(
         const std::string& kernelName, const gls::size& gridSize, const gls::size& threadGroupSize,
         std::function<void(GpuCommandEncoder*)> encodeKernelParameters,
-        std::function<void(void)> completionHandler = []() {})
+        const std::vector<cl::Event>& waitEvents = {}, cl::Event* outputEvent = nullptr)
     {
         return enqueueWithEvent(kernelName, gridSize, threadGroupSize, encodeKernelParameters, _commandQueue,
-                                completionHandler);
+                                waitEvents, outputEvent);
     }
 
     cl::Event enqueueWithEvent(
         const std::string& kernelName, const gls::size& gridSize,
         std::function<void(GpuCommandEncoder*)> encodeKernelParameters,
-        std::function<void(void)> completionHandler = []() {})
+        const std::vector<cl::Event>& waitEvents = {}, cl::Event* outputEvent = nullptr)
     {
-        return enqueueWithEvent(kernelName, gridSize, encodeKernelParameters, _commandQueue, completionHandler);
+        return enqueueWithEvent(kernelName, gridSize, encodeKernelParameters, _commandQueue, waitEvents, outputEvent);
     }
 
     // Event-based enqueue methods with custom command queue (DI)
     cl::Event enqueueWithEvent(
         const std::string& kernelName, const gls::size& gridSize, const gls::size& threadGroupSize,
         std::function<void(GpuCommandEncoder*)> encodeKernelParameters, cl::CommandQueue& queue,
-        std::function<void(void)> completionHandler = []() {})
+        const std::vector<cl::Event>& waitEvents = {}, cl::Event* outputEvent = nullptr)
     {
         cl::Kernel kernel(_program, kernelName.c_str());
         OCLCommandEncoder encoder(kernel);
@@ -543,15 +543,20 @@ class OCLContext : public GpuContext {
         cl::NDRange global_workgroup_size = cl::NDRange(gridSize.width, gridSize.height);
         cl::NDRange local_workgroup_size = cl::NDRange(threadGroupSize.width, threadGroupSize.height);
 
-        cl::Event event;
-        queue.enqueueNDRangeKernel(kernel, cl::NullRange, global_workgroup_size, local_workgroup_size, nullptr, &event);
-        return event;
+        if (outputEvent) {
+            queue.enqueueNDRangeKernel(kernel, cl::NullRange, global_workgroup_size, local_workgroup_size, &waitEvents, outputEvent);
+            return *outputEvent;
+        } else {
+            cl::Event event;
+            queue.enqueueNDRangeKernel(kernel, cl::NullRange, global_workgroup_size, local_workgroup_size, &waitEvents, &event);
+            return event;
+        }
     }
 
     cl::Event enqueueWithEvent(
         const std::string& kernelName, const gls::size& gridSize,
         std::function<void(GpuCommandEncoder*)> encodeKernelParameters, cl::CommandQueue& queue,
-        std::function<void(void)> completionHandler = []() {})
+        const std::vector<cl::Event>& waitEvents = {}, cl::Event* outputEvent = nullptr)
     {
         try {
             cl::Kernel kernel(_program, kernelName.c_str());
@@ -561,9 +566,12 @@ class OCLContext : public GpuContext {
 
             cl::NDRange global_workgroup_size = cl::NDRange(gridSize.width, gridSize.height);
 
-            cl::Event event;
-            queue.enqueueNDRangeKernel(kernel, cl::NullRange, global_workgroup_size, cl::NullRange, nullptr, &event);
-            return event;
+            if (!outputEvent) {
+                outputEvent = new cl::Event();
+            }
+            queue.enqueueNDRangeKernel(kernel, cl::NullRange, global_workgroup_size, cl::NullRange, &waitEvents, outputEvent);
+            return *outputEvent;
+
         } catch (const cl::Error& e) {
             std::cerr << "OpenCL Kernel Error - " << kernelName << " - " << e.what() << ": "
                       << clStatusToString(e.err()) << std::endl;
@@ -574,6 +582,8 @@ class OCLContext : public GpuContext {
             throw std::runtime_error("OpenCL Kernel Error");
         }
     }
+
+
 };
 
 // OCL-specific kernel wrapper that supports event-based execution
@@ -608,6 +618,55 @@ public:
             [&, this](GpuCommandEncoder* encoder) { 
                 this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); 
             }
+        );
+    }
+
+    // Event-based execution with wait events
+    cl::Event operator()(const gls::size& gridSize, const std::vector<cl::Event>& waitEvents, const Ts&... ts) const {
+        return ocl_context_->enqueueWithEvent(
+            this->_kernelName,
+            gridSize,
+            [&, this](GpuCommandEncoder* encoder) { 
+                this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); 
+            },
+            waitEvents
+        );
+    }
+
+    cl::Event operator()(const gls::size& gridSize, const std::vector<cl::Event>& waitEvents, cl::Event* outputEvent, const Ts&... ts) const {
+        return ocl_context_->enqueueWithEvent(
+            this->_kernelName,
+            gridSize,
+            [&, this](GpuCommandEncoder* encoder) { 
+                this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); 
+            },
+            waitEvents,
+            outputEvent
+        );
+    }
+
+    cl::Event operator()(const gls::size& gridSize, const gls::size& threadGroupSize, const std::vector<cl::Event>& waitEvents, const Ts&... ts) const {
+        return ocl_context_->enqueueWithEvent(
+            this->_kernelName,
+            gridSize,
+            threadGroupSize,
+            [&, this](GpuCommandEncoder* encoder) { 
+                this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); 
+            },
+            waitEvents
+        );
+    }
+
+    cl::Event operator()(const gls::size& gridSize, const gls::size& threadGroupSize, const std::vector<cl::Event>& waitEvents, cl::Event* outputEvent, const Ts&... ts) const {
+        return ocl_context_->enqueueWithEvent(
+            this->_kernelName,
+            gridSize,
+            threadGroupSize,
+            [&, this](GpuCommandEncoder* encoder) { 
+                this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); 
+            },
+            waitEvents,
+            outputEvent
         );
     }
 };
