@@ -527,7 +527,7 @@ class OCLContext : public GpuContext {
     }
 
     virtual void waitForCompletion() override {
-        cl::finish();
+        _commandQueue.finish();
         //        __android_log_print(ANDROID_LOG_INFO, "OpenCL Debug",  "Error code: %d", errcode);
     }
 
