@@ -12,6 +12,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <optional>
 
 #include "gls_logging.h"
 
@@ -103,16 +104,22 @@ static const char* cl_options = "-cl-std=CL2.0 -Werror -cl-single-precision-cons
 class OCLContext : public GpuContext {
     cl::Context _clContext;
     cl::Program _program;
-    const std::string _shadersRootPath;
+    cl::CommandQueue _commandQueue;
+    std::string _shadersRootPath;
 
 #if defined(__ANDROID__) && defined(USE_ASSET_MANAGER)
     std::map<std::string, std::string> cl_shaders;
     std::map<std::string, std::vector<unsigned char>> cl_bytecode;
 #endif
 
+    // Private default constructor for factory method use
+    OCLContext() {}
+
    public:
-    OCLContext(const std::vector<std::string>& programs, const std::string& shadersRootPath = "")
-        : _shadersRootPath(shadersRootPath) {
+    OCLContext(const std::vector<std::string>& programs, const std::string& shadersRootPath = "",
+               std::optional<cl_command_queue_properties> queueProperties = std::nullopt)
+        : _shadersRootPath(shadersRootPath)
+    {
 #if __ANDROID__
         // Load libOpenCL
         CL_WRAPPER_NS::bindOpenCLLibrary();
@@ -177,8 +184,57 @@ class OCLContext : public GpuContext {
         std::cout << "- CL_DEVICE_EXTENSIONS: " << d.getInfo<CL_DEVICE_EXTENSIONS>() << std::endl;
 #endif
 #endif
+
+        // Initialize command queue - create dedicated queue if properties specified, otherwise use default
+        if (queueProperties.has_value())
+        {
+            _commandQueue = cl::CommandQueue(_clContext, cl::Device::getDefault(), queueProperties.value());
+        }
+        else
+        {
+            _commandQueue = cl::CommandQueue::getDefault();
+        }
+
         //       TODO: FIGURE OUT WHY THIS IS COMMENTED IN DOUG's version
         //        loadPrograms(programs);
+    }
+
+    // Factory method for creating a new context with a new queue. Allows for creating a context with compiled programs
+    // once, and then deriving new contexts with different queues.
+    std::unique_ptr<OCLContext> createWithNewQueue(
+        std::optional<cl_command_queue_properties> queueProperties = cl_command_queue_properties{0}) const
+    {
+        if (!_clContext() || !_program())
+        {
+            throw std::runtime_error("Cannot create OCLContext from invalid source context");
+        }
+
+        // Create a new context using the empty constructor approach
+        auto new_context = std::unique_ptr<OCLContext>(new OCLContext());
+
+        // Copy shared resources from the original context
+        new_context->_clContext = _clContext;
+        new_context->_program = _program;
+        new_context->_shadersRootPath = _shadersRootPath;
+
+#if defined(__ANDROID__) && defined(USE_ASSET_MANAGER)
+        // Copy shader maps if they exist
+        new_context->cl_shaders = cl_shaders;
+        new_context->cl_bytecode = cl_bytecode;
+#endif
+
+        // Create a new dedicated command queue with the specified properties
+        if (queueProperties.has_value())
+        {
+            new_context->_commandQueue =
+                cl::CommandQueue(_clContext, cl::Device::getDefault(), queueProperties.value());
+        }
+        else
+        {
+            new_context->_commandQueue = cl::CommandQueue::getDefault();
+        }
+
+        return new_context;
     }
 
 #if defined(__ANDROID__) && defined(USE_ASSET_MANAGER)
@@ -192,6 +248,7 @@ class OCLContext : public GpuContext {
 
     cl::Context clContext() { return _clContext; }
     cl::Program clProgram() { return _program; }
+    cl::CommandQueue clCommandQueue() { return _commandQueue; }
 
     inline static std::vector<int> computeDivisors(const size_t val) {
         std::vector<int> divisors;
@@ -470,7 +527,7 @@ class OCLContext : public GpuContext {
     }
 
     virtual void waitForCompletion() override {
-        cl::finish();
+        _commandQueue.finish();
         //        __android_log_print(ANDROID_LOG_INFO, "OpenCL Debug",  "Error code: %d", errcode);
     }
 
@@ -490,12 +547,11 @@ class OCLContext : public GpuContext {
 
         encodeKernelParameters(&encoder);
 
-        cl::CommandQueue queue = cl::CommandQueue::getDefault();
 
         cl::NDRange global_workgroup_size = cl::NDRange(gridSize.width, gridSize.height);
         cl::NDRange local_workgroup_size = cl::NDRange(threadGroupSize.width, threadGroupSize.height);
 
-        queue.enqueueNDRangeKernel(kernel, cl::NullRange, global_workgroup_size, local_workgroup_size);
+        _commandQueue.enqueueNDRangeKernel(kernel, cl::NullRange, global_workgroup_size, local_workgroup_size);
     }
 
     virtual void enqueue(const std::string& kernelName, const gls::size& gridSize,
@@ -507,11 +563,9 @@ class OCLContext : public GpuContext {
 
             encodeKernelParameters(&encoder);
 
-            cl::CommandQueue queue = cl::CommandQueue::getDefault();
-
             cl::NDRange global_workgroup_size = cl::NDRange(gridSize.width, gridSize.height);
 
-            queue.enqueueNDRangeKernel(kernel, cl::NullRange, global_workgroup_size);
+            _commandQueue.enqueueNDRangeKernel(kernel, cl::NullRange, global_workgroup_size);
         } catch (const cl::Error& e) {
             std::cerr << "OpenCL Kernel Error - " << kernelName << " - " << e.what() << ": "
                       << clStatusToString(e.err()) << std::endl;
