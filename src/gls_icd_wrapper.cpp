@@ -228,6 +228,13 @@ static void bindOpenClAPIEntries(void* libopencl) {
     /* cl_khr_sub_groups */
     bindEntry(clGetKernelSubGroupInfoKHR);
 
+    /* cl_qcom_recordable_queues extension */
+    bindEntry(clNewRecordingQCOM);
+    bindEntry(clEndRecordingQCOM);
+    bindEntry(clReleaseRecordingQCOM);
+    bindEntry(clRetainRecordingQCOM);
+    bindEntry(clEnqueueRecordingQCOM);
+
 #ifdef OPENCL_2_1
     /* OpenCL 2.1 */
     bindEntry(clCloneKernel);
@@ -382,6 +389,13 @@ cl_api_clCreateFromD3D11Texture3DKHR clCreateFromD3D11Texture3DKHR = nullptr;
 cl_api_clCreateFromDX9MediaSurfaceKHR clCreateFromDX9MediaSurfaceKHR = nullptr;
 cl_api_clEnqueueAcquireD3D11ObjectsKHR clEnqueueAcquireD3D11ObjectsKHR = nullptr;
 cl_api_clEnqueueReleaseD3D11ObjectsKHR clEnqueueReleaseD3D11ObjectsKHR = nullptr;
+
+/* cl_qcom_recordable_queues extension */
+cl_api_clNewRecordingQCOM clNewRecordingQCOM = nullptr;
+cl_api_clEndRecordingQCOM clEndRecordingQCOM = nullptr;
+cl_api_clReleaseRecordingQCOM clReleaseRecordingQCOM = nullptr;
+cl_api_clRetainRecordingQCOM clRetainRecordingQCOM = nullptr;
+cl_api_clEnqueueRecordingQCOM clEnqueueRecordingQCOM = nullptr;
 
 /* cl_khr_dx9_media_sharing */
 cl_api_clGetDeviceIDsFromDX9MediaAdapterKHR clGetDeviceIDsFromDX9MediaAdapterKHR = nullptr;

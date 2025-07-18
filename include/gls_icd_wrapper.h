@@ -209,6 +209,70 @@ extern cl_api_clCreateBufferWithProperties clCreateBufferWithProperties;
 extern cl_api_clCreateImageWithProperties clCreateImageWithProperties;
 extern cl_api_clSetContextDestructorCallback clSetContextDestructorCallback;
 
+/*************************************
+ * cl_qcom_recordable_queues extension *
+ *************************************/
+
+/** Accepted by clGetDeviceInfo */
+#define CL_DEVICE_RECORDABLE_QUEUE_MAX_SIZE        0x41DE
+
+/** Flag to enable recordable command queues */
+#define CL_QUEUE_RECORDABLE_QCOM                  (1u << 30u)  // 0x40000000
+
+typedef struct _cl_recording_qcom * cl_recording_qcom;
+
+/** Array element struct used to set kernel arguments */
+typedef struct _cl_array_arg_qcom{
+    cl_uint dispatch_index;
+    cl_uint arg_index;
+    size_t arg_size;
+    const void *arg_value;
+} cl_array_arg_qcom;
+
+typedef struct _cl_array_kernel_exec_info_qcom{
+    cl_uint dispatch_index;
+    cl_kernel_exec_info param_name;
+    size_t param_value_size;
+    const void *param_value;
+} cl_array_kernel_exec_info_qcom;
+
+/** Used to update a local or global workgroup.  workgroup_size * is used in the same manner as
+   the correponding argument in clEnqueueNDRangeKernel */
+typedef struct _cl_workgroup_qcom {
+    cl_uint dispatch_index;
+    const size_t *workgroup_size;
+} cl_workgroup_qcom;
+
+typedef struct _cl_offset_qcom
+{
+    cl_uint dispatch_index;
+    size_t offsets[3];
+} cl_offset_qcom;
+
+/* Function prototypes for recordable queues */
+typedef cl_recording_qcom
+(CL_API_CALL *cl_api_clNewRecordingQCOM)(cl_command_queue, cl_int *);
+typedef cl_int
+(CL_API_CALL *cl_api_clEndRecordingQCOM)(cl_recording_qcom);
+typedef cl_int
+(CL_API_CALL *cl_api_clReleaseRecordingQCOM)(cl_recording_qcom);
+typedef cl_int
+(CL_API_CALL *cl_api_clRetainRecordingQCOM)(cl_recording_qcom);
+typedef cl_int
+(CL_API_CALL *cl_api_clEnqueueRecordingQCOM)(cl_command_queue, cl_recording_qcom,
+                                            size_t, const cl_array_arg_qcom *,
+                                            size_t, const cl_offset_qcom *,
+                                            size_t, const cl_workgroup_qcom *,
+                                            size_t, const cl_workgroup_qcom *,
+                                            cl_uint, const cl_event *, cl_event *);
+
+/* Function pointers for recordable queues */
+extern cl_api_clNewRecordingQCOM clNewRecordingQCOM;
+extern cl_api_clEndRecordingQCOM clEndRecordingQCOM;
+extern cl_api_clReleaseRecordingQCOM clReleaseRecordingQCOM;
+extern cl_api_clRetainRecordingQCOM clRetainRecordingQCOM;
+extern cl_api_clEnqueueRecordingQCOM clEnqueueRecordingQCOM;
+
 #pragma clang diagnostic pop
 
 }  // namespace CL_WRAPPER_NS
