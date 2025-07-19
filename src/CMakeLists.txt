@@ -21,6 +21,14 @@ target_include_directories(
     ../include
 )
 
+if(GLASS_IMAGE_BUILD_IMAGE_IO)
+    target_compile_definitions(
+        GlassImage
+        PUBLIC
+        GLASS_IMAGE_BUILD_IMAGE_IO
+    )
+endif()
+
 ## Possibly build with image I/O libraries.
 if(GLASS_IMAGE_BUILD_IMAGE_IO AND (CMAKE_SYSTEM_NAME STREQUAL "Android"))
     message("Building with Image IO Libraries for Android")

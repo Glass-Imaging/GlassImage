@@ -9,10 +9,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(GLASS_IMAGE_BUILD_IMAGE_IO "Build with image I/O libraries." OFF)
 SET_PROPERTY(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE) # TODO: Needed for something?
 
-if(GLASS_IMAGE_BUILD_IMAGE_IO)
-    add_compile_definitions(GLASS_IMAGE_BUILD_IMAGE_IO)
-endif()
-
 # Add dependencies
 if(NOT TARGET GlassLogging)
     add_subdirectory(dependencies/internal/GlassLogging)
