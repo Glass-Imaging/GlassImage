@@ -117,7 +117,8 @@ class OCLContext : public GpuContext {
 
    public:
     OCLContext(const std::vector<std::string>& programs, const std::string& shadersRootPath = "",
-               std::optional<cl_command_queue_properties> queueProperties = std::nullopt)
+               std::optional<cl_command_queue_properties> queueProperties = std::nullopt,
+               const std::vector<cl_context_properties>& contextProperties = {})
         : _shadersRootPath(shadersRootPath)
     {
 #if __ANDROID__
@@ -142,8 +143,13 @@ class OCLContext : public GpuContext {
             throw cl::Error(-1, "Error setting default platform.");
         }
 
-        cl_context_properties properties[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platform)(), 0};
-        cl::Context context(CL_DEVICE_TYPE_ALL, properties);
+        // Compose the properties array by combining the required CL_CONTEXT_PLATFORM and any additional contextProperties
+        std::vector<cl_context_properties> merged_context_properties;
+        merged_context_properties.push_back(CL_CONTEXT_PLATFORM);
+        merged_context_properties.push_back((cl_context_properties)(platform)());
+        merged_context_properties.insert(merged_context_properties.end(), contextProperties.begin(), contextProperties.end());
+        merged_context_properties.push_back(0);
+        cl::Context context(CL_DEVICE_TYPE_ALL, merged_context_properties.data());
 
         cl::Device d = cl::Device::getDefault();
         std::cout << "- Device: " << d.getInfo<CL_DEVICE_NAME>() << std::endl;
