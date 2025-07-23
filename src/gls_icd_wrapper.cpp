@@ -228,6 +228,9 @@ static void bindOpenClAPIEntries(void* libopencl) {
     /* cl_khr_sub_groups */
     bindEntry(clGetKernelSubGroupInfoKHR);
 
+    /* cl_qcom_perf_hint extension */
+    bindEntry(clSetPerfHintQCOM);
+
     /* cl_qcom_recordable_queues extension */
     bindEntry(clNewRecordingQCOM);
     bindEntry(clEndRecordingQCOM);
@@ -389,6 +392,9 @@ cl_api_clCreateFromD3D11Texture3DKHR clCreateFromD3D11Texture3DKHR = nullptr;
 cl_api_clCreateFromDX9MediaSurfaceKHR clCreateFromDX9MediaSurfaceKHR = nullptr;
 cl_api_clEnqueueAcquireD3D11ObjectsKHR clEnqueueAcquireD3D11ObjectsKHR = nullptr;
 cl_api_clEnqueueReleaseD3D11ObjectsKHR clEnqueueReleaseD3D11ObjectsKHR = nullptr;
+
+/* cl_qcom_perf_hint extension */
+cl_api_clSetPerfHintQCOM clSetPerfHintQCOM = nullptr;
 
 /* cl_qcom_recordable_queues extension */
 cl_api_clNewRecordingQCOM clNewRecordingQCOM = nullptr;

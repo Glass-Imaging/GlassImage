@@ -40,7 +40,7 @@
 // Include cl_icd_wrapper.h before <CL/*>
 #include "gls_icd_wrapper.h"
 
-#include <CL/cl_ext.h>
+#include <CL/cl_ext_qcom.h>
 #include <CL/opencl.hpp>
 
 // clang-format on

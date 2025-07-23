@@ -813,24 +813,6 @@ typedef struct _cl_mem_ion_host_ptr
 } cl_mem_ion_host_ptr;
 
 
-/*********************************
-* cl_qcom_android_native_buffer_host_ptr extension
-*********************************/
-
-#define CL_MEM_ANDROID_NATIVE_BUFFER_HOST_PTR_QCOM                  0x40C6
-
-typedef struct _cl_mem_android_native_buffer_host_ptr
-{
-    /* Type of external memory allocation. */
-    /* Must be CL_MEM_ANDROID_NATIVE_BUFFER_HOST_PTR_QCOM for Android native buffers. */
-    cl_mem_ext_host_ptr  ext_host_ptr;
-
-    /* Virtual pointer to the android native buffer */
-    void*                anb_ptr;
-
-} cl_mem_android_native_buffer_host_ptr;
-
-
 /******************************************
  * cl_img_yuv_image extension *
  ******************************************/

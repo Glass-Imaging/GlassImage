@@ -22,6 +22,7 @@
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
 #include "CL/cl_icd.h"
+#include "CL/cl_ext_qcom.h"
 
 #define CL_WRAPPER_NS opencl
 #define CL_USE_FUNCTION_POINTERS
@@ -210,44 +211,20 @@ extern cl_api_clCreateImageWithProperties clCreateImageWithProperties;
 extern cl_api_clSetContextDestructorCallback clSetContextDestructorCallback;
 
 /*************************************
- * cl_qcom_recordable_queues extension *
+ * cl_qcom_perf_hint extension *
  *************************************/
 
-/** Accepted by clGetDeviceInfo */
-#define CL_DEVICE_RECORDABLE_QUEUE_MAX_SIZE        0x41DE
+/* Function prototype for performance hint */
+typedef cl_int
+(CL_API_CALL *cl_api_clSetPerfHintQCOM)(cl_context    context,
+                                        cl_perf_hint  perf_hint);
 
-/** Flag to enable recordable command queues */
-#define CL_QUEUE_RECORDABLE_QCOM                  (1u << 30u)  // 0x40000000
+/* Function pointer for performance hint */
+extern cl_api_clSetPerfHintQCOM clSetPerfHintQCOM;
 
-typedef struct _cl_recording_qcom * cl_recording_qcom;
-
-/** Array element struct used to set kernel arguments */
-typedef struct _cl_array_arg_qcom{
-    cl_uint dispatch_index;
-    cl_uint arg_index;
-    size_t arg_size;
-    const void *arg_value;
-} cl_array_arg_qcom;
-
-typedef struct _cl_array_kernel_exec_info_qcom{
-    cl_uint dispatch_index;
-    cl_kernel_exec_info param_name;
-    size_t param_value_size;
-    const void *param_value;
-} cl_array_kernel_exec_info_qcom;
-
-/** Used to update a local or global workgroup.  workgroup_size * is used in the same manner as
-   the correponding argument in clEnqueueNDRangeKernel */
-typedef struct _cl_workgroup_qcom {
-    cl_uint dispatch_index;
-    const size_t *workgroup_size;
-} cl_workgroup_qcom;
-
-typedef struct _cl_offset_qcom
-{
-    cl_uint dispatch_index;
-    size_t offsets[3];
-} cl_offset_qcom;
+/*************************************
+ * cl_qcom_recordable_queues extension *
+ *************************************/
 
 /* Function prototypes for recordable queues */
 typedef cl_recording_qcom
