@@ -152,14 +152,15 @@ class OCLContext : public GpuContext {
         cl::Context context(CL_DEVICE_TYPE_ALL, merged_context_properties.data());
 
         cl::Device d = cl::Device::getDefault();
-        std::cout << "- Device: " << d.getInfo<CL_DEVICE_NAME>() << std::endl;
-        std::cout << "- Device Version: " << d.getInfo<CL_DEVICE_VERSION>() << std::endl;
-        std::cout << "- Driver Version: " << d.getInfo<CL_DRIVER_VERSION>() << std::endl;
-        std::cout << "- OpenCL C Version: " << d.getInfo<CL_DEVICE_OPENCL_C_VERSION>() << std::endl;
-        std::cout << "- Compute Units: " << d.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
-        std::cout << "- CL_DEVICE_MAX_WORK_GROUP_SIZE: " << d.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
-        std::cout << "- CL_DEVICE_EXTENSIONS: " << d.getInfo<CL_DEVICE_EXTENSIONS>() << std::endl;
-
+        gls::logging::LogInfo("GLS_OCL") << "- Device: " << d.getInfo<CL_DEVICE_NAME>() << std::endl;
+        gls::logging::LogInfo("GLS_OCL") << "- Device Version: " << d.getInfo<CL_DEVICE_VERSION>() << std::endl;
+        gls::logging::LogInfo("GLS_OCL") << "- Driver Version: " << d.getInfo<CL_DRIVER_VERSION>() << std::endl;
+        gls::logging::LogInfo("GLS_OCL") << "- OpenCL C Version: " << d.getInfo<CL_DEVICE_OPENCL_C_VERSION>() << std::endl;
+        gls::logging::LogInfo("GLS_OCL") << "- Compute Units: " << d.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
+        gls::logging::LogInfo("GLS_OCL") << "- CL_DEVICE_MAX_WORK_GROUP_SIZE: " << d.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
+        gls::logging::LogInfo("GLS_OCL") << "- CL_DEVICE_EXTENSIONS: " << d.getInfo<CL_DEVICE_EXTENSIONS>() << std::endl;
+        gls::logging::LogInfo("GLS_OCL") << "- CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS: " << d.getInfo<CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS>() << std::endl;
+        gls::logging::LogInfo("GLS_OCL") << "- CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE: " << d.getInfo<CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE>() << std::endl;
         // opencl.hpp relies on a default context
         cl::Context::setDefault(context);
         _clContext = cl::Context::getDefault();
