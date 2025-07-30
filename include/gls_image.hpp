@@ -735,7 +735,14 @@ class image : public basic_image<T>
             {
                 if (i * i + j * j <= radius * radius)
                 {
-                    (*this)[y + i][x + j] = color;
+                    // Check if the pixel is within bounds
+                    const int coord_x = x + j;
+                    const int coord_y = y + i;
+                    const bool is_within_bounds = coord_x >= 0 && coord_x < this->width && coord_y >= 0 && coord_y < this->height;
+                    if (is_within_bounds)
+                    {
+                        (*this)[coord_y][coord_x] = color;
+                    }
                 }
             }
         }
