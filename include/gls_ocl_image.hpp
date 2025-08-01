@@ -74,14 +74,16 @@ class ocl_texture : public virtual platform_texture {
     }
 
     std::span<uint8_t> mapTexture() const override {
-        cl::CommandQueue queue = cl::CommandQueue::getDefault();
+        cl::CommandQueue queue = cl::CommandQueue(cl::Context::getDefault(), cl::Device::getDefault(), CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE);
+        cl::Event map_event;
         size_t buffer_size = pixelSize() * texture_stride() * texture_height();
-        void* mapped_data = queue.enqueueMapBuffer(_buffer, true, CL_MAP_READ | CL_MAP_WRITE, 0, buffer_size);
+        void* mapped_data = queue.enqueueMapBuffer(_buffer, false, CL_MAP_READ | CL_MAP_WRITE, 0, buffer_size, nullptr, &map_event);
+        map_event.wait();
         return std::span<uint8_t>((uint8_t*)mapped_data, buffer_size);
     }
 
     void unmapTexture(void* ptr) const override {
-        cl::CommandQueue queue = cl::CommandQueue::getDefault();
+        cl::CommandQueue queue = cl::CommandQueue(cl::Context::getDefault(), cl::Device::getDefault(), CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE);
         queue.enqueueUnmapMemObject(ocl_texture::_buffer, ptr);
     }
 
@@ -104,12 +106,17 @@ class ocl_buffer : public platform_buffer {
     virtual size_t bufferSize() const override { return (int)_buffer.getInfo<CL_MEM_SIZE>(); }
 
     virtual void* mapBuffer() const override {
-        cl::CommandQueue queue = cl::CommandQueue::getDefault();
-        return queue.enqueueMapBuffer(_buffer, true, CL_MAP_READ | CL_MAP_WRITE, 0, bufferSize());
+        // Use out-of-order queue to avoid blocking the default queue
+        cl::CommandQueue queue = cl::CommandQueue(cl::Context::getDefault(), cl::Device::getDefault(), CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE);
+        cl::Event map_event;
+        void* mapped_data = queue.enqueueMapBuffer(_buffer, false, CL_MAP_READ | CL_MAP_WRITE, 0, bufferSize(), nullptr, &map_event);
+        map_event.wait();
+        return mapped_data;
     }
 
     virtual void unmapBuffer(void* ptr) const override {
-        cl::CommandQueue queue = cl::CommandQueue::getDefault();
+        // Use out-of-order queue to avoid blocking the default queue
+        cl::CommandQueue queue = cl::CommandQueue(cl::Context::getDefault(), cl::Device::getDefault(), CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE);
         queue.enqueueUnmapMemObject(_buffer, ptr);
     }
 
