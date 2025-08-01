@@ -408,6 +408,44 @@ class image : public basic_image<T>
 
     const constexpr size_t size_in_bytes() const { return _data.size() * basic_image<T>::pixel_size; }
 
+    constexpr void drawLine(int x0, int y0, int x1, int y1, const T& color)
+    {
+        // Bresenham's line algorithm
+        int dx = std::abs(x1 - x0);
+        int dy = std::abs(y1 - y0);
+        int sx = x0 < x1 ? 1 : -1;
+        int sy = y0 < y1 ? 1 : -1;
+        int err = dx - dy;
+        
+        int x = x0;
+        int y = y0;
+        
+        while (true)
+        {
+            // Check if the pixel is within bounds and draw it
+            if (x >= 0 && x < this->width && y >= 0 && y < this->height)
+            {
+                (*this)[y][x] = color;
+            }
+            
+            // Check if we've reached the end point
+            if (x == x1 && y == y1)
+                break;
+                
+            int e2 = 2 * err;
+            if (e2 > -dy)
+            {
+                err -= dy;
+                x += sx;
+            }
+            if (e2 < dx)
+            {
+                err += dx;
+                y += sy;
+            }
+        }
+    }
+
 #ifdef GLASS_IMAGE_BUILD_IMAGE_IO
     // image factory from PNG file
     constexpr static unique_ptr read_png_file(const std::string& filename)
