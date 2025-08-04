@@ -7,6 +7,9 @@ add_library(
     gls_color_science.cpp
     gls_icd_wrapper.cpp
     gls_ocl.cpp
+    gpu_buffer.cpp
+    gpu_image.cpp
+    gpu_utils.cpp
 
     # Only adding this if building for Android.
     $<$<BOOL:${DEFINE_ANDROID_TOOLCHAIN}>:/gls_android_support.cpp>
