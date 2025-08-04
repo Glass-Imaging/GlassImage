@@ -72,6 +72,25 @@ class ocl_texture : public virtual platform_texture {
         _buffer = cl::Buffer(context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, stride * _height * element_size);
         _image = cl::Image2D(context, imageFormat(textureFormat), _buffer, _width, _height, stride * element_size);
     }
+    
+    // Constructor for wrapping existing buffer-backed image
+    ocl_texture(const cl::Image2D& image) : _image(image) {
+        // Check if image is backed by the buffer
+        cl_mem backing_buffer = nullptr;
+        cl_int err = image.getImageInfo(CL_IMAGE_BUFFER, &backing_buffer);
+        
+        if (err != CL_SUCCESS) {
+            throw std::runtime_error("Failed to get image info");
+        }
+        
+        if (backing_buffer != nullptr) {
+            // The image is backed by a buffer, and 'backing_buffer' now holds a handle to it.
+            // Use retainObject=true to properly increment the reference count
+            _buffer = cl::Buffer(backing_buffer, /*retainObject=*/true);
+        } else {
+            throw std::runtime_error("Image is not backed by a buffer");
+        }
+    }
 
     std::span<uint8_t> mapTexture() const override {
         cl::CommandQueue queue = cl::CommandQueue::getDefault();
