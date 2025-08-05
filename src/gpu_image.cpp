@@ -56,6 +56,60 @@ cl::Event GpuImage<T>::CopyFrom(const gls::image<T>& image, std::optional<cl::Co
 }
 
 template <typename T>
+cl::Event GpuImage<T>::CopyTo(gls::image<T>& image, std::optional<cl::CommandQueue> queue,
+                              const std::vector<cl::Event>& events)
+{
+    if (image.width != shape_[0] || image.height != shape_[1])
+        throw std::runtime_error(std::format("CopyTo() expected image of size {}x{}, got {}x{}.", shape_[0], shape_[1],
+                                             image.width, image.height));
+
+    cl::CommandQueue _queue = queue.value_or(gpu_context_->clCommandQueue());
+    cl::Event event;
+    const size_t row_pitch = image.stride * sizeof(T);
+    _queue.enqueueReadImage(image_, CL_FALSE, {0, 0, 0}, {shape_[0], shape_[1], 1}, row_pitch, row_pitch * image.height,
+                            image.pixels().data(), &events, &event);
+    return event;
+}
+
+template <typename T>
+std::unique_ptr<gls::image<T>, std::function<void(gls::image<T>*)>> GpuImage<T>::MapImage(
+    std::optional<cl::CommandQueue> queue, const std::vector<cl::Event>& events)
+{
+    if (is_mapped_) throw std::runtime_error("MapImage() called on an image that is already mapped.");
+
+    cl::CommandQueue _queue = queue.value_or(gpu_context_->clCommandQueue());
+    size_t row_pitch, slice_pitch;
+    void* ptr = _queue.enqueueMapImage(image_, CL_TRUE, CL_MAP_READ | CL_MAP_WRITE, {0, 0, 0},
+                                       {shape_[0], shape_[1], 1}, &row_pitch, &slice_pitch, &events);
+
+    // Create custom deleter that unmaps the image
+    auto deleter = [this, ptr, _queue, events](gls::image<T>* img) mutable
+    {
+        _queue.enqueueUnmapMemObject(image_, ptr, &events);
+        is_mapped_ = false;
+        delete img;
+        std::cout << "Image deleted!" << std::endl;
+    };
+
+    // Create gls::image from mapped pointer
+    const size_t stride = row_pitch / sizeof(T);
+    const size_t total_elements = stride * shape_[1];
+    std::span<T> data_span(static_cast<T*>(ptr), total_elements);
+    auto mapped_image = new gls::image<T>(shape_[0], shape_[1], stride, data_span);
+
+    is_mapped_ = true;
+    return std::unique_ptr<gls::image<T>, std::function<void(gls::image<T>*)>>(mapped_image, deleter);
+}
+
+template <typename T>
+void GpuImage<T>::ApplyOnCpu(std::function<void(T* pixel, int x, int y)> process, std::optional<cl::CommandQueue> queue,
+                             const std::vector<cl::Event>& events)
+{
+    auto mapped_image = MapImage(queue, events);
+    mapped_image->apply(process);
+}
+
+template <typename T>
 cl::ImageFormat GpuImage<T>::GetClFormat()
 {
     if constexpr (std::is_same_v<T, float>)

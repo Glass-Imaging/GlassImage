@@ -20,17 +20,11 @@ int main()
     std::iota(data.begin(), data.end(), 0.0f);
 
     gls::image<float> input_image(16, 4);
+    for (int y = 0; y < input_image.height; y++)
+        for (int x = 0; x < input_image.width; x++) input_image[y][x] = y * x;
 
     std::array<size_t, 2> shape{16, 4};
     gls::GpuImage<float> gpu_image(gpu_context, input_image);
-    gls::image<float> cpu_image = gpu_image.ToImage();
 
-    for (int y = 0; y < input_image.height; y++)
-    {
-        for (int x = 0; x < input_image.width; x++)
-        {
-            cout << input_image[y][x] << ", ";
-        }
-        cout << endl;
-    }
+    auto cpu_image = gpu_image.MapImage();
 }

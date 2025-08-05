@@ -1,3 +1,4 @@
+#include <functional>
 #include <optional>
 #include <span>
 #include <string>
@@ -22,6 +23,15 @@ class GpuImage
 
     cl::Event CopyFrom(const gls::image<T>& image, std::optional<cl::CommandQueue> queue = std::nullopt,
                        const std::vector<cl::Event>& events = {});
+
+    cl::Event CopyTo(gls::image<T>& image, std::optional<cl::CommandQueue> queue = std::nullopt,
+                     const std::vector<cl::Event>& events = {});
+
+    std::unique_ptr<gls::image<T>, std::function<void(gls::image<T>*)>> MapImage(
+        std::optional<cl::CommandQueue> queue = std::nullopt, const std::vector<cl::Event>& events = {});
+
+    void ApplyOnCpu(std::function<void(T* pixel, int x, int y)> process,
+                    std::optional<cl::CommandQueue> queue = std::nullopt, const std::vector<cl::Event>& events = {});
 
     const std::array<size_t, 2> shape_;
 

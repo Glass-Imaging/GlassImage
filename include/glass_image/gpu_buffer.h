@@ -42,6 +42,7 @@ class GpuBuffer
     cl::Event CopyTo(std::span<T>& data, std::optional<cl::CommandQueue> queue = std::nullopt,
                      const std::vector<cl::Event>& events = {});
 
+    /// TODO: Can't I use a custom deleter instead?!
     std::unique_ptr<MappedBuffer<T>> MapBuffer(std::optional<cl::CommandQueue> queue = std::nullopt,
                                                const std::vector<cl::Event>& events = {});
 
