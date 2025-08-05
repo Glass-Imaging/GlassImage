@@ -16,36 +16,41 @@ struct MappedBuffer final
     /// @details Should only be used inside a unique_ptr to release mapped memory once it is not in use anymore.
     /// @param data Span covering the mapped host pointer.
     /// @param cleanup Cleanup function to call in destructor, use to unmap the buffer.
-    MappedBuffer(std::span<T> data, std::function<void()> cleanup) : data(data), cleanup(cleanup) {};
-    ~MappedBuffer() { cleanup(); };
+    MappedBuffer(std::span<T> data, std::function<void()> cleanup) : data_(data), cleanup_(cleanup) {};
+    ~MappedBuffer() { cleanup_(); };
 
-    std::span<T> data;
+    std::span<T> data_;
 
    private:
-    std::function<void()> cleanup;
+    std::function<void()> cleanup_;
 };
 
 template <typename T>
 class GpuBuffer
 {
    public:
-    GpuBuffer(std::shared_ptr<gls::OCLContext> gpu_context, cl_mem_flags flags, const size_t size);
-    GpuBuffer(std::shared_ptr<gls::OCLContext> gpu_context, cl_mem_flags flags, const std::span<T>& data);
+    GpuBuffer(std::shared_ptr<gls::OCLContext> gpu_context, const size_t size, cl_mem_flags flags = CL_MEM_READ_WRITE);
+    GpuBuffer(std::shared_ptr<gls::OCLContext> gpu_context, const std::span<T>& data,
+              cl_mem_flags flags = CL_MEM_READ_WRITE);
 
     std::vector<T> ToVector(std::optional<cl::CommandQueue> queue = std::nullopt,
                             const std::vector<cl::Event>& events = {});
 
-    cl::Event LoadVector(std::vector<T>, std::optional<cl::CommandQueue> queue = std::nullopt,
-                         const std::vector<cl::Event>& events = {});
+    cl::Event CopyFrom(const std::span<T>& data, std::optional<cl::CommandQueue> queue = std::nullopt,
+                       const std::vector<cl::Event>& events = {});
+
+    cl::Event CopyTo(std::span<T>& data, std::optional<cl::CommandQueue> queue = std::nullopt,
+                     const std::vector<cl::Event>& events = {});
 
     std::unique_ptr<MappedBuffer<T>> MapBuffer(std::optional<cl::CommandQueue> queue = std::nullopt,
                                                const std::vector<cl::Event>& events = {});
 
-   private:
-    std::shared_ptr<gls::OCLContext> gpu_context;
     const size_t size;
-    bool is_mapped = false;
 
-    cl::Buffer buffer;
+   private:
+    std::shared_ptr<gls::OCLContext> gpu_context_;
+    bool is_mapped_ = false;
+
+    cl::Buffer buffer_;
 };
 }  // namespace gls
