@@ -1,3 +1,5 @@
+#pragma once
+
 #include <optional>
 #include <span>
 #include <string>
@@ -47,6 +49,7 @@ class GpuBuffer
                                                const std::vector<cl::Event>& events = {});
 
     const size_t size;
+    cl::Buffer buffer() { return buffer_; };
 
    private:
     std::shared_ptr<gls::OCLContext> gpu_context_;
