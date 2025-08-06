@@ -21,6 +21,7 @@ GpuImage<T>::GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, const size_t
       buffer_(GpuBuffer<T>(gpu_context, GetBufferSize(width, height), flags))
 {
     // image_ = cl::Image2D(gpu_context->clContext(), flags, GetClFormat(), width, height);
+    // std::cout << "IMAGE RAW" << std::endl;
     image_ = CreateImage2dFromBuffer(buffer_, width, height, flags);
 }
 
@@ -58,8 +59,8 @@ cl::Event GpuImage<T>::CopyFrom(const gls::image<T>& image, std::optional<cl::Co
     cl::CommandQueue _queue = queue.value_or(gpu_context_->clCommandQueue());
     cl::Event event;
     const size_t row_pitch = image.stride * sizeof(T);
-    _queue.enqueueWriteImage(image_, CL_FALSE, {0, 0, 0}, {width_, height_, 1}, row_pitch, row_pitch * image.height,
-                             image.pixels().data(), &events, &event);
+    _queue.enqueueWriteImage(image_, CL_FALSE, {0, 0, 0}, {width_, height_, 1}, row_pitch, 0, image.pixels().data(),
+                             &events, &event);  // NOTE: slice_pitch must be 0 for Image2D on Android.
     return event;
 }
 
@@ -74,8 +75,8 @@ cl::Event GpuImage<T>::CopyTo(gls::image<T>& image, std::optional<cl::CommandQue
     cl::CommandQueue _queue = queue.value_or(gpu_context_->clCommandQueue());
     cl::Event event;
     const size_t row_pitch = image.stride * sizeof(T);
-    _queue.enqueueReadImage(image_, CL_FALSE, {0, 0, 0}, {width_, height_, 1}, row_pitch, row_pitch * image.height,
-                            image.pixels().data(), &events, &event);
+    _queue.enqueueReadImage(image_, CL_FALSE, {0, 0, 0}, {width_, height_, 1}, row_pitch, 0, image.pixels().data(),
+                            &events, &event);  // NOTE: slice_pitch must be 0 for Image2D on Android.
     return event;
 }
 
@@ -167,6 +168,8 @@ template <typename T>
 cl::Image2D GpuImage<T>::CreateImage2dFromBuffer(GpuBuffer<T>& buffer, const size_t width, const size_t height,
                                                  cl_mem_flags flags)
 {
+    /// NOTE: flags needs to match what the buffer was created with, but reading them from the buffer didn't work just
+    /// now.
     auto [row_pitch, slice_pitch] = GetPitches(width, height);
     if (buffer.size != slice_pitch)
         throw std::runtime_error(
@@ -195,10 +198,9 @@ cl::Image2D GpuImage<T>::CreateImage2dFromBuffer(GpuBuffer<T>& buffer, const siz
     cl::Image2D image(gpu_context_->clContext(), flags, format, width, height);
     return image;
 #else
-    cl_mem_flags flags = buffer.getInfo<CL_MEM_FLAGS>();  // The crop only works with equal memory flags.
     cl_int err;
     cl_mem image_mem =
-        opencl::clCreateImage(gpu_context->clContext().get(), flags, &image_format, &image_desc, nullptr, &err);
+        opencl::clCreateImage(gpu_context_->clContext().get(), flags, &image_format, &image_desc, nullptr, &err);
 
     if (err != CL_SUCCESS)
     {

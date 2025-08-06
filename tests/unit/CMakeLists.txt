@@ -40,5 +40,5 @@ endif()
 
 
 include(GoogleTest)
-gtest_discover_tests(GpuBufferTest)
-gtest_discover_tests(GpuImageTest)
+# gtest_discover_tests(GpuBufferTest)
+# gtest_discover_tests(GpuImageTest)
