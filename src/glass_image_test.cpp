@@ -23,12 +23,13 @@ int main()
     // for (int y = 0; y < input_image.height; y++)
     //     for (int x = 0; x < input_image.width; x++) input_image[y][x] = y * x;
 
-    const size_t width = 1024, height = 1024;
-    gls::GpuImage<float> gpu_image(gpu_context, width, height, CL_MEM_READ_WRITE);  // Create GPU image from CPU image
-    gls::image<float> cpu_image(width, height);
-    gpu_image.CopyFrom(cpu_image);
+    gls::image<float> input_image(16, 4);
+    input_image.apply([](float* pixel, int x, int y) { *pixel = static_cast<float>(x + y); });  // Set values
 
-    // gls::image<float> cpu_image = gpu_image.ToImage();         // Create CPU image out of GPU image
+    gls::GpuImage<float> gpu_image(gpu_context, input_image);        // Create GPU image from CPU image
+    gls::GpuImage<float> gpu_image2(gpu_context, gpu_image, 16, 3);  // Another, smaller GPU image with same buffer.
+
+    gls::image<float> cpu_image = gpu_image2.ToImage();  // Create CPU image out of GPU image
 
     cout << endl << "All done." << endl;
 }

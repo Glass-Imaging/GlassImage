@@ -9,6 +9,8 @@
 
 namespace gu = gls::image_utils;
 
+using std::cout, std::endl;
+
 namespace gls
 {
 
@@ -18,6 +20,7 @@ GpuImage<T>::GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, const size_t
     : gpu_context_(gpu_context),
       width_(width),
       height_(height),
+      flags_(flags),
       buffer_(GpuBuffer<T>(gpu_context, GetBufferSize(width, height), flags))
 {
     // image_ = cl::Image2D(gpu_context->clContext(), flags, GetClFormat(), width, height);
@@ -30,6 +33,7 @@ GpuImage<T>::GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, const gls::i
     : gpu_context_(gpu_context),
       width_(image.width),
       height_(image.height),
+      flags_(flags),
       buffer_(GpuBuffer<T>(gpu_context, GetBufferSize(image.width, image.height), flags))
 {
     // image_ = cl::Image2D(gpu_context->clContext(), flags, GetClFormat(), image.width, image.height);
@@ -38,11 +42,25 @@ GpuImage<T>::GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, const gls::i
 }
 
 template <typename T>
+GpuImage<T>::GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, GpuImage<T>& image, const size_t width,
+                      const size_t height)
+    : gpu_context_(gpu_context), width_(width), height_(height), flags_(image.flags_), buffer_(image.buffer_)
+{
+    // image_ = cl::Image2D(gpu_context->clContext(), flags_, GetClFormat(), width_, height_);
+    if (width > image.width_ || height > image.height_)
+        throw std::logic_error(std::format("Cannot crop an image of size {}x{} from source image of size {}x{}.", width,
+                                           height, image.width_, image.height_));
+    image_ = CreateImage2dFromBuffer(buffer_, width, height, flags_);
+}
+
+template <typename T>
 gls::image<T> GpuImage<T>::ToImage(std::optional<cl::CommandQueue> queue, const std::vector<cl::Event>& events)
 {
     cl::CommandQueue _queue = queue.value_or(gpu_context_->clCommandQueue());
     gls::image<T> host_image(width_, height_);
-    _queue.enqueueReadImage(image_, CL_TRUE, {0, 0, 0}, {width_, height_, 1}, 0, 0, host_image.pixels().data(),
+    const size_t row_pitch = host_image.stride * sizeof(T);
+
+    _queue.enqueueReadImage(image_, CL_TRUE, {0, 0, 0}, {width_, height_, 1}, row_pitch, 0, host_image.pixels().data(),
                             &events);
     return host_image;
 }
@@ -97,7 +115,6 @@ std::unique_ptr<gls::image<T>, std::function<void(gls::image<T>*)>> GpuImage<T>:
         _queue.enqueueUnmapMemObject(image_, ptr, &events);
         is_mapped_ = false;
         delete img;
-        std::cout << "Image deleted!" << std::endl;
     };
 
     // Create gls::image from mapped pointer

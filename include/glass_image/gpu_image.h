@@ -22,6 +22,8 @@ class GpuImage
     GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, const gls::image<T>& image,
              cl_mem_flags flags = CL_MEM_READ_WRITE);
 
+    GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, GpuImage<T>& image, const size_t width, const size_t height);
+
     gls::image<T> ToImage(std::optional<cl::CommandQueue> queue = std::nullopt,
                           const std::vector<cl::Event>& events = {});
 
@@ -51,5 +53,6 @@ class GpuImage
     GpuBuffer<T> buffer_;
     cl::Image2D image_;
     bool is_mapped_ = false;  // TODO: map image with the composed struct like buffer
+    const cl_mem_flags flags_;
 };
 }  // namespace gls
