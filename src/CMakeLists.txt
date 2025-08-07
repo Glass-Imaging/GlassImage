@@ -9,6 +9,7 @@ add_library(
     gls_ocl.cpp
     gpu_buffer.cpp
     gpu_image.cpp
+    gpu_kernel.cpp
     gpu_utils.cpp
 
     # Only adding this if building for Android.
