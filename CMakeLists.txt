@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
 
+# Features
+include(FetchContent)
+
+# Project
 project("glass_image")
 
 # This will make cmake generate compile_commands.json, used by clangd and other tools
@@ -16,3 +20,15 @@ endif()
 
 # Add sources
 add_subdirectory(src)
+
+# Add unit tests
+enable_testing()
+
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/refs/tags/v1.17.0.zip
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+FetchContent_MakeAvailable(googletest)
+add_subdirectory(tests/unit)

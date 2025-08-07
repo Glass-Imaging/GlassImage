@@ -60,9 +60,11 @@
 #include "gls_gpu_image.hpp"
 #include "gls_ocl_image.hpp"
 
-namespace gls {
+namespace gls
+{
 
-class OCLCommandEncoder : public GpuCommandEncoder {
+class OCLCommandEncoder : public GpuCommandEncoder
+{
     cl::Kernel* _kernel;
 
    public:
@@ -70,22 +72,31 @@ class OCLCommandEncoder : public GpuCommandEncoder {
 
     virtual ~OCLCommandEncoder() {}
 
-    virtual void setBytes(const void* parameter, size_t parameter_size, unsigned index) override {
+    virtual void setBytes(const void* parameter, size_t parameter_size, unsigned index) override
+    {
         _kernel->setArg(index, parameter_size, parameter);
     }
 
-    virtual void setBuffer(const gls::buffer& buffer, unsigned index) override {
-        if (const ocl_buffer* b = dynamic_cast<const ocl_buffer*>(buffer())) {
+    virtual void setBuffer(const gls::buffer& buffer, unsigned index) override
+    {
+        if (const ocl_buffer* b = dynamic_cast<const ocl_buffer*>(buffer()))
+        {
             _kernel->setArg(index, b->buffer());
-        } else {
+        }
+        else
+        {
             throw std::runtime_error("Unexpected buffer type.");
         }
     }
 
-    virtual void setTexture(const gls::texture& texture, unsigned index) override {
-        if (const ocl_texture* t = dynamic_cast<const ocl_texture*>(texture())) {
+    virtual void setTexture(const gls::texture& texture, unsigned index) override
+    {
+        if (const ocl_texture* t = dynamic_cast<const ocl_texture*>(texture()))
+        {
             _kernel->setArg(index, t->image());
-        } else {
+        }
+        else
+        {
             throw std::runtime_error("Unexpected buffer type.");
         }
     }
@@ -101,7 +112,8 @@ static const char* cl_options = "-cl-std=CL1.2 -cl-single-precision-constant -I 
 static const char* cl_options = "-cl-std=CL2.0 -Werror -cl-single-precision-constant -I " OPENCL_HEADERS_PATH "OpenCL";
 #endif
 
-class OCLContext : public GpuContext {
+class OCLContext : public GpuContext
+{
     cl::Context _clContext;
     cl::Program _program;
     cl::CommandQueue _commandQueue;
@@ -127,18 +139,22 @@ class OCLContext : public GpuContext {
         std::vector<cl::Platform> platforms;
         cl::Platform::get(&platforms);
         cl::Platform platform;
-        for (auto& p : platforms) {
+        for (auto& p : platforms)
+        {
             std::string version = p.getInfo<CL_PLATFORM_VERSION>();
-            if (version.find("OpenCL 2.") != std::string::npos || version.find("OpenCL 3.") != std::string::npos) {
+            if (version.find("OpenCL 2.") != std::string::npos || version.find("OpenCL 3.") != std::string::npos)
+            {
                 platform = p;
             }
         }
-        if (platform() == nullptr) {
+        if (platform() == nullptr)
+        {
             throw cl::Error(-1, "No OpenCL 2.0 platform found.");
         }
 
         cl::Platform defaultPlatform = cl::Platform::setDefault(platform);
-        if (defaultPlatform != platform) {
+        if (defaultPlatform != platform)
+        {
             throw cl::Error(-1, "Error setting default platform.");
         }
 
@@ -146,13 +162,13 @@ class OCLContext : public GpuContext {
         cl::Context context(CL_DEVICE_TYPE_ALL, properties);
 
         cl::Device d = cl::Device::getDefault();
-        std::cout << "- Device: " << d.getInfo<CL_DEVICE_NAME>() << std::endl;
-        std::cout << "- Device Version: " << d.getInfo<CL_DEVICE_VERSION>() << std::endl;
-        std::cout << "- Driver Version: " << d.getInfo<CL_DRIVER_VERSION>() << std::endl;
-        std::cout << "- OpenCL C Version: " << d.getInfo<CL_DEVICE_OPENCL_C_VERSION>() << std::endl;
-        std::cout << "- Compute Units: " << d.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
-        std::cout << "- CL_DEVICE_MAX_WORK_GROUP_SIZE: " << d.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
-        std::cout << "- CL_DEVICE_EXTENSIONS: " << d.getInfo<CL_DEVICE_EXTENSIONS>() << std::endl;
+        // std::cout << "- Device: " << d.getInfo<CL_DEVICE_NAME>() << std::endl;
+        // std::cout << "- Device Version: " << d.getInfo<CL_DEVICE_VERSION>() << std::endl;
+        // std::cout << "- Driver Version: " << d.getInfo<CL_DRIVER_VERSION>() << std::endl;
+        // std::cout << "- OpenCL C Version: " << d.getInfo<CL_DEVICE_OPENCL_C_VERSION>() << std::endl;
+        // std::cout << "- Compute Units: " << d.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
+        // std::cout << "- CL_DEVICE_MAX_WORK_GROUP_SIZE: " << d.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
+        // std::cout << "- CL_DEVICE_EXTENSIONS: " << d.getInfo<CL_DEVICE_EXTENSIONS>() << std::endl;
 
         // opencl.hpp relies on a default context
         cl::Context::setDefault(context);
@@ -165,9 +181,11 @@ class OCLContext : public GpuContext {
         // Macs have multiple GPUs, select the one with most compute units
         int max_compute_units = 0;
         cl::Device best_device;
-        for (const auto& d : devices) {
+        for (const auto& d : devices)
+        {
             int device_compute_units = d.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>();
-            if (device_compute_units > max_compute_units) {
+            if (device_compute_units > max_compute_units)
+            {
                 max_compute_units = device_compute_units;
                 best_device = d;
             }
@@ -175,13 +193,13 @@ class OCLContext : public GpuContext {
         cl::Device::setDefault(best_device);
 #if 1
         cl::Device d = cl::Device::getDefault();
-        std::cout << "OpenCL Default Device: " << d.getInfo<CL_DEVICE_NAME>() << std::endl;
-        std::cout << "- Device Version: " << d.getInfo<CL_DEVICE_VERSION>() << std::endl;
-        std::cout << "- Driver Version: " << d.getInfo<CL_DRIVER_VERSION>() << std::endl;
-        std::cout << "- OpenCL C Version: " << d.getInfo<CL_DEVICE_OPENCL_C_VERSION>() << std::endl;
-        std::cout << "- Compute Units: " << d.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
-        std::cout << "- CL_DEVICE_MAX_WORK_GROUP_SIZE: " << d.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
-        std::cout << "- CL_DEVICE_EXTENSIONS: " << d.getInfo<CL_DEVICE_EXTENSIONS>() << std::endl;
+        // std::cout << "OpenCL Default Device: " << d.getInfo<CL_DEVICE_NAME>() << std::endl;
+        // std::cout << "- Device Version: " << d.getInfo<CL_DEVICE_VERSION>() << std::endl;
+        // std::cout << "- Driver Version: " << d.getInfo<CL_DRIVER_VERSION>() << std::endl;
+        // std::cout << "- OpenCL C Version: " << d.getInfo<CL_DEVICE_OPENCL_C_VERSION>() << std::endl;
+        // std::cout << "- Compute Units: " << d.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
+        // std::cout << "- CL_DEVICE_MAX_WORK_GROUP_SIZE: " << d.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
+        // std::cout << "- CL_DEVICE_EXTENSIONS: " << d.getInfo<CL_DEVICE_EXTENSIONS>() << std::endl;
 #endif
 #endif
 
@@ -250,11 +268,14 @@ class OCLContext : public GpuContext {
     cl::Program clProgram() const { return _program; }
     cl::CommandQueue clCommandQueue() const { return _commandQueue; }
 
-    inline static std::vector<int> computeDivisors(const size_t val) {
+    inline static std::vector<int> computeDivisors(const size_t val)
+    {
         std::vector<int> divisors;
         int divisor = 32;
-        while (divisor >= 1) {
-            if (val % divisor == 0) {
+        while (divisor >= 1)
+        {
+            if (val % divisor == 0)
+            {
                 divisors.push_back(divisor);
             }
             divisor /= 2;
@@ -264,7 +285,8 @@ class OCLContext : public GpuContext {
 
     // Compute the squarest workgroup of size <= max_workgroup_size
     // Static
-    inline static cl::NDRange computeWorkGroupSizes(size_t width, size_t height) {
+    inline static cl::NDRange computeWorkGroupSizes(size_t width, size_t height)
+    {
         std::vector<int> width_divisors = computeDivisors(width);
         std::vector<int> height_divisors = computeDivisors(height);
 
@@ -274,22 +296,31 @@ class OCLContext : public GpuContext {
         int width_divisor = 1;
         int height_divisor = 1;
         while (width_divisor * height_divisor <= max_workgroup_size &&
-               (!width_divisors.empty() || !height_divisors.empty())) {
-            if (!width_divisors.empty()) {
+               (!width_divisors.empty() || !height_divisors.empty()))
+        {
+            if (!width_divisors.empty())
+            {
                 int new_width_divisor = width_divisors.back();
                 width_divisors.pop_back();
-                if (new_width_divisor * height_divisor > max_workgroup_size) {
+                if (new_width_divisor * height_divisor > max_workgroup_size)
+                {
                     break;
-                } else {
+                }
+                else
+                {
                     width_divisor = new_width_divisor;
                 }
             }
-            if (!height_divisors.empty()) {
+            if (!height_divisors.empty())
+            {
                 int new_height_divisor = height_divisors.back();
                 height_divisors.pop_back();
-                if (new_height_divisor * width_divisor > max_workgroup_size) {
+                if (new_height_divisor * width_divisor > max_workgroup_size)
+                {
                     break;
-                } else {
+                }
+                else
+                {
                     height_divisor = new_height_divisor;
                 }
             }
@@ -300,13 +331,15 @@ class OCLContext : public GpuContext {
         return cl::NDRange(width_divisor, height_divisor);
     }
 
-    inline static cl::EnqueueArgs buildEnqueueArgs(size_t width, size_t height) {
+    inline static cl::EnqueueArgs buildEnqueueArgs(size_t width, size_t height)
+    {
         cl::NDRange global_workgroup_size = cl::NDRange(width, height);
         cl::NDRange local_workgroup_size = computeWorkGroupSizes(width, height);
         return cl::EnqueueArgs(global_workgroup_size, local_workgroup_size);
     }
 
-    inline static cl::EnqueueArgs buildMaxEnqueueArgs(size_t width, size_t height) {
+    inline static cl::EnqueueArgs buildMaxEnqueueArgs(size_t width, size_t height)
+    {
         cl::Device d = cl::Device::getDefault();
         const size_t max_workgroup_size = d.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
         const int max_dimension = sqrtf(max_workgroup_size);
@@ -316,13 +349,15 @@ class OCLContext : public GpuContext {
         return cl::EnqueueArgs(global_workgroup_size, local_workgroup_size);
     }
 
-    std::string OpenCLSource(const std::string& shaderName) {
+    std::string OpenCLSource(const std::string& shaderName)
+    {
 #if defined(__ANDROID__) && defined(USE_ASSET_MANAGER)
         return cl_shaders[shaderName];
 
 #else
         std::ifstream file(_shadersRootPath + "OpenCL/" + shaderName, std::ios::in | std::ios::ate);
-        if (file.is_open()) {
+        if (file.is_open())
+        {
             std::streampos size = file.tellg();
             std::vector<char> memblock((int)size);
             file.seekg(0, std::ios::beg);
@@ -334,13 +369,15 @@ class OCLContext : public GpuContext {
 #endif
     }
 
-    std::vector<unsigned char> OpenCLBinary(const std::string& shaderName) {
+    std::vector<unsigned char> OpenCLBinary(const std::string& shaderName)
+    {
 #if defined(__ANDROID__) && defined(USE_ASSET_MANAGER)
         return cl_bytecode[shaderName];
 #else
         std::ifstream file(_shadersRootPath + "OpenCLBinaries/" + shaderName,
                            std::ios::in | std::ios::binary | std::ios::ate);
-        if (file.is_open()) {
+        if (file.is_open())
+        {
             std::streampos size = file.tellg();
             std::vector<unsigned char> memblock((int)size);
             file.seekg(0, std::ios::beg);
@@ -353,21 +390,26 @@ class OCLContext : public GpuContext {
     }
 
     void loadProgramsFromFullStringSource(const ::std::vector<std::string>& programSources,
-                                          const std::string compileOptions = "") {
+                                          const std::string compileOptions = "")
+    {
         cl::Program program;
         cl::Device device;
-        try {
+        try
+        {
             const std::string combinedOptions = std::string(cl_options) + " " + compileOptions;
 
             device = cl::Device::getDefault();
             program = cl::Program(programSources);
             program.build(device, combinedOptions.c_str());
             _program = program;
-        } catch (const cl::BuildError& e) {
+        }
+        catch (const cl::BuildError& e)
+        {
             gls::logging::LogError("GLS_OCL")
                 << "OpenCL Build Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
             // Print build info for all devices
-            for (auto& pair : e.getBuildLog()) {
+            for (auto& pair : e.getBuildLog())
+            {
                 std::cerr << pair.second << std::endl;
             }
 
@@ -377,7 +419,9 @@ class OCLContext : public GpuContext {
                 << "Build log for: " << name.c_str() << ": " << buildlog.c_str() << std::endl;
 
             throw std::runtime_error("OpenCL Build Error");
-        } catch (const cl::Error& e) {
+        }
+        catch (const cl::Error& e)
+        {
             gls::logging::LogError("GLS_OCL")
                 << "OpenCL Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
 
@@ -385,10 +429,12 @@ class OCLContext : public GpuContext {
         }
     }
 
-    void loadProgramsFromBinaries(std::vector<std::vector<unsigned char>> binaries) {
+    void loadProgramsFromBinaries(std::vector<std::vector<unsigned char>> binaries)
+    {
         cl::Program program;
         cl::Device device;
-        try {
+        try
+        {
             std::vector<cl::Device> devices(binaries.size(), cl::Device::getDefault());
 
             std::vector<cl_int> binaryStatus(binaries.size());
@@ -398,14 +444,18 @@ class OCLContext : public GpuContext {
             program.build();
             _program = program;
 
-            if (err != CL_SUCCESS) {
+            if (err != CL_SUCCESS)
+            {
                 gls::logging::LogInfo("GLS_OCL") << "Error creating program: " << clStatusToString(err) << std::endl;
             }
-        } catch (const cl::BuildError& e) {
+        }
+        catch (const cl::BuildError& e)
+        {
             gls::logging::LogError("GLS_OCL")
                 << "OpenCL Build Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
             // Print build info for all devices
-            for (auto& pair : e.getBuildLog()) {
+            for (auto& pair : e.getBuildLog())
+            {
                 std::cerr << pair.second << std::endl;
             }
 
@@ -415,7 +465,9 @@ class OCLContext : public GpuContext {
                 << "Build log for: " << name.c_str() << ": " << buildlog.c_str() << std::endl;
 
             throw std::runtime_error("OpenCL Build Error");
-        } catch (const cl::Error& e) {
+        }
+        catch (const cl::Error& e)
+        {
             gls::logging::LogError("GLS_OCL")
                 << "OpenCL Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
 
@@ -423,15 +475,18 @@ class OCLContext : public GpuContext {
         }
     }
 
-    void loadPrograms(const std::vector<std::string>& programNames) {
+    void loadPrograms(const std::vector<std::string>& programNames)
+    {
         cl::Program program;
         cl::Device device;
-        try {
+        try
+        {
             device = cl::Device::getDefault();
 #if (defined(USE_TEXT_SHADERS))
 
             std::vector<std::string> sources;
-            for (const auto& p : programNames) {
+            for (const auto& p : programNames)
+            {
                 const auto& source = OpenCLSource(p + ".cl");
                 __android_log_print(ANDROID_LOG_INFO, "foo", "OpenCL Source:  %s", source.c_str());
                 //                std::cout << "OpenCL Source: " << source << std::endl;
@@ -442,7 +497,8 @@ class OCLContext : public GpuContext {
 #else
             //            cl::Program::Binaries
             std::vector<std::vector<unsigned char>> binary_list = {};
-            for (const auto& p : programNames) {
+            for (const auto& p : programNames)
+            {
                 //                std::cout << "Opening: " << p << std::endl;
                 std::vector<unsigned char> binary = OpenCLBinary(p + ".o");
                 binary_list.push_back(binary);
@@ -463,7 +519,8 @@ class OCLContext : public GpuContext {
 
             std::vector<unsigned char> combined_binary;
             //            combined_binary.
-            for (const auto& binaryContent : binary_list) {
+            for (const auto& binaryContent : binary_list)
+            {
                 combined_binary.insert(combined_binary.end(), binaryContent.begin(), binaryContent.end());
 
                 // __android_log_print(ANDROID_LOG_INFO, "OpenCL", "Combined Binary Size: %d",
@@ -485,7 +542,8 @@ class OCLContext : public GpuContext {
             //            program = cl::Program(_clContext, {device}, {combined_binary}, &error_codes);
             // __android_log_print(ANDROID_LOG_INFO, "OpenCL", "--------------Loaded OpenCL Binaries---------");
             std::cout << "--------------Loaded OpenCL Binaries---------" << std::endl;
-            for (int i = 0; i < error_codes.size(); i++) {
+            for (int i = 0; i < error_codes.size(); i++)
+            {
                 // __android_log_print(ANDROID_LOG_INFO, "foo", "OpenCL Program Error Codes: %s",
                 //                     clStatusToString(error_codes[i]).c_str());
             }
@@ -502,10 +560,13 @@ class OCLContext : public GpuContext {
             //            buildlog.c_str());
 
             _program = program;
-        } catch (const cl::BuildError& e) {
+        }
+        catch (const cl::BuildError& e)
+        {
             std::cerr << "OpenCL Build Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
             // Print build info for all devices
-            for (auto& pair : e.getBuildLog()) {
+            for (auto& pair : e.getBuildLog())
+            {
                 std::cerr << pair.second << std::endl;
             }
 
@@ -517,7 +578,9 @@ class OCLContext : public GpuContext {
             // buildlog.c_str());
 
             throw std::runtime_error("OpenCL Build Error");
-        } catch (const cl::Error& e) {
+        }
+        catch (const cl::Error& e)
+        {
             std::cerr << "OpenCL Error - " << e.what() << ": " << clStatusToString(e.err()) << std::endl;
             // __android_log_print(ANDROID_LOG_INFO, "foo", "OpenCL Error - %s: %s", e.what(),
             //                     clStatusToString(e.err()).c_str());
@@ -526,29 +589,34 @@ class OCLContext : public GpuContext {
         }
     }
 
-    virtual void waitForCompletion() override {
+    virtual void waitForCompletion() override
+    {
         _commandQueue.finish();
         //        __android_log_print(ANDROID_LOG_INFO, "OpenCL Debug",  "Error code: %d", errcode);
     }
 
-    virtual platform_buffer* new_platform_buffer(size_t size, bool readOnly) override {
+    virtual platform_buffer* new_platform_buffer(size_t size, bool readOnly) override
+    {
         return new ocl_buffer(_clContext, size, readOnly);
     }
 
-    virtual platform_texture* new_platform_texture(int _width, int _height, texture::format format) override {
+    virtual platform_texture* new_platform_texture(int _width, int _height, texture::format format) override
+    {
         return new ocl_texture(_clContext, _width, _height, format);
     }
 
     virtual void enqueue(const std::string& kernelName, const gls::size& gridSize, const gls::size& threadGroupSize,
                          std::function<void(GpuCommandEncoder*)> encodeKernelParameters,
-                         std::function<void(void)> completionHandler) override {
+                         std::function<void(void)> completionHandler) override
+    {
         // Call the event-based version and ignore the event for backward compatibility
         enqueueWithEvent(kernelName, gridSize, threadGroupSize, encodeKernelParameters);
     }
 
     virtual void enqueue(const std::string& kernelName, const gls::size& gridSize,
                          std::function<void(GpuCommandEncoder*)> encodeKernelParameters,
-                         std::function<void(void)> completionHandler) override {
+                         std::function<void(void)> completionHandler) override
+    {
         // Call the event-based version and ignore the event for backward compatibility
         enqueueWithEvent(kernelName, gridSize, encodeKernelParameters);
     }
@@ -637,83 +705,60 @@ class OCLContext : public GpuContext {
 
 // OCL-specific kernel wrapper that supports event-based execution
 template <typename... Ts>
-class OCLKernel : public Kernel<Ts...> {
-public:
-    OCLKernel(OCLContext* context, const std::string& kernelName) 
-        : Kernel<Ts...>(context, kernelName) {}
+class OCLKernel : public Kernel<Ts...>
+{
+   public:
+    OCLKernel(OCLContext* context, const std::string& kernelName) : Kernel<Ts...>(context, kernelName) {}
 
     // Regular execution (inherited from base class)
     using Kernel<Ts...>::operator();
 
     // Event-based execution for cross-queue synchronization
-    cl::Event operator()(const OCLContext& ocl_context, const gls::size& gridSize, const Ts&... ts) const {
-        return ocl_context.enqueueWithEvent(
-            this->_kernelName,
-            gridSize,
-            [&, this](GpuCommandEncoder* encoder) { 
-                this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); 
-            }
-        );
+    cl::Event operator()(const OCLContext& ocl_context, const gls::size& gridSize, const Ts&... ts) const
+    {
+        return ocl_context.enqueueWithEvent(this->_kernelName, gridSize, [&, this](GpuCommandEncoder* encoder)
+                                            { this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); });
     }
 
-    cl::Event operator()(const OCLContext& ocl_context, const gls::size& gridSize, const gls::size& threadGroupSize, const Ts&... ts) const {
-        return ocl_context.enqueueWithEvent(
-            this->_kernelName,
-            gridSize,
-            threadGroupSize,
-            [&, this](GpuCommandEncoder* encoder) { 
-                this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); 
-            }
-        );
+    cl::Event operator()(const OCLContext& ocl_context, const gls::size& gridSize, const gls::size& threadGroupSize,
+                         const Ts&... ts) const
+    {
+        return ocl_context.enqueueWithEvent(this->_kernelName, gridSize, threadGroupSize,
+                                            [&, this](GpuCommandEncoder* encoder)
+                                            { this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); });
     }
 
     // Event-based execution with wait events
-    cl::Event operator()(const OCLContext& ocl_context, const gls::size& gridSize, const std::vector<cl::Event>& waitEvents, const Ts&... ts) const {
+    cl::Event operator()(const OCLContext& ocl_context, const gls::size& gridSize,
+                         const std::vector<cl::Event>& waitEvents, const Ts&... ts) const
+    {
         return ocl_context.enqueueWithEvent(
-            this->_kernelName,
-            gridSize,
-            [&, this](GpuCommandEncoder* encoder) { 
-                this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); 
-            },
-            waitEvents
-        );
+            this->_kernelName, gridSize, [&, this](GpuCommandEncoder* encoder)
+            { this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); }, waitEvents);
     }
 
-    cl::Event operator()(const OCLContext& ocl_context, const gls::size& gridSize, const std::vector<cl::Event>& waitEvents, cl::Event* outputEvent, const Ts&... ts) const {
+    cl::Event operator()(const OCLContext& ocl_context, const gls::size& gridSize,
+                         const std::vector<cl::Event>& waitEvents, cl::Event* outputEvent, const Ts&... ts) const
+    {
         return ocl_context.enqueueWithEvent(
-            this->_kernelName,
-            gridSize,
-            [&, this](GpuCommandEncoder* encoder) { 
-                this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); 
-            },
-            waitEvents,
-            outputEvent
-        );
+            this->_kernelName, gridSize, [&, this](GpuCommandEncoder* encoder)
+            { this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); }, waitEvents, outputEvent);
     }
 
-    cl::Event operator()(const OCLContext& ocl_context, const gls::size& gridSize, const gls::size& threadGroupSize, const std::vector<cl::Event>& waitEvents, const Ts&... ts) const {
+    cl::Event operator()(const OCLContext& ocl_context, const gls::size& gridSize, const gls::size& threadGroupSize,
+                         const std::vector<cl::Event>& waitEvents, const Ts&... ts) const
+    {
         return ocl_context.enqueueWithEvent(
-            this->_kernelName,
-            gridSize,
-            threadGroupSize,
-            [&, this](GpuCommandEncoder* encoder) { 
-                this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); 
-            },
-            waitEvents
-        );
+            this->_kernelName, gridSize, threadGroupSize, [&, this](GpuCommandEncoder* encoder)
+            { this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); }, waitEvents);
     }
 
-    cl::Event operator()(const OCLContext& ocl_context, const gls::size& gridSize, const gls::size& threadGroupSize, const std::vector<cl::Event>& waitEvents, cl::Event* outputEvent, const Ts&... ts) const {
+    cl::Event operator()(const OCLContext& ocl_context, const gls::size& gridSize, const gls::size& threadGroupSize,
+                         const std::vector<cl::Event>& waitEvents, cl::Event* outputEvent, const Ts&... ts) const
+    {
         return ocl_context.enqueueWithEvent(
-            this->_kernelName,
-            gridSize,
-            threadGroupSize,
-            [&, this](GpuCommandEncoder* encoder) { 
-                this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); 
-            },
-            waitEvents,
-            outputEvent
-        );
+            this->_kernelName, gridSize, threadGroupSize, [&, this](GpuCommandEncoder* encoder)
+            { this->template setArgs<0>(encoder, std::forward<const Ts>(ts)...); }, waitEvents, outputEvent);
     }
 };
 
