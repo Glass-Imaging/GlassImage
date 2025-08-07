@@ -253,9 +253,9 @@ class OCLContext : public GpuContext {
 
     virtual ~OCLContext() { waitForCompletion(); }
 
-    cl::Context clContext() { return _clContext; }
-    cl::Program clProgram() { return _program; }
-    cl::CommandQueue clCommandQueue() { return _commandQueue; }
+    cl::Context clContext() const { return _clContext; }
+    cl::Program clProgram() const { return _program; }
+    cl::CommandQueue clCommandQueue() const { return _commandQueue; }
 
     inline static std::vector<int> computeDivisors(const size_t val) {
         std::vector<int> divisors;
