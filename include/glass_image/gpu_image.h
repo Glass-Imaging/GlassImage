@@ -40,6 +40,7 @@ class GpuImage
                     std::optional<cl::CommandQueue> queue = std::nullopt, const std::vector<cl::Event>& events = {});
 
     const size_t width_, height_;
+    cl::Image2D image() { return image_; };
 
    private:
     cl::ImageFormat GetClFormat();

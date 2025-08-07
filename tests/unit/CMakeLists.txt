@@ -38,7 +38,30 @@ else()
     )
 endif()
 
+add_executable(
+  GpuKernelTest
+  gpu_kernel_test.cpp
+)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    target_link_libraries(
+        GpuKernelTest 
+        GlassImage
+        GTest::gtest_main
+        "-framework OpenCL" # TODO: Factor out to var
+    )
+else()
+    target_link_libraries(
+        GpuKernelTest 
+        GlassImage
+        GTest::gtest_main
+    )
+endif()
+
 
 include(GoogleTest)
-# gtest_discover_tests(GpuBufferTest)
-# gtest_discover_tests(GpuImageTest)
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Android")
+    gtest_discover_tests(GpuBufferTest)
+    gtest_discover_tests(GpuImageTest)
+    gtest_discover_tests(GpuKernelTest)
+endif()

@@ -11,7 +11,7 @@
 #include "gls_image.hpp"
 #include "gls_logging.h"
 #include "gls_ocl.hpp"
-#include "kernels.h"
+// #include "kernels.h"
 
 using namespace std;
 
@@ -34,23 +34,23 @@ class AddKernel : gls::GpuKernel
 
 int main()
 {
-    std::vector<std::string> kernel_sources{kernel_code};
-    auto gpu_context = std::make_shared<gls::OCLContext>(kernel_sources, "");
-    gpu_context->loadProgramsFromFullStringSource(kernel_sources, "-DUSE_FLOAT16");
+    // std::vector<std::string> kernel_sources{kernel_code};
+    // auto gpu_context = std::make_shared<gls::OCLContext>(kernel_sources, "");
+    // gpu_context->loadProgramsFromFullStringSource(kernel_sources, "-DUSE_FLOAT16");
 
-    gls::image<float> input_image(16, 4);
-    input_image.apply([](float* pixel, int x, int y) { *pixel = static_cast<float>(x + y); });  // Set values
-    gls::GpuBuffer<float> buffer(gpu_context, 16 * 4);
+    // gls::image<float> input_image(16, 4);
+    // input_image.apply([](float* pixel, int x, int y) { *pixel = static_cast<float>(x + y); });  // Set values
+    // gls::GpuBuffer<float> buffer(gpu_context, 16 * 4);
 
-    gls::GpuImage<float> gpu_image(gpu_context, input_image);  // Create GPU image from CPU image
+    // gls::GpuImage<float> gpu_image(gpu_context, input_image);  // Create GPU image from CPU image
 
-    // gls::GpuKernel kernel(gpu_context, "add_one");
-    AddKernel kernel(gpu_context);
+    // // gls::GpuKernel kernel(gpu_context, "add_one");
+    // AddKernel kernel(gpu_context);
 
-    // kernel.SetArgs(buffer.buffer(), 16 * 4);
-    cl::Event event = kernel(buffer, 16 * 4);
+    // // kernel.SetArgs(buffer.buffer(), 16 * 4);
+    // cl::Event event = kernel(buffer, 16 * 4);
 
-    // gls::image<float> cpu_image = gpu_image2.ToImage();  // Create CPU image out of GPU image
+    // // gls::image<float> cpu_image = gpu_image2.ToImage();  // Create CPU image out of GPU image
 
-    cout << endl << "All done." << endl;
+    // cout << endl << "All done." << endl;
 }
