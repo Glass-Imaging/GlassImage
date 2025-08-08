@@ -28,6 +28,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <optional>
 
 #include "gls_geometry.hpp"
 #ifdef GLASS_IMAGE_BUILD_IMAGE_IO
@@ -408,7 +409,7 @@ class image : public basic_image<T>
 
     const constexpr size_t size_in_bytes() const { return _data.size() * basic_image<T>::pixel_size; }
 
-    constexpr void drawLine(int x0, int y0, int x1, int y1, const T& color)
+    constexpr void drawLine(int x0, int y0, int x1, int y1, const T& color, std::optional<int> thickness = std::nullopt)
     {
         // Bresenham's line algorithm
         int dx = std::abs(x1 - x0);
@@ -416,22 +417,30 @@ class image : public basic_image<T>
         int sx = x0 < x1 ? 1 : -1;
         int sy = y0 < y1 ? 1 : -1;
         int err = dx - dy;
-        
+
         int x = x0;
         int y = y0;
-        
+
+        const int radius = (thickness.has_value() && thickness.value() > 1) ? (thickness.value() - 1) / 2 : 0;
+
         while (true)
         {
             // Check if the pixel is within bounds and draw it
             if (x >= 0 && x < this->width && y >= 0 && y < this->height)
             {
-                (*this)[y][x] = color;
+                if (radius == 0)
+                {
+                    (*this)[y][x] = color;
+                }
+                else
+                {
+                    this->drawCircle(x, y, radius, color);
+                }
             }
-            
+
             // Check if we've reached the end point
-            if (x == x1 && y == y1)
-                break;
-                
+            if (x == x1 && y == y1) break;
+
             int e2 = 2 * err;
             if (e2 > -dy)
             {
