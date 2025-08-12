@@ -19,6 +19,9 @@ class GpuImage
     GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, const size_t width, const size_t height,
              cl_mem_flags flags = CL_MEM_READ_WRITE);
 
+    // Shallow copy constructor with same underlying OpenCL resources.
+    GpuImage(const GpuImage& other);
+
     GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, const gls::image<T>& image,
              cl_mem_flags flags = CL_MEM_READ_WRITE);
 

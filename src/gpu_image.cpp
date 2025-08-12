@@ -29,6 +29,17 @@ GpuImage<T>::GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, const size_t
 }
 
 template <typename T>
+GpuImage<T>::GpuImage(const GpuImage& other)
+    : gpu_context_(other.gpu_context_),
+      width_(other.width_),
+      height_(other.height_),
+      flags_(other.flags_),
+      buffer_(other.buffer_),
+      image_(other.image_)
+{
+}
+
+template <typename T>
 GpuImage<T>::GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, const gls::image<T>& image, cl_mem_flags flags)
     : gpu_context_(gpu_context),
       width_(image.width),

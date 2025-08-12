@@ -59,6 +59,20 @@ TEST(GpuImageTest, Fill)
     cpu_image.apply([&](float* pixel, int x, int y) { EXPECT_EQ(*pixel, 1.2f); });
 }
 
+TEST(GpuImageTest, CopyConstructor)
+{
+    auto gpu_context = std::make_shared<gls::OCLContext>(std::vector<std::string>{}, "");
+
+    const size_t width = 16, height = 4;
+    gls::GpuImage<float> gpu_image(gpu_context, width, height);  // Create GPU image from CPU image
+    gpu_image.Fill(1.2f).wait();
+
+    gls::GpuImage<float> other(gpu_image);
+
+    gls::image<float> cpu_image = other.ToImage();
+    cpu_image.apply([&](float* pixel, int x, int y) { EXPECT_EQ(*pixel, 1.2f); });
+}
+
 TEST(GpuImageTest, MapImage)
 {
     auto gpu_context = std::make_shared<gls::OCLContext>(std::vector<std::string>{}, "");
