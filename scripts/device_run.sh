@@ -1,5 +1,5 @@
 # Local paths
-EXE_FILE="/Users/manuel/workspace/GlassImage/build-android/src/GlassImageTest"
+EXE_FILE="/Users/manuel/workspace/GlassImage/build/src/GlassImageTest"
 EXE_NAME=$(basename ${EXE_FILE})
 
 # Device paths

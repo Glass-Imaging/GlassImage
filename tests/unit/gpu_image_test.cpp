@@ -47,6 +47,18 @@ TEST(GpuImageTest, CreateFromImage_CopyTo)
     cpu_image.apply([&](float* pixel, int x, int y) { EXPECT_EQ(*pixel, input_image[y][x]); });
 }
 
+TEST(GpuImageTest, Fill)
+{
+    auto gpu_context = std::make_shared<gls::OCLContext>(std::vector<std::string>{}, "");
+
+    const size_t width = 16, height = 4;
+    gls::GpuImage<float> gpu_image(gpu_context, width, height);  // Create GPU image from CPU image
+    gpu_image.Fill(1.2f).wait();
+
+    gls::image<float> cpu_image = gpu_image.ToImage();
+    cpu_image.apply([&](float* pixel, int x, int y) { EXPECT_EQ(*pixel, 1.2f); });
+}
+
 TEST(GpuImageTest, MapImage)
 {
     auto gpu_context = std::make_shared<gls::OCLContext>(std::vector<std::string>{}, "");
@@ -98,3 +110,34 @@ TEST(GpuImageTest, CropOtherImage)
     cpu_image.apply([&](float* pixel, int x, int y) { EXPECT_EQ(*pixel, input_image[y][x]); });
 #endif
 }
+
+#if false
+// Still risky / incomplete!
+TEST(GpuImageTest, CropOtherImage)
+{
+    auto gpu_context = std::make_shared<gls::OCLContext>(std::vector<std::string>{}, "");
+
+    gls::image<float> cpu_image(1024, 1024);
+    cpu_image.apply([](float* pixel, int x, int y) { *pixel = static_cast<float>(x + y); });  // Set values
+
+    gls::GpuImage<float> gpu_image(gpu_context, cpu_image);  // Create GPU image from CPU image
+    cout << gpu_image.width_ << "x" << gpu_image.height_ << endl;
+
+    gls::GpuImage<float> crop_image(gpu_context, gpu_image, 256, 256, 256, 256);
+
+    gls::image<float> out_image = crop_image.ToImage();
+    for (int y = 0; y < 4; y++)
+    {
+        for (int x = 0; x < 4; x++)
+        {
+            cout << out_image[y][x] << ", ";
+        }
+        cout << endl;
+    }
+
+    /// Cropping an image from buffer does not work on Mac
+#ifndef __APPLE__
+    cpu_image.apply([&](float* pixel, int x, int y) { EXPECT_EQ(*pixel, input_image[y][x]); });
+#endif
+}
+#endif

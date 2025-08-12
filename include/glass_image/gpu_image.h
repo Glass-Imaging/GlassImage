@@ -24,6 +24,9 @@ class GpuImage
 
     GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, GpuImage<T>& image, const size_t width, const size_t height);
 
+    GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, GpuImage<T>& image, const size_t x0, const size_t y0,
+             const size_t width, const size_t height);
+
     gls::image<T> ToImage(std::optional<cl::CommandQueue> queue = std::nullopt,
                           const std::vector<cl::Event>& events = {});
 
@@ -32,6 +35,9 @@ class GpuImage
 
     cl::Event CopyTo(gls::image<T>& image, std::optional<cl::CommandQueue> queue = std::nullopt,
                      const std::vector<cl::Event>& events = {});
+
+    cl::Event Fill(const T& value, std::optional<cl::CommandQueue> queue = std::nullopt,
+                   const std::vector<cl::Event>& events = {});
 
     std::unique_ptr<gls::image<T>, std::function<void(gls::image<T>*)>> MapImage(
         std::optional<cl::CommandQueue> queue = std::nullopt, const std::vector<cl::Event>& events = {});
@@ -46,8 +52,12 @@ class GpuImage
     cl::ImageFormat GetClFormat();
     std::tuple<size_t, size_t> GetPitches(const size_t width, const size_t height);
     size_t GetBufferSize(const size_t width, const size_t height);
+
     cl::Image2D CreateImage2dFromBuffer(GpuBuffer<T>& buffer, const size_t width, const size_t height,
                                         cl_mem_flags flags);
+
+    cl::Image2D CropImage2dFromBuffer(GpuBuffer<T>& buffer, const size_t x0, const size_t y0, const size_t width,
+                                      const size_t height, const size_t row_pitch_bytes, cl_mem_flags flags);
 
     std::shared_ptr<gls::OCLContext> gpu_context_;
 
