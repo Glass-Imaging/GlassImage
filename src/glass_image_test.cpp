@@ -7,6 +7,7 @@
 
 #include "glass_image/gpu_buffer.h"
 #include "glass_image/gpu_image.h"
+#include "glass_image/gpu_image_3d.h"
 #include "glass_image/gpu_kernel.h"
 #include "gls_image.hpp"
 #include "gls_logging.h"
@@ -34,26 +35,37 @@ using namespace std;
 
 int main()
 {
-    cout << "HIIIIII" << endl;
-    // auto gpu_context = std::make_shared<gls::OCLContext>(std::vector<std::string>{}, "");
+    auto gpu_context = std::make_shared<gls::OCLContext>(std::vector<std::string>{}, "");
 
-    // gls::image<float> cpu_image(1024, 1024);
-    // cpu_image.apply([](float* pixel, int x, int y) { *pixel = static_cast<float>(x + y); });  // Set values
+    gls::image<float> input_image(16, 4);
 
-    // gls::GpuImage<float> gpu_image(gpu_context, cpu_image);  // Create GPU image from CPU image
-    // cout << gpu_image.width_ << "x" << gpu_image.height_ << endl;
+    const size_t width = 16, height = 4;
+    gls::GpuImage3d<float> gpu_image(gpu_context, width, height, 2);
 
-    // gls::GpuImage<float> crop_image(gpu_context, gpu_image, 256, 256, 256, 256);
+    // First slice is y * x
+    for (int y = 0; y < input_image.height; y++)
+        for (int x = 0; x < input_image.width; x++) input_image[y][x] = y * x;
+    gpu_image.CopyFrom(input_image, 0);
 
-    // gls::image<float> out_image = crop_image.ToImage();
-    // for (int y = 0; y < 4; y++)
-    // {
-    //     for (int x = 0; x < 4; x++)
-    //     {
-    //         cout << out_image[y][x] << ", ";
-    //     }
-    //     cout << endl;
-    // }
+    for (int y = 0; y < input_image.height; y++)
+        for (int x = 0; x < input_image.width; x++) input_image[y][x] = y + x;
+    gpu_image.CopyFrom(input_image, 1);
+
+    gls::image<float> cpu_image = gpu_image.ToImage(1);
+    for (int y = 0; y < height; y++)
+    {
+        for (int x = 0; x < width; x++)
+        {
+            cout << cpu_image[y][x] << ", ";
+        }
+        cout << endl;
+    }
+    cpu_image.apply([&](float* pixel, int x, int y) { assert(*pixel == y + x); });
+
+    // // First slice is y * x
+    // for (int y = 0; y < input_image.height; y++)
+    //     for (int x = 0; x < input_image.width; x++) input_image[y][x] = y + x;
+    // gpu_image.CopyFrom(input_image, 1);
 
     cout << endl << "All done." << endl;
 }

@@ -21,7 +21,7 @@ GpuImage<T>::GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, const size_t
       width_(width),
       height_(height),
       flags_(flags),
-      buffer_(GpuBuffer<T>(gpu_context, GetBufferSize(width, height), flags))
+      buffer_(GpuBuffer<T>(gpu_context, gu::GetBufferSize<T>(width, height), flags))
 {
     // image_ = cl::Image2D(gpu_context->clContext(), flags, GetClFormat(), width, height);
     // std::cout << "IMAGE RAW" << std::endl;
@@ -45,7 +45,7 @@ GpuImage<T>::GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, const gls::i
       width_(image.width),
       height_(image.height),
       flags_(flags),
-      buffer_(GpuBuffer<T>(gpu_context, GetBufferSize(image.width, image.height), flags))
+      buffer_(GpuBuffer<T>(gpu_context, gu::GetBufferSize<T>(image.width, image.height), flags))
 {
     // image_ = cl::Image2D(gpu_context->clContext(), flags, GetClFormat(), image.width, image.height);
     image_ = CreateImage2dFromBuffer(buffer_, image.width, image.height, flags);
@@ -186,51 +186,51 @@ cl::Event GpuImage<T>::Fill(const T& value, std::optional<cl::CommandQueue> queu
     return event;
 }
 
-template <typename T>
-cl::ImageFormat GpuImage<T>::GetClFormat()
-{
-    if constexpr (std::is_same_v<T, float>)
-        return cl::ImageFormat(CL_R, CL_FLOAT);
-    else if constexpr (std::is_same_v<T, gls::pixel_fp32>)
-        return cl::ImageFormat(CL_R, CL_FLOAT);
-    else if constexpr (std::is_same_v<T, gls::pixel_fp32_2>)
-        return cl::ImageFormat(CL_RG, CL_FLOAT);
-    else if constexpr (std::is_same_v<T, gls::pixel_fp32_4>)
-        return cl::ImageFormat(CL_RGBA, CL_FLOAT);
-    else
-        throw std::runtime_error("Unsupported pixel type for GpuImage::GetClFormat()");
-}
+// template <typename T>
+// cl::ImageFormat GpuImage<T>::GetClFormat()
+// {
+//     if constexpr (std::is_same_v<T, float>)
+//         return cl::ImageFormat(CL_R, CL_FLOAT);
+//     else if constexpr (std::is_same_v<T, gls::pixel_fp32>)
+//         return cl::ImageFormat(CL_R, CL_FLOAT);
+//     else if constexpr (std::is_same_v<T, gls::pixel_fp32_2>)
+//         return cl::ImageFormat(CL_RG, CL_FLOAT);
+//     else if constexpr (std::is_same_v<T, gls::pixel_fp32_4>)
+//         return cl::ImageFormat(CL_RGBA, CL_FLOAT);
+//     else
+//         throw std::runtime_error("Unsupported pixel type for GpuImage::GetClFormat()");
+// }
 
-template <typename T>
-std::tuple<size_t, size_t> GpuImage<T>::GetPitches(const size_t width, const size_t height)
-{
-    /* TODO / NOTE: This is so far taken from GlassLibrary and seems to work.
-    However, @mako443 is not certain if 4096 is for sure the right alignment - is this related to the QCOM page size?
-    */
+// template <typename T>
+// std::tuple<size_t, size_t> GpuImage<T>::GetPitches(const size_t width, const size_t height)
+// {
+//     /* TODO / NOTE: This is so far taken from GlassLibrary and seems to work.
+//     However, @mako443 is not certain if 4096 is for sure the right alignment - is this related to the QCOM page size?
+//     */
 
-    cl::Device device = cl::Device::getDefault();
-    auto image_pitch_alignment = device.getInfo<CL_DEVICE_IMAGE_PITCH_ALIGNMENT>();
-    int row_pitch = width * sizeof(T);  // TODO: sizeof(T) is correct, right?
+//     cl::Device device = cl::Device::getDefault();
+//     auto image_pitch_alignment = device.getInfo<CL_DEVICE_IMAGE_PITCH_ALIGNMENT>();
+//     int row_pitch = width * sizeof(T);  // TODO: sizeof(T) is correct, right?
 
-    // Round up to the nearest multiple of image_pitch_alignment
-    row_pitch = (row_pitch + image_pitch_alignment - 1) & ~(image_pitch_alignment - 1);
+//     // Round up to the nearest multiple of image_pitch_alignment
+//     row_pitch = (row_pitch + image_pitch_alignment - 1) & ~(image_pitch_alignment - 1);
 
-    // Round up to the nearest multiple of 4096
-    // Value 4096 is reverse engineered on how cl::Image objects are constructed by reading
-    // slice pitch values from cl::Image objects which owns their own memory.
-    // Did not find any correct documentation on this how it should be calculated on Qualcomm GPUs.
-    int slice_pitch = row_pitch * height;
-    slice_pitch = (slice_pitch + 4095) & ~4095;
+//     // Round up to the nearest multiple of 4096
+//     // Value 4096 is reverse engineered on how cl::Image objects are constructed by reading
+//     // slice pitch values from cl::Image objects which owns their own memory.
+//     // Did not find any correct documentation on this how it should be calculated on Qualcomm GPUs.
+//     int slice_pitch = row_pitch * height;
+//     slice_pitch = (slice_pitch + 4095) & ~4095;
 
-    return std::make_tuple(row_pitch, slice_pitch);
-}
+//     return std::make_tuple(row_pitch, slice_pitch);
+// }
 
-template <typename T>
-size_t GpuImage<T>::GetBufferSize(const size_t width, const size_t height)
-{
-    auto [row_pitch, slice_pitch] = GetPitches(width, height);
-    return slice_pitch * 1;
-}
+// template <typename T>
+// size_t GpuImage<T>::GetBufferSize(const size_t width, const size_t height, const size_t depth)
+// {
+//     auto [row_pitch, slice_pitch] = GetPitches(width, height);
+//     return slice_pitch * depth;
+// }
 
 template <typename T>
 cl::Image2D GpuImage<T>::CreateImage2dFromBuffer(GpuBuffer<T>& buffer, const size_t width, const size_t height,
@@ -238,7 +238,7 @@ cl::Image2D GpuImage<T>::CreateImage2dFromBuffer(GpuBuffer<T>& buffer, const siz
 {
     /// NOTE: flags needs to match what the buffer was created with, but reading them from the buffer didn't work just
     /// now.
-    auto [row_pitch, slice_pitch] = GetPitches(width, height);
+    auto [row_pitch, slice_pitch] = gu::GetPitches<T>(width, height);
     if (buffer.size != slice_pitch)
         throw std::runtime_error(
             std::format("Expected a buffer of size {} as base for image, got {}.", slice_pitch, buffer.size));
@@ -253,7 +253,7 @@ cl::Image2D GpuImage<T>::CreateImage2dFromBuffer(GpuBuffer<T>& buffer, const siz
     image_desc.image_row_pitch = row_pitch;
     image_desc.image_slice_pitch = 0;  // TODO: This or slice_pitch? Image2D often wants slice pitch of 0, e.g. in copy
 
-    cl::ImageFormat format = GetClFormat();
+    cl::ImageFormat format = gu::GetClFormat<T>();
     cl_image_format image_format;
     image_format.image_channel_order = format.image_channel_order;
     image_format.image_channel_data_type = format.image_channel_data_type;
@@ -299,7 +299,7 @@ cl::Image2D GpuImage<T>::CropImage2dFromBuffer(GpuBuffer<T>& buffer, const size_
             "Expected buffer of at least {} bytes to crop at [{}, {}, {}, {}] with row pitch of {} bytes. Got {}.",
             min_buffer_size, x0, y0, width, height, row_pitch_bytes, buffer.size * sizeof(T)));
 
-    cl::ImageFormat format = GetClFormat();
+    cl::ImageFormat format = gu::GetClFormat<T>();
 
 #ifdef __APPLE__
     /*Creating an Image2D from a buffer fails on Mac, even with cl_khr_image2d_from_buffer explicitly listed.

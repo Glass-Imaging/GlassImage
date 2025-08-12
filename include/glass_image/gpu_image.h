@@ -52,10 +52,6 @@ class GpuImage
     cl::Image2D image() { return image_; };
 
    private:
-    cl::ImageFormat GetClFormat();
-    std::tuple<size_t, size_t> GetPitches(const size_t width, const size_t height);
-    size_t GetBufferSize(const size_t width, const size_t height);
-
     cl::Image2D CreateImage2dFromBuffer(GpuBuffer<T>& buffer, const size_t width, const size_t height,
                                         cl_mem_flags flags);
 

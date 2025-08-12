@@ -8,6 +8,7 @@ add_library(
     gls_icd_wrapper.cpp
     gls_ocl.cpp
     gpu_buffer.cpp
+    gpu_image_3d.cpp
     gpu_image.cpp
     gpu_kernel.cpp
     gpu_utils.cpp
