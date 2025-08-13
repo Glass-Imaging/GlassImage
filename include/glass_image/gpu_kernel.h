@@ -45,7 +45,7 @@ class GpuKernel
     template <typename T>
     void SetArg(const size_t index, T arg)
     {
-        std::cout << "Setting arg " << index << " with " << typeid(T).name() << std::endl;
+        // std::cout << "Setting arg " << index << " with " << typeid(T).name() << std::endl;
         try
         {
             kernel_.setArg(index, arg);

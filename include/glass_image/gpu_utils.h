@@ -1,5 +1,6 @@
 #include <array>
 
+#include "gls_image.hpp"
 #include "gls_ocl.hpp"
 
 /// TODO: This has to change! We should have gls::image::utils::SomeFunction() here and gls::image::Image/GpuImage
@@ -22,6 +23,8 @@ cl::ImageFormat GetClFormat()
         return cl::ImageFormat(CL_RG, CL_FLOAT);
     else if constexpr (std::is_same_v<T, gls::pixel_fp32_4>)
         return cl::ImageFormat(CL_RGBA, CL_FLOAT);
+    else if constexpr (std::is_same_v<T, gls::luma_pixel_16>)
+        return cl::ImageFormat(CL_R, CL_UNSIGNED_INT16);
     else
         throw std::runtime_error("Unsupported pixel type for GpuImage::GetClFormat()");
 }

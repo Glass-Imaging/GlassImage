@@ -49,6 +49,7 @@ class GpuBuffer
                                                const std::vector<cl::Event>& events = {});
 
     const size_t size;
+    size_t ByteSize() { return size * sizeof(T); };
     cl::Buffer buffer() { return buffer_; };
 
    private:

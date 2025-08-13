@@ -4,7 +4,7 @@ EXE_PATHS=(build-android/tests/unit/*Test)
 RUN_PATH="/data/local/tmp/GlassImage"
 
 # Push device
-adb push "${BUILD_DIR}" "${RUN_PATH}/"
+adb push "${BUILD_DIR}" "${RUN_PATH}/" || { echo "Push failed, exiting." ; exit 1; }
 
 # Run
 CHANGE_DIR="cd ${RUN_PATH}"

@@ -53,15 +53,17 @@ GpuImage<T>::GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, const gls::i
 }
 
 template <typename T>
-GpuImage<T>::GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, GpuImage<T>& image, const size_t width,
+GpuImage<T>::GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, const GpuImage<T>& other, const size_t width,
                       const size_t height)
-    : gpu_context_(gpu_context), width_(width), height_(height), flags_(image.flags_), buffer_(image.buffer_)
+    : gpu_context_(gpu_context), width_(width), height_(height), flags_(other.flags_), buffer_(other.buffer_)
 {
     // image_ = cl::Image2D(gpu_context->clContext(), flags_, GetClFormat(), width_, height_);
-    if (width > image.width_ || height > image.height_)
+    if (width > other.width_ || height > other.height_)
         throw std::logic_error(std::format("Cannot crop an image of size {}x{} from source image of size {}x{}.", width,
-                                           height, image.width_, image.height_));
-    image_ = CreateImage2dFromBuffer(buffer_, width, height, flags_);
+                                           height, other.width_, other.height_));
+
+    auto [row_pitch, slice_pitch] = gu::GetPitches<T>(other.width_, other.height_);
+    image_ = CreateImage2dFromBuffer(buffer_, width, height, flags_, row_pitch, slice_pitch);
 }
 
 #if false
@@ -180,6 +182,11 @@ cl::Event GpuImage<T>::Fill(const T& value, std::optional<cl::CommandQueue> queu
         cl_float4 color = {value[0], value[1], value[2], value[3]};
         _queue.enqueueFillImage(image_, color, {0, 0, 0}, {width_, height_, 1}, &events, &event);
     }
+    else if constexpr (std::is_same_v<T, gls::luma_pixel_16>)
+    {
+        cl_uint4 color = {value, 0, 0, 0};
+        _queue.enqueueFillImage(image_, color, {0, 0, 0}, {width_, height_, 1}, &events, &event);
+    }
     else
         throw std::runtime_error("Unsupported pixel type for GpuImage::Fill()");
 
@@ -234,14 +241,18 @@ cl::Event GpuImage<T>::Fill(const T& value, std::optional<cl::CommandQueue> queu
 
 template <typename T>
 cl::Image2D GpuImage<T>::CreateImage2dFromBuffer(GpuBuffer<T>& buffer, const size_t width, const size_t height,
-                                                 cl_mem_flags flags)
+                                                 cl_mem_flags flags, const std::optional<size_t> row_pitch_bytes,
+                                                 const std::optional<size_t> slice_pitch_bytes)
 {
     /// NOTE: flags needs to match what the buffer was created with, but reading them from the buffer didn't work just
     /// now.
-    auto [row_pitch, slice_pitch] = gu::GetPitches<T>(width, height);
-    if (buffer.size != slice_pitch)
+    auto [this_row_pitch, this_slice_pitch] = gu::GetPitches<T>(width, height);  // In bytes
+    size_t row_pitch = row_pitch_bytes.value_or(this_row_pitch);
+    size_t slice_pitch = slice_pitch_bytes.value_or(this_slice_pitch);
+
+    if (buffer.ByteSize() < slice_pitch)
         throw std::runtime_error(
-            std::format("Expected a buffer of size {} as base for image, got {}.", slice_pitch, buffer.size));
+            std::format("Expected a buffer of >= {} bytes as base for image, got {}.", slice_pitch, buffer.ByteSize()));
 
     cl_image_desc image_desc;
     memset(&image_desc, 0, sizeof(image_desc));
@@ -354,5 +365,6 @@ template class GpuImage<gls::pixel_fp32_2>;
 // template class GpuImage<gls::pixel_fp32_3>; /// NOTE: We explicitly leave out RGB images because they show faulty
 // behaviour on Android.
 template class GpuImage<gls::pixel_fp32_4>;
+template class GpuImage<gls::luma_pixel_16>;
 
 }  // namespace gls

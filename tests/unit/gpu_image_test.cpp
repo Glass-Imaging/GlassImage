@@ -109,7 +109,7 @@ TEST(GpuImageTest, CropOtherImage)
     auto gpu_context = std::make_shared<gls::OCLContext>(std::vector<std::string>{}, "");
 
     gls::image<float> input_image(16, 4);
-    input_image.apply([](float* pixel, int x, int y) { *pixel = static_cast<float>(x + y); });  // Set values
+    input_image.apply([](float* pixel, int x, int y) { *pixel = static_cast<float>(x * y); });  // Set values
 
     std::unique_ptr<gls::GpuImage<float>> gpu_image =
         std::make_unique<gls::GpuImage<float>>(gpu_context, input_image);  // Create GPU image from CPU image
@@ -121,7 +121,7 @@ TEST(GpuImageTest, CropOtherImage)
 
     /// Cropping an image from buffer does not work on Mac
 #ifndef __APPLE__
-    cpu_image.apply([&](float* pixel, int x, int y) { EXPECT_EQ(*pixel, input_image[y][x]); });
+    cpu_image.apply([&](float* pixel, int x, int y) { EXPECT_EQ(*pixel, x * y); });
 #endif
 }
 

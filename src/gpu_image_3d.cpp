@@ -28,6 +28,24 @@ GpuImage3d<T>::GpuImage3d(std::shared_ptr<gls::OCLContext> gpu_context, const si
 }
 
 template <typename T>
+GpuImage3d<T>::GpuImage3d(std::shared_ptr<gls::OCLContext> gpu_context, const GpuImage3d<T>& other, const size_t width,
+                          const size_t height, const size_t depth)
+    : gpu_context_(gpu_context),
+      width_(width),
+      height_(height),
+      depth_(depth),
+      flags_(other.flags_),
+      buffer_(other.buffer_)
+{
+    if (width > other.width_ || height > other.height_ || depth > other.depth_)
+        throw std::logic_error(std::format("Cannot crop an image of size {}x{}x{} from source image of size {}x{}x{}.",
+                                           width, height, depth, other.width_, other.height_, other.depth_));
+
+    auto [row_pitch, slice_pitch] = gu::GetPitches<T>(other.width_, other.height_);
+    image_ = CreateImage3dFromBuffer(buffer_, width, height, depth, flags_, row_pitch, slice_pitch);
+}
+
+template <typename T>
 gls::image<T> GpuImage3d<T>::ToImage(const size_t z, std::optional<cl::CommandQueue> queue,
                                      const std::vector<cl::Event>& events)
 {
@@ -79,16 +97,55 @@ cl::Event GpuImage3d<T>::CopyTo(gls::image<T>& image, const size_t z, std::optio
 }
 
 template <typename T>
+cl::Event GpuImage3d<T>::Fill(const T& value, std::optional<cl::CommandQueue> queue,
+                              const std::vector<cl::Event>& events)
+{
+    cl::CommandQueue _queue = queue.value_or(gpu_context_->clCommandQueue());
+    cl::Event event;
+
+    // TODO: Is there a more concise way?
+    if constexpr (std::is_same_v<T, float>)
+    {
+        cl_float4 color = {value, 0.0f, 0.0f, 0.0f};
+        _queue.enqueueFillImage(image_, color, {0, 0, 0}, {width_, height_, depth_}, &events, &event);
+    }
+    else if constexpr (std::is_same_v<T, gls::pixel_fp32_2>)
+    {
+        cl_float4 color = {value[0], value[1], 0.0f, 0.0f};
+        _queue.enqueueFillImage(image_, color, {0, 0, 0}, {width_, height_, depth_}, &events, &event);
+    }
+    else if constexpr (std::is_same_v<T, gls::pixel_fp32_4>)
+    {
+        cl_float4 color = {value[0], value[1], value[2], value[3]};
+        _queue.enqueueFillImage(image_, color, {0, 0, 0}, {width_, height_, depth_}, &events, &event);
+    }
+    else if constexpr (std::is_same_v<T, gls::luma_pixel_16>)
+    {
+        cl_uint4 color = {value, 0, 0, 0};
+        _queue.enqueueFillImage(image_, color, {0, 0, 0}, {width_, height_, depth_}, &events, &event);
+    }
+    else
+        throw std::runtime_error("Unsupported pixel type for GpuImage3d::Fill()");
+
+    return event;
+}
+
+template <typename T>
 cl::Image3D GpuImage3d<T>::CreateImage3dFromBuffer(GpuBuffer<T>& buffer, const size_t width, const size_t height,
-                                                   const size_t depth, cl_mem_flags flags)
+                                                   const size_t depth, cl_mem_flags flags,
+                                                   const std::optional<size_t> row_pitch_bytes,
+                                                   const std::optional<size_t> slice_pitch_bytes)
 {
     /// NOTE: flags needs to match what the buffer was created with, but reading them from the buffer didn't work just
     /// now.
-    auto [row_pitch, slice_pitch] = gu::GetPitches<T>(width, height);
+    auto [this_row_pitch, this_slice_pitch] = gu::GetPitches<T>(width, height);  // In bytes
+    size_t row_pitch = row_pitch_bytes.value_or(this_row_pitch);
+    size_t slice_pitch = slice_pitch_bytes.value_or(this_slice_pitch);
+
     const size_t expected_buffer_size = slice_pitch * depth;
-    if (buffer.size != expected_buffer_size)
-        throw std::runtime_error(
-            std::format("Expected a buffer of size {} as base for image, got {}.", expected_buffer_size, buffer.size));
+    if (buffer.ByteSize() < expected_buffer_size)
+        throw std::runtime_error(std::format("Expected a buffer of >= {} bytes as base for image, got {}.",
+                                             expected_buffer_size, buffer.ByteSize()));
 
     cl_image_desc image_desc;
     memset(&image_desc, 0, sizeof(image_desc));
@@ -135,5 +192,6 @@ template class GpuImage3d<float>;
 template class GpuImage3d<gls::pixel_fp32>;
 template class GpuImage3d<gls::pixel_fp32_2>;
 template class GpuImage3d<gls::pixel_fp32_4>;
+template class GpuImage3d<gls::luma_pixel_16>;
 
 }  // namespace gls

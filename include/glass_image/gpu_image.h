@@ -25,10 +25,13 @@ class GpuImage
     GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, const gls::image<T>& image,
              cl_mem_flags flags = CL_MEM_READ_WRITE);
 
-    GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, GpuImage<T>& image, const size_t width, const size_t height);
+    GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, const GpuImage<T>& other, const size_t width,
+             const size_t height);
 
+#if false
     GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, GpuImage<T>& image, const size_t x0, const size_t y0,
              const size_t width, const size_t height);
+#endif
 
     gls::image<T> ToImage(std::optional<cl::CommandQueue> queue = std::nullopt,
                           const std::vector<cl::Event>& events = {});
@@ -53,7 +56,8 @@ class GpuImage
 
    private:
     cl::Image2D CreateImage2dFromBuffer(GpuBuffer<T>& buffer, const size_t width, const size_t height,
-                                        cl_mem_flags flags);
+                                        cl_mem_flags flags, const std::optional<size_t> row_pitch_bytes = std::nullopt,
+                                        const std::optional<size_t> slice_pitch_bytes = std::nullopt);
 
     cl::Image2D CropImage2dFromBuffer(GpuBuffer<T>& buffer, const size_t x0, const size_t y0, const size_t width,
                                       const size_t height, const size_t row_pitch_bytes, cl_mem_flags flags);
