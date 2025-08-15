@@ -50,7 +50,7 @@ class GpuBuffer
 
     const size_t size;
     size_t ByteSize() { return size * sizeof(T); };
-    cl::Buffer buffer() { return buffer_; };
+    cl::Buffer buffer() const { return buffer_; };
 
    private:
     std::shared_ptr<gls::OCLContext> gpu_context_;
