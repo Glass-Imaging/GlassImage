@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "gls_ocl.hpp"
+#include "gpu_kernel_args.h"
 
 namespace gls
 {
@@ -48,7 +49,7 @@ class GpuKernel
         // std::cout << "Setting arg " << index << " with " << typeid(T).name() << std::endl;
         try
         {
-            kernel_.setArg(index, arg);
+            kernel_.setArg(index, gls::kernel_arg::get_kernel_arg(arg));
         }
         catch (cl::Error& e)
         {
