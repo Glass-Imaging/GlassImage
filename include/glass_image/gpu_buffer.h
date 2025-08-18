@@ -1,32 +1,15 @@
 #pragma once
 
+#include <functional>
 #include <optional>
 #include <span>
 #include <stdexcept>
-#include <string>
 #include <vector>
 
 #include "gls_ocl.hpp"
 
 namespace gls
 {
-
-template <typename T>
-struct MappedBuffer final
-{
-   public:
-    /// @brief Utility to keep track of a mapped buffer from GpuBuffer<T>::MapBuffer().
-    /// @details Should only be used inside a unique_ptr to release mapped memory once it is not in use anymore.
-    /// @param data Span covering the mapped host pointer.
-    /// @param cleanup Cleanup function to call in destructor, use to unmap the buffer.
-    MappedBuffer(std::span<T> data, std::function<void()> cleanup) : data_(data), cleanup_(cleanup) {};
-    ~MappedBuffer() { cleanup_(); };
-
-    std::span<T> data_;
-
-   private:
-    std::function<void()> cleanup_;
-};
 
 /// We implement GpuBuffer as a header-only library in order to allow for flexible, potentially struct-based buffer
 /// types.
@@ -96,23 +79,27 @@ class GpuBuffer
         return event;
     }
 
-    /// TODO: Can't I use a custom deleter instead?!
-    std::unique_ptr<MappedBuffer<T>> MapBuffer(std::optional<cl::CommandQueue> queue = std::nullopt,
-                                               const std::vector<cl::Event>& events = {})
+    std::unique_ptr<std::span<T>, std::function<void(std::span<T>*)>> MapBuffer(
+        std::optional<cl::CommandQueue> queue = std::nullopt, const std::vector<cl::Event>& events = {})
     {
         if (is_mapped_) throw std::runtime_error("MapBuffer() called on a buffer that is already mapped.");
 
         cl::CommandQueue _queue = queue.value_or(gpu_context_->clCommandQueue());
         void* ptr = _queue.enqueueMapBuffer(buffer_, CL_TRUE, CL_MAP_READ | CL_MAP_WRITE, 0, size * sizeof(T));
-        auto cleanup = [this, ptr, &_queue, &events]()
+
+        // Create custom deleter that unmaps the buffer
+        auto deleter = [this, ptr, _queue, events](std::span<T>* span) mutable
         {
             _queue.enqueueUnmapMemObject(buffer_, ptr, &events);
             is_mapped_ = false;
+            delete span;
         };
-        std::span<T> data_span(static_cast<T*>(ptr), size);
+
+        // Create span from mapped pointer
+        auto mapped_span = new std::span<T>(static_cast<T*>(ptr), size);
 
         is_mapped_ = true;
-        return std::make_unique<MappedBuffer<T>>(data_span, cleanup);
+        return std::unique_ptr<std::span<T>, std::function<void(std::span<T>*)>>(mapped_span, deleter);
     };
 
     const size_t size;

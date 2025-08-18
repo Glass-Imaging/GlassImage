@@ -91,7 +91,7 @@ TEST(GpuBufferTest, MapBuffer)
     gls::GpuBuffer<float> buffer(gpu_context, 4);
 
     auto mapped = buffer.MapBuffer();
-    std::iota(mapped->data_.begin(), mapped->data_.end(), 0.0f);
+    std::iota(mapped->begin(), mapped->end(), 0.0f);
     mapped.reset();
 
     std::vector<float> result = buffer.ToVector();
@@ -110,8 +110,8 @@ TEST(GpuBufferTest, CustomBufferType)
     auto mapped = buffer.MapBuffer();
     for (int i = 0; i < buffer.size; i++)
     {
-        mapped->data_[i].int_value = i;
-        mapped->data_[i].float_value = 0.2f;
+        (*mapped)[i].int_value = i;
+        (*mapped)[i].float_value = 0.2f;
     }
     mapped.reset();
 
