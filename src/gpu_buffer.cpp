@@ -78,11 +78,11 @@ std::unique_ptr<MappedBuffer<T>> GpuBuffer<T>::MapBuffer(std::optional<cl::Comma
     return std::make_unique<MappedBuffer<T>>(data_span, cleanup);
 }
 
-template class GpuBuffer<float>;
-template class GpuBuffer<gls::pixel_fp32>;
-template class GpuBuffer<gls::pixel_fp32_2>;
-template class GpuBuffer<gls::pixel_fp32_3>;
-template class GpuBuffer<gls::pixel_fp32_4>;
-template class GpuBuffer<gls::luma_pixel_16>;
+// template class GpuBuffer<float>;
+// template class GpuBuffer<gls::pixel_fp32>;
+// template class GpuBuffer<gls::pixel_fp32_2>;
+// template class GpuBuffer<gls::pixel_fp32_3>;
+// template class GpuBuffer<gls::pixel_fp32_4>;
+// template class GpuBuffer<gls::luma_pixel_16>;
 
 }  // namespace gls

@@ -41,6 +41,7 @@ class GpuImage3d
 
     const size_t width_, height_, depth_;
     cl::Image3D image() { return image_; };
+    const cl::Image3D image() const { return image_; };
 
    private:
     cl::Image3D CreateImage3dFromBuffer(GpuBuffer<T>& buffer, const size_t width, const size_t height,

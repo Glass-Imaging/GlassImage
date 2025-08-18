@@ -53,6 +53,7 @@ class GpuImage
 
     const size_t width_, height_;
     cl::Image2D image() { return image_; };
+    const cl::Image2D image() const { return image_; };
 
    private:
     cl::Image2D CreateImage2dFromBuffer(GpuBuffer<T>& buffer, const size_t width, const size_t height,

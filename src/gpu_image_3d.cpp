@@ -41,6 +41,8 @@ GpuImage3d<T>::GpuImage3d(std::shared_ptr<gls::OCLContext> gpu_context, const Gp
         throw std::logic_error(std::format("Cannot crop an image of size {}x{}x{} from source image of size {}x{}x{}.",
                                            width, height, depth, other.width_, other.height_, other.depth_));
 
+    /// TODO: I think all these crop-copies need to carry a stride around! Otherwise you cannot do this in a chain.
+    /// Implement and test this!
     auto [row_pitch, slice_pitch] = gu::GetPitches<T>(other.width_, other.height_);
     image_ = CreateImage3dFromBuffer(buffer_, width, height, depth, flags_, row_pitch, slice_pitch);
 }
