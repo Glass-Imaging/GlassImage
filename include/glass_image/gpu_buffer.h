@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <span>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -45,6 +46,20 @@ class GpuBuffer
         : gpu_context_(gpu_context), size(data.size())
     {
         buffer_ = cl::Buffer(gpu_context->clContext(), flags | CL_MEM_COPY_HOST_PTR, sizeof(T) * size, data.data());
+    };
+
+    GpuBuffer(std::shared_ptr<gls::OCLContext> gpu_context, cl::Buffer buffer)
+        : gpu_context_(gpu_context), size(buffer.getInfo<CL_MEM_SIZE>() / sizeof(T))
+    {
+        /// NOTE: Doing this with a buffer of custom types is potentially risky! I am not sure if the sizes align on
+        /// both host and device sides.
+
+        const size_t buffer_size = buffer.getInfo<CL_MEM_SIZE>();
+        if (buffer_size % sizeof(T) != 0)
+            throw std::runtime_error(
+                std::format("Buffer of {} bytes does not evenly divide by type of size T.", buffer_size, sizeof(T)));
+
+        buffer_ = buffer;  // Copies a reference to the underlying OpenCL buffer object.
     };
 
     std::vector<T> ToVector(std::optional<cl::CommandQueue> queue = std::nullopt,

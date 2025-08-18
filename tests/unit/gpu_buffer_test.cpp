@@ -119,3 +119,28 @@ TEST(GpuBufferTest, CustomBufferType)
     EXPECT_EQ(result.size(), 4);
     for (int i = 0; i < result.size(); i++) EXPECT_EQ(result[i].float_value, i + 0.2f);
 }
+
+TEST(GpuBufferTest, CustomBufferType_FromClBuffer)
+{
+    std::vector<std::string> kernel_sources{testing_kernel_code};
+    auto gpu_context = std::make_shared<gls::OCLContext>(kernel_sources, "");
+    gpu_context->loadProgramsFromFullStringSource(kernel_sources, "");
+
+    // Same as above but now I create the GpuBuffer from a "normal" cl::Buffer.
+    vector<CustomBufferStruct> data;
+    for (int i = 0; i < 4; i++)
+    {
+        data.push_back({.int_value = i, .float_value = 0.2f});
+    }
+
+    cl::Buffer ocl_buffer(gpu_context->clContext(), CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+                          sizeof(CustomBufferStruct) * 4, data.data());
+    gls::GpuBuffer<CustomBufferStruct> buffer(gpu_context, ocl_buffer);
+
+    CustomBufferAddKernel kernel(gpu_context);
+    kernel(buffer).wait();
+
+    std::vector<CustomBufferStruct> result = buffer.ToVector();
+    EXPECT_EQ(result.size(), 4);
+    for (int i = 0; i < result.size(); i++) EXPECT_EQ(result[i].float_value, i + 0.2f);
+}

@@ -33,39 +33,49 @@ using namespace std;
 //     }
 // };
 
+typedef struct
+{
+    int int_value;
+    float float_value;
+} CustomBufferStruct;
+
 int main()
 {
     auto gpu_context = std::make_shared<gls::OCLContext>(std::vector<std::string>{}, "");
 
-    gls::image<float> input_image(16, 4);
+    cl::Buffer ocl_buffer(gpu_context->clContext(), CL_MEM_READ_WRITE, sizeof(CustomBufferStruct) * 3);
+    gls::GpuBuffer<CustomBufferStruct> buffer(gpu_context, ocl_buffer);
+    cout << "SIZE: " << buffer.size << endl;
 
-    const size_t width = 16, height = 4;
-    gls::GpuImage3d<float> gpu_image(gpu_context, width, height, 2);
+    // gls::image<float> input_image(16, 4);
 
-    // First slice is y * x
-    for (int y = 0; y < input_image.height; y++)
-        for (int x = 0; x < input_image.width; x++) input_image[y][x] = y * x;
-    gpu_image.CopyFrom(input_image, 0);
+    // const size_t width = 16, height = 4;
+    // gls::GpuImage3d<float> gpu_image(gpu_context, width, height, 2);
 
-    for (int y = 0; y < input_image.height; y++)
-        for (int x = 0; x < input_image.width; x++) input_image[y][x] = y + x;
-    gpu_image.CopyFrom(input_image, 1);
+    // // First slice is y * x
+    // for (int y = 0; y < input_image.height; y++)
+    //     for (int x = 0; x < input_image.width; x++) input_image[y][x] = y * x;
+    // gpu_image.CopyFrom(input_image, 0);
 
-    gls::image<float> cpu_image = gpu_image.ToImage(1);
-    for (int y = 0; y < height; y++)
-    {
-        for (int x = 0; x < width; x++)
-        {
-            cout << cpu_image[y][x] << ", ";
-        }
-        cout << endl;
-    }
-    cpu_image.apply([&](float* pixel, int x, int y) { assert(*pixel == y + x); });
+    // for (int y = 0; y < input_image.height; y++)
+    //     for (int x = 0; x < input_image.width; x++) input_image[y][x] = y + x;
+    // gpu_image.CopyFrom(input_image, 1);
+
+    // gls::image<float> cpu_image = gpu_image.ToImage(1);
+    // for (int y = 0; y < height; y++)
+    // {
+    //     for (int x = 0; x < width; x++)
+    //     {
+    //         cout << cpu_image[y][x] << ", ";
+    //     }
+    //     cout << endl;
+    // }
+    // cpu_image.apply([&](float* pixel, int x, int y) { assert(*pixel == y + x); });
 
     // // First slice is y * x
     // for (int y = 0; y < input_image.height; y++)
     //     for (int x = 0; x < input_image.width; x++) input_image[y][x] = y + x;
     // gpu_image.CopyFrom(input_image, 1);
 
-    cout << endl << "All done." << endl;
+    // cout << endl << "All done." << endl;
 }
