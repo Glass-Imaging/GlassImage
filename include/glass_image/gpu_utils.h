@@ -17,6 +17,14 @@ cl::ImageFormat GetClFormat()
 {
     if constexpr (std::is_same_v<T, float>)
         return cl::ImageFormat(CL_R, CL_FLOAT);
+    else if constexpr (std::is_same_v<T, float16_t>)
+        return cl::ImageFormat(CL_R, CL_HALF_FLOAT);        
+    else if constexpr (std::is_same_v<T, gls::pixel_fp16>)
+        return cl::ImageFormat(CL_R, CL_HALF_FLOAT);
+    else if constexpr (std::is_same_v<T, gls::pixel_fp16_2>)
+        return cl::ImageFormat(CL_RG, CL_HALF_FLOAT);
+    else if constexpr (std::is_same_v<T, gls::pixel_fp16_4>)
+        return cl::ImageFormat(CL_RGBA, CL_HALF_FLOAT);
     else if constexpr (std::is_same_v<T, gls::pixel_fp32>)
         return cl::ImageFormat(CL_R, CL_FLOAT);
     else if constexpr (std::is_same_v<T, gls::pixel_fp32_2>)

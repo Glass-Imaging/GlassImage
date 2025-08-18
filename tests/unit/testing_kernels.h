@@ -27,4 +27,18 @@ __kernel void ImageAddKernel(read_only image2d_t image, float value, write_only 
     write_imagef(output, (int2)(x, y), pixel);
 }
 
+// Read values from a distance to test texture access speeds
+__kernel void ReadIrregular2d(read_only image2d_t image, const int dist, write_only image2d_t output){
+    int x = get_global_id(0);
+    int y = get_global_id(1);
+
+    float4 pix = (float4)(0.0f);
+    for(int yread = y - dist; yread <= y + dist; yread += dist){
+        for(int xread = x - dist; xread <= x + dist; xread += dist){
+            pix = pix + read_imagef(image, sampler, (int2)(x, y));
+        }
+    }
+    write_imagef(output, (int2)(x, y), pix);
+}
+
 )";

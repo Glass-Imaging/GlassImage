@@ -362,6 +362,12 @@ cl::Image2D GpuImage<T>::CropImage2dFromBuffer(GpuBuffer<T>& buffer, const size_
 }
 
 template class GpuImage<float>;
+// template class GpuImage<float16_t>;
+// template class GpuImage<gls::pixel_fp16>;
+// template class GpuImage<gls::pixel_fp16_2>;
+// template class GpuImage<gls::pixel_fp16_3>; /// NOTE: We explicitly leave out RGB images because they show faulty
+// behaviour on Android.
+// template class GpuImage<gls::pixel_fp16_4>;
 template class GpuImage<gls::pixel_fp32>;
 template class GpuImage<gls::pixel_fp32_2>;
 // template class GpuImage<gls::pixel_fp32_3>; /// NOTE: We explicitly leave out RGB images because they show faulty

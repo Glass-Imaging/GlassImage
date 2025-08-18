@@ -48,11 +48,12 @@ class GpuBuffer
         buffer_ = cl::Buffer(gpu_context->clContext(), flags | CL_MEM_COPY_HOST_PTR, sizeof(T) * size, data.data());
     };
 
+    /// Warp the cl::Buffer
     GpuBuffer(std::shared_ptr<gls::OCLContext> gpu_context, cl::Buffer buffer)
         : gpu_context_(gpu_context), size(buffer.getInfo<CL_MEM_SIZE>() / sizeof(T))
     {
         /// NOTE: Doing this with a buffer of custom types is potentially risky! I am not sure if the sizes align on
-        /// both host and device sides.
+        /// both host and device sides - it does work in the unit test though.
 
         const size_t buffer_size = buffer.getInfo<CL_MEM_SIZE>();
         if (buffer_size % sizeof(T) != 0)

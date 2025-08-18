@@ -17,6 +17,9 @@ typedef struct
     float float_value;
 } CustomBufferStruct;
 
+template class gls::GpuBuffer<float>;
+// template class gls::GpuBuffer<CustomBufferStruct>;
+
 class CustomBufferAddKernel : gls::GpuKernel
 {
    public:
