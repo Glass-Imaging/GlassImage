@@ -262,7 +262,7 @@ cl::Image2D GpuImage<T>::CreateImage2dFromBuffer(GpuBuffer<T>& buffer, const siz
     image_desc.image_width = width;
     image_desc.image_height = height;
     image_desc.buffer = buffer.buffer().get();
-    size_t pixel_size = sizeof(T);
+    // size_t pixel_size = sizeof(T);
     image_desc.image_row_pitch = row_pitch;
     image_desc.image_slice_pitch = 0;  // TODO: This or slice_pitch? Image2D often wants slice pitch of 0, e.g. in copy
 

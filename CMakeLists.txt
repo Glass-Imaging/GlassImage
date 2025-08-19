@@ -13,12 +13,19 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(GLASS_IMAGE_BUILD_IMAGE_IO "Build with image I/O libraries." OFF)
 SET_PROPERTY(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE) # TODO: Needed for something?
 
+option(GLASS_IMAGE_RUN_ASSERTIONS "Run assertions, independently of the release/debug build type." OFF)
+
+# Compile options
+if(GLASS_IMAGE_RUN_ASSERTIONS)
+    add_compile_options(-UNDEBUG)
+endif()
+
 # Add dependencies
 if(NOT TARGET GlassLogging)
     add_subdirectory(dependencies/internal/GlassLogging)
 endif()
 
-# Add sources
+# Directories
 add_subdirectory(src)
 
 # Add unit tests
