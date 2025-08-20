@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "glass_image/gpu_buffer.h"
+
 using std::vector;
 
 TEST(GpuImageTest, CreateFromImage_ToImage)
@@ -113,45 +115,46 @@ TEST(GpuImageTest, CropOtherImage)
 
     std::unique_ptr<gls::GpuImage<float>> gpu_image =
         std::make_unique<gls::GpuImage<float>>(gpu_context, input_image);  // Create GPU image from CPU image
-    gls::GpuImage<float> gpu_image2(gpu_context, *gpu_image, 7, 3);  // Another, smaller GPU image with same buffer.
 
-    gpu_image.reset();  // Delete the original image and check, if the buffer is still intact after.
+    // Another, smaller GPU image with same buffer.
+    gls::GpuImage<float> gpu_image2(gpu_context, *gpu_image, 0, 0, 7, 2);
+
+    gpu_image.reset();  // Delete the original image and check if the buffer is still intact after.
 
     gls::image<float> cpu_image = gpu_image2.ToImage();  // Create CPU image out of GPU image
-
-    /// Cropping an image from buffer does not work on Mac
-#ifndef __APPLE__
     cpu_image.apply([&](float* pixel, int x, int y) { EXPECT_EQ(*pixel, x * y); });
-#endif
 }
 
-#if false
-// Still risky / incomplete!
-TEST(GpuImageTest, CropOtherImage)
+TEST(GpuImageTest, CropOtherImageOffset)
 {
+    // Same as above but crop with an offset
     auto gpu_context = std::make_shared<gls::OCLContext>(std::vector<std::string>{}, "");
 
-    gls::image<float> cpu_image(1024, 1024);
-    cpu_image.apply([](float* pixel, int x, int y) { *pixel = static_cast<float>(x + y); });  // Set values
+    gls::image<float> input_image(1024, 16);
+    input_image.apply([](float* pixel, int x, int y) { *pixel = static_cast<float>(x + y); });  // Set values
 
-    gls::GpuImage<float> gpu_image(gpu_context, cpu_image);  // Create GPU image from CPU image
-    cout << gpu_image.width_ << "x" << gpu_image.height_ << endl;
+    std::unique_ptr<gls::GpuImage<float>> gpu_image =
+        std::make_unique<gls::GpuImage<float>>(gpu_context, input_image);  // Create GPU image from CPU image
+    gls::GpuImage<float> gpu_image2(gpu_context, *gpu_image, 512, 2, 16, 8);
 
-    gls::GpuImage<float> crop_image(gpu_context, gpu_image, 256, 256, 256, 256);
+    gpu_image.reset();  // Delete the original image and check if the buffer is still intact after.
 
-    gls::image<float> out_image = crop_image.ToImage();
-    for (int y = 0; y < 4; y++)
-    {
-        for (int x = 0; x < 4; x++)
-        {
-            cout << out_image[y][x] << ", ";
-        }
-        cout << endl;
-    }
-
-    /// Cropping an image from buffer does not work on Mac
-#ifndef __APPLE__
-    cpu_image.apply([&](float* pixel, int x, int y) { EXPECT_EQ(*pixel, input_image[y][x]); });
-#endif
+    gls::image<float> cpu_image = gpu_image2.ToImage();  // Create CPU image out of GPU image
+    cpu_image.apply([&](float* pixel, int x, int y) { EXPECT_EQ(*pixel, (x + 512) + (y + 2)); });
 }
-#endif
+
+TEST(GpuImageTest, CreateFromBuffer)
+{
+    // Same as above but crop with an offset
+    auto gpu_context = std::make_shared<gls::OCLContext>(std::vector<std::string>{}, "");
+
+    const size_t w = 768, h = 4;  // Buffer must be large enough to contain pitch-adjusted image.
+    vector<float> data(w * h);
+    std::iota(data.begin(), data.end(), 0.0f);
+    gls::GpuBuffer<float> buffer(gpu_context, data);
+
+    gls::GpuImage<float> gpu_image(gpu_context, buffer, w, h);
+
+    gls::image<float> cpu_image = gpu_image.ToImage();  // Create CPU image out of GPU image
+    cpu_image.apply([&](float* pixel, int x, int y) { EXPECT_EQ(*pixel, y * w + x); });
+}

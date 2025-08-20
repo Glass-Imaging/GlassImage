@@ -18,7 +18,6 @@ typedef struct
 } CustomBufferStruct;
 
 template class gls::GpuBuffer<float>;
-// template class gls::GpuBuffer<CustomBufferStruct>;
 
 class CustomBufferAddKernel : gls::GpuKernel
 {
@@ -35,7 +34,7 @@ class CustomBufferAddKernel : gls::GpuKernel
         SetArgs(buffer.buffer());
         cl::CommandQueue _queue = queue.value_or(gpu_context_->clCommandQueue());
         cl::Event event;
-        _queue.enqueueNDRangeKernel(kernel_, {}, {buffer.size, 1, 1}, {}, &events, &event);
+        _queue.enqueueNDRangeKernel(kernel_, {}, {buffer.size_, 1, 1}, {}, &events, &event);
         return event;
     }
 };
@@ -51,7 +50,25 @@ TEST(GpuBufferTest, CreateFromSpan_ToVector)
 
     std::vector<float> result = buffer.ToVector();
     EXPECT_EQ(result.size(), data.size());
-    EXPECT_EQ(result.size(), buffer.size);
+    EXPECT_EQ(result.size(), buffer.size_);
+    for (int i = 0; i < result.size(); i++) EXPECT_EQ(data[i], result[i]);
+}
+
+TEST(GpuBufferTest, ConstructFromClBuffer)
+{
+    auto gpu_context = std::make_shared<gls::OCLContext>(std::vector<std::string>{}, "");
+
+    vector<float> data(6);
+    std::iota(data.begin(), data.end(), 0.0f);
+
+    cl::Buffer ocl_buffer(gpu_context->clContext(), CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+                          sizeof(float) * data.size(), data.data());
+
+    gls::GpuBuffer<float> buffer(gpu_context, ocl_buffer);
+
+    std::vector<float> result = buffer.ToVector();
+    EXPECT_EQ(result.size(), data.size());
+    EXPECT_EQ(result.size(), buffer.size_);
     for (int i = 0; i < result.size(); i++) EXPECT_EQ(data[i], result[i]);
 }
 
@@ -108,7 +125,7 @@ TEST(GpuBufferTest, CustomBufferType)
     gls::GpuBuffer<CustomBufferStruct> buffer(gpu_context, 4);
 
     auto mapped = buffer.MapBuffer();
-    for (int i = 0; i < buffer.size; i++)
+    for (int i = 0; i < buffer.size_; i++)
     {
         (*mapped)[i].int_value = i;
         (*mapped)[i].float_value = 0.2f;

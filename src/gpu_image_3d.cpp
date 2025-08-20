@@ -1,5 +1,6 @@
 #include "glass_image/gpu_image_3d.h"
 
+#include <CL/opencl.hpp>
 #include <format>
 #include <stdexcept>
 
@@ -22,7 +23,7 @@ GpuImage3d<T>::GpuImage3d(std::shared_ptr<gls::OCLContext> gpu_context, const si
       height_(height),
       depth_(depth),
       flags_(flags),
-      buffer_(GpuBuffer<T>(gpu_context, gu::GetBufferSize<T>(width, height, depth), flags))
+      buffer_(GpuBuffer<T>(gpu_context, gu::GetBestRowPitch<T>(width), flags))
 {
     image_ = CreateImage3dFromBuffer(buffer_, width, height, depth, flags);
 }
@@ -43,8 +44,8 @@ GpuImage3d<T>::GpuImage3d(std::shared_ptr<gls::OCLContext> gpu_context, const Gp
 
     /// TODO: I think all these crop-copies need to carry a stride around! Otherwise you cannot do this in a chain.
     /// Implement and test this!
-    auto [row_pitch, slice_pitch] = gu::GetPitches<T>(other.width_, other.height_);
-    image_ = CreateImage3dFromBuffer(buffer_, width, height, depth, flags_, row_pitch, slice_pitch);
+    // auto [row_pitch, slice_pitch] = gu::GetPitches<T>(other.width_, other.height_);
+    // image_ = CreateImage3dFromBuffer(buffer_, width, height, depth, flags_, row_pitch, slice_pitch);
 }
 
 template <typename T>
@@ -138,56 +139,59 @@ cl::Image3D GpuImage3d<T>::CreateImage3dFromBuffer(GpuBuffer<T>& buffer, const s
                                                    const std::optional<size_t> row_pitch_bytes,
                                                    const std::optional<size_t> slice_pitch_bytes)
 {
-    /// NOTE: flags needs to match what the buffer was created with, but reading them from the buffer didn't work just
-    /// now.
-    auto [this_row_pitch, this_slice_pitch] = gu::GetPitches<T>(width, height);  // In bytes
-    size_t row_pitch = row_pitch_bytes.value_or(this_row_pitch);
-    size_t slice_pitch = slice_pitch_bytes.value_or(this_slice_pitch);
+    return cl::Image3D();
+    //     /// NOTE: flags needs to match what the buffer was created with, but reading them from the buffer didn't work
+    //     just
+    //     /// now.
+    //     auto [this_row_pitch, this_slice_pitch] = gu::GetPitches<T>(width, height);  // In bytes
 
-    const size_t expected_buffer_size = slice_pitch * depth;
-    if (buffer.ByteSize() < expected_buffer_size)
-        throw std::runtime_error(std::format("Expected a buffer of >= {} bytes as base for image, got {}.",
-                                             expected_buffer_size, buffer.ByteSize()));
+    //     size_t row_pitch = row_pitch_bytes.value_or(this_row_pitch);
+    //     size_t slice_pitch = slice_pitch_bytes.value_or(this_slice_pitch);
 
-    cl_image_desc image_desc;
-    memset(&image_desc, 0, sizeof(image_desc));
-    image_desc.image_type = CL_MEM_OBJECT_IMAGE3D;
-    image_desc.image_width = width;
-    image_desc.image_height = height;
-    image_desc.image_depth = depth;
-    image_desc.buffer = buffer.buffer().get();
-    size_t pixel_size = sizeof(T);
-    image_desc.image_row_pitch = row_pitch;
-    image_desc.image_slice_pitch = slice_pitch;
+    //     const size_t expected_buffer_size = slice_pitch * depth;
+    //     if (buffer.ByteSize() < expected_buffer_size)
+    //         throw std::runtime_error(std::format("Expected a buffer of >= {} bytes as base for image, got {}.",
+    //                                              expected_buffer_size, buffer.ByteSize()));
 
-    cl::ImageFormat format = gu::GetClFormat<T>();
-    cl_image_format image_format;
-    image_format.image_channel_order = format.image_channel_order;
-    image_format.image_channel_data_type = format.image_channel_data_type;
+    //     cl_image_desc image_desc;
+    //     memset(&image_desc, 0, sizeof(image_desc));
+    //     image_desc.image_type = CL_MEM_OBJECT_IMAGE3D;
+    //     image_desc.image_width = width;
+    //     image_desc.image_height = height;
+    //     image_desc.image_depth = depth;
+    //     image_desc.buffer = buffer.buffer().get();
+    //     size_t pixel_size = sizeof(T);
+    //     image_desc.image_row_pitch = row_pitch;
+    //     image_desc.image_slice_pitch = slice_pitch;
 
-#ifdef __APPLE__
-    /*Creating an Image2D from a buffer fails on Mac, even with cl_khr_image2d_from_buffer explicitly listed.
-    Therefore, I am returning a new cl::Image2D unrelated to the Buffer here. Note that this breaks having multiple
-    images share the same buffer.
-    */
-    cl::Image3D image(gpu_context_->clContext(), flags, format, width, height, depth);
-    return image;
-#else
-    cl_int err;
-    cl_mem image_mem =
-        opencl::clCreateImage(gpu_context_->clContext().get(), flags, &image_format, &image_desc, nullptr, &err);
+    //     cl::ImageFormat format = gu::GetClFormat<T>();
+    //     cl_image_format image_format;
+    //     image_format.image_channel_order = format.image_channel_order;
+    //     image_format.image_channel_data_type = format.image_channel_data_type;
 
-    if (err != CL_SUCCESS)
-    {
-        std::stringstream ss;
-        ss << "clCreateImage() failed in CreateImage3dFromBuffer()." << "  Error code: " << std::to_string(err)
-           << "  Readable error code: " << gls::clStatusToString(err) << std::endl;
-        throw cl::Error(err, ss.str().c_str());
-    }
+    // #ifdef __APPLE__
+    //     /*Creating an Image2D from a buffer fails on Mac, even with cl_khr_image2d_from_buffer explicitly listed.
+    //     Therefore, I am returning a new cl::Image2D unrelated to the Buffer here. Note that this breaks having
+    //     multiple images share the same buffer.
+    //     */
+    //     cl::Image3D image(gpu_context_->clContext(), flags, format, width, height, depth);
+    //     return image;
+    // #else
+    //     cl_int err;
+    //     cl_mem image_mem =
+    //         opencl::clCreateImage(gpu_context_->clContext().get(), flags, &image_format, &image_desc, nullptr, &err);
 
-    // Wrap the cl_mem object in a cl::Image3D
-    return cl::Image3D(image_mem);
-#endif
+    //     if (err != CL_SUCCESS)
+    //     {
+    //         std::stringstream ss;
+    //         ss << "clCreateImage() failed in CreateImage3dFromBuffer()." << "  Error code: " << std::to_string(err)
+    //            << "  Readable error code: " << gls::clStatusToString(err) << std::endl;
+    //         throw cl::Error(err, ss.str().c_str());
+    //     }
+
+    //     // Wrap the cl_mem object in a cl::Image3D
+    //     return cl::Image3D(image_mem);
+    // #endif
 }
 
 template class GpuImage3d<float>;

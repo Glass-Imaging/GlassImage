@@ -20,6 +20,7 @@
                 "CMAKE_CXX_FLAGS": "-std=c++23 -stdlib=libc++ -O3",
                 "CMAKE_SYSTEM_NAME": "Android",
                 "GLASS_IMAGE_BUILD_IMAGE_IO": "ON",
+                "GLASS_IMAGE_PAD_POWER2_IMAGES": "ON",
                 "GLASS_IMAGE_RUN_ASSERTIONS": "ON",
                 "GLASS_LOGGING_SHOW_INTERNAL": "ON",
                 "GLASS_LOGGING_USE_ANDROID_LOG": "OFF"
@@ -36,6 +37,7 @@
                 "CMAKE_CXX_FLAGS": "-std=c++23 -stdlib=libc++ -O3",
                 "CMAKE_SYSTEM_NAME": "Darwin",
                 "GLASS_IMAGE_BUILD_IMAGE_IO": "ON",
+                "GLASS_IMAGE_PAD_POWER2_IMAGES": "ON",
                 "GLASS_IMAGE_RUN_ASSERTIONS": "ON",
                 "GLASS_LOGGING_SHOW_INTERNAL": "ON",
                 "GLASS_LOGGING_USE_ANDROID_LOG": "OFF"

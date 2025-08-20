@@ -46,13 +46,12 @@ __kernel void WriteIrregular2d(read_only image2d_t image, const int dist, write_
     int x = get_global_id(0);
     int y = get_global_id(1);
 
-    float4 pix = (float4)(0.0f);
-    for(int yread = y - dist; yread <= y + dist; yread += dist){
-        for(int xread = x - dist; xread <= x + dist; xread += dist){
-            pix = pix + read_imagef(image, sampler, (int2)(x, y));
+    float4 pix = read_imagef(image, sampler, (int2)(x, y));
+    for(int ywrite = y - dist; ywrite <= y + dist; ywrite += dist){
+        for(int xwrite = x - dist; xwrite <= x + dist; xwrite += dist){
+            write_imagef(output, (int2)(xwrite, ywrite), pix);
         }
-    }
-    write_imagef(output, (int2)(x, y), pix);
+    }   
 }
 
 )";

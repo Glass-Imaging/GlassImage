@@ -18,7 +18,7 @@ cl::ImageFormat GetClFormat()
     if constexpr (std::is_same_v<T, float>)
         return cl::ImageFormat(CL_R, CL_FLOAT);
     else if constexpr (std::is_same_v<T, float16_t>)
-        return cl::ImageFormat(CL_R, CL_HALF_FLOAT);        
+        return cl::ImageFormat(CL_R, CL_HALF_FLOAT);
     else if constexpr (std::is_same_v<T, gls::pixel_fp16>)
         return cl::ImageFormat(CL_R, CL_HALF_FLOAT);
     else if constexpr (std::is_same_v<T, gls::pixel_fp16_2>)
@@ -37,35 +37,63 @@ cl::ImageFormat GetClFormat()
         throw std::runtime_error("Unsupported pixel type for GpuImage::GetClFormat()");
 }
 
+/// Get the optimal row pitch for an image with the given width in pixels, adhering to the device constraints and
+/// potentially padded to a non-power of 2.
+/// @param width Width in pixels
+/// @return Optimal row pitch in pixels
 template <typename T>
-std::tuple<size_t, size_t> GetPitches(const size_t width, const size_t height)
+size_t GetBestRowPitch(size_t width)
 {
-    /* TODO / NOTE: This is so far taken from GlassLibrary and seems to work.
-    However, @mako443 is not certain if 4096 is for sure the right alignment - is this related to the QCOM page size?
+    /* According to @mako443's understanding, the row pitch has to be a multiple of CL_DEVICE_IMAGE_PITCH_ALIGNMENT,
+       both in pixels. Furthermore, experiments on the Adreno GPU of Xiaomi 15 Ultra showed that read & write speeds can
+       be ~2x faster if the row pitch is *not* a power of 2 - this is fully counter-intuitive. Therefore, I am
+       experimentally padding power-of-2 pitches to the next valid pitch size based on the GLASS_IMAGE_PAD_POWER2_IMAGES
+       preproc directive.
     */
 
     cl::Device device = cl::Device::getDefault();
-    auto image_pitch_alignment = device.getInfo<CL_DEVICE_IMAGE_PITCH_ALIGNMENT>();
-    int row_pitch = width * sizeof(T);  // TODO: sizeof(T) is correct, right?
+    cl_uint image_pitch_alignment = device.getInfo<CL_DEVICE_IMAGE_PITCH_ALIGNMENT>();  // In pixels
 
-    // Round up to the nearest multiple of image_pitch_alignment
-    row_pitch = (row_pitch + image_pitch_alignment - 1) & ~(image_pitch_alignment - 1);
+    // Round up width to the next multiple of image_pitch_alignment, all in pixels.
+    width = ((width + image_pitch_alignment - 1) / image_pitch_alignment) * image_pitch_alignment;
 
-    // Round up to the nearest multiple of 4096
-    // Value 4096 is reverse engineered on how cl::Image objects are constructed by reading
-    // slice pitch values from cl::Image objects which owns their own memory.
-    // Did not find any correct documentation on this how it should be calculated on Qualcomm GPUs.
-    int slice_pitch = row_pitch * height;
-    slice_pitch = (slice_pitch + 4095) & ~4095;
+#if GLASS_IMAGE_PAD_POWER2_IMAGES
+    if ((width & (width - 1)) == 0) width += image_pitch_alignment;
+#endif
 
-    return std::make_tuple(row_pitch, slice_pitch);
+    return width;
 }
 
-template <typename T>
-size_t GetBufferSize(const size_t width, const size_t height, const size_t depth = 1)
-{
-    auto [row_pitch, slice_pitch] = GetPitches<T>(width, height);
-    return slice_pitch * depth;
-}
+// template <typename T>
+// std::tuple<size_t, size_t> GetPitches(const size_t width, const size_t height)
+// {
+//     /* TODO / NOTE: This is so far taken from GlassLibrary and seems to work.
+//     However, @mako443 is not certain if 4096 is for sure the right alignment - is this related to the QCOM page size?
+//     */
+
+//     cl::Device device = cl::Device::getDefault();
+//     auto image_pitch_alignment = device.getInfo<CL_DEVICE_IMAGE_PITCH_ALIGNMENT>();
+//     int row_pitch = width * sizeof(T);  // TODO: sizeof(T) is correct, right?
+
+//     // Round up to the nearest multiple of image_pitch_alignment
+//     row_pitch = (row_pitch + image_pitch_alignment - 1) & ~(image_pitch_alignment - 1);
+
+//     // Round up to the nearest multiple of 4096
+//     // Value 4096 is reverse engineered on how cl::Image objects are constructed by reading
+//     // slice pitch values from cl::Image objects which owns their own memory.
+//     // Did not find any correct documentation on this how it should be calculated on Qualcomm GPUs.
+//     int slice_pitch = row_pitch * height;
+//     slice_pitch = (slice_pitch + 4095) & ~4095;
+
+//     return std::make_tuple(row_pitch, slice_pitch);
+// }
+
+// template <typename T>
+// size_t GetBufferSize(const size_t width, const size_t height, const size_t depth = 1)
+// {
+//     // auto [row_pitch, slice_pitch] = GetPitches<T>(width, height);
+//     const size_t row_pitch = GetBestRowPitch<T>(width);
+//     return row_pitch * height * depth;
+// }
 
 }  // namespace gls::image_utils

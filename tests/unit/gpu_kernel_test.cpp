@@ -25,7 +25,7 @@ class BufferAddKernel : gls::GpuKernel
         SetArgs(buffer.buffer(), value);
         cl::CommandQueue _queue = queue.value_or(gpu_context_->clCommandQueue());
         cl::Event event;
-        _queue.enqueueNDRangeKernel(kernel_, {}, {buffer.size, 1, 1}, {}, &events, &event);
+        _queue.enqueueNDRangeKernel(kernel_, {}, {buffer.size_, 1, 1}, {}, &events, &event);
         return event;
     }
 };
