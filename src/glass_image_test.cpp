@@ -26,17 +26,36 @@ int main()
     gpu_context->loadProgramsFromFullStringSource(kernel_sources, "");
     cl::Device device = cl::Device::getDefault();
 
-    gls::image<float> input_image(16, 4);
-    input_image.apply([](float* pixel, int x, int y) { *pixel = static_cast<float>(x * y); });  // Set values
+    const size_t width = 16, height = 4, depth = 3;
+    gls::GpuImage3d<float> gpu_image(gpu_context, width, height, depth);
 
-    std::unique_ptr<gls::GpuImage<float>> gpu_image =
-        std::make_unique<gls::GpuImage<float>>(gpu_context, input_image);  // Create GPU image from CPU image
-    gls::GpuImage<float> gpu_image2(gpu_context, *gpu_image, 7, 3);  // Another, smaller GPU image with same buffer.
+    int i = 2;
+    {
+        gls::GpuImage<float> slice = gpu_image[i];
+        gls::image<float> cpu_image(16, 4);
+        cpu_image.apply([&](float* pixel, int x, int y) { *pixel = x + i * y; });
+        slice.CopyFrom(cpu_image).wait();
+    }
 
-    gpu_image.reset();  // Delete the original image and check if the buffer is still intact after.
+    {
+        gls::GpuImage<float> slice = gpu_image[i];
+        gls::image<float> cpu_image = slice.ToImage();
+        for (int y = 0; y < 3; y++)
+        {
+            for (int x = 0; x < 6; x++)
+            {
+                cout << cpu_image[y][x] << ", ";
+            }
+            cout << endl;
+        }
+    }
 
-    gls::image<float> cpu_image = gpu_image2.ToImage();  // Create CPU image out of GPU image
-    cpu_image.apply([&](float* pixel, int x, int y) { assert(*pixel == x * y); });
+    // for (int i = 0; i < depth; i++)
+    // {
+    //     gls::GpuImage<float> slice = gpu_image[i];
+    //     gls::image<float> cpu_image = slice.ToImage();
+    //     cpu_image.apply([&](float* pixel, int x, int y) { EXPECT_EQ(*pixel, x + i * y); });
+    // }
 
     cout << endl << "All done." << endl;
 }

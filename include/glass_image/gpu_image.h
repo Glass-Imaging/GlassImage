@@ -33,7 +33,7 @@ class GpuImage
              cl_mem_flags flags = CL_MEM_READ_WRITE);
 
     GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, GpuBuffer<T>& buffer, const size_t width,
-             const size_t height, cl_mem_flags flags = CL_MEM_READ_WRITE);
+             const size_t height, const size_t offset = 0, cl_mem_flags flags = CL_MEM_READ_WRITE);
 
     // Crop from another GpuImage, sharing same memory
     /// NOTE: The speed of this is usually fine but if you want to ensure a speed-optimal pitch, rather create from
@@ -65,18 +65,11 @@ class GpuImage
     void ApplyOnCpu(std::function<void(T* pixel, int x, int y)> process,
                     std::optional<cl::CommandQueue> queue = std::nullopt, const std::vector<cl::Event>& events = {});
 
-    const size_t width_, height_;
-    cl::Image2D image() { return image_; };
+    const size_t width_, height_, row_pitch_;  // In pixels
+    // cl::Image2D image() { return image_; };
     const cl::Image2D image() const { return image_; };
 
    private:
-    // cl::Image2D CreateImage2dFromBuffer(GpuBuffer<T>& buffer, const size_t width, const size_t height,
-    //                                     cl_mem_flags flags, const std::optional<size_t> row_pitch_bytes =
-    //                                     std::nullopt, const std::optional<size_t> slice_pitch_bytes = std::nullopt);
-
-    // cl::Image2D CropImage2dFromBuffer(GpuBuffer<T>& buffer, const size_t x0, const size_t y0, const size_t width,
-    //                                   const size_t height, const size_t row_pitch_bytes, cl_mem_flags flags);
-
     /// @brief Creates a 2D OpenCL image from a GPU buffer with specified offset and dimensions.
     /// @param buffer The GPU buffer to create the image from
     /// @param offset The starting offset in the buffer (in pixels).
@@ -91,7 +84,6 @@ class GpuImage
     // General
     std::shared_ptr<std::atomic<bool>> is_mapped_;
     const cl_mem_flags flags_;
-    const size_t row_pitch_;  // In pixels
 
     // GPU resources
     std::shared_ptr<gls::OCLContext> gpu_context_;

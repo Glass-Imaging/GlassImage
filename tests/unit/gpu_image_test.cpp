@@ -158,3 +158,18 @@ TEST(GpuImageTest, CreateFromBuffer)
     gls::image<float> cpu_image = gpu_image.ToImage();  // Create CPU image out of GPU image
     cpu_image.apply([&](float* pixel, int x, int y) { EXPECT_EQ(*pixel, y * w + x); });
 }
+
+TEST(GpuImageTest, PaddedPower2)
+{
+    // Same as above but crop with an offset
+    auto gpu_context = std::make_shared<gls::OCLContext>(std::vector<std::string>{}, "");
+
+    const size_t w = 512, h = 4;
+    gls::GpuImage<float> gpu_image(gpu_context, w, h);
+
+#if GLASS_IMAGE_PAD_POWER2_IMAGES
+    EXPECT_EQ(gpu_image.row_pitch_, 768);
+#else
+    EXPECT_EQ(gpu_image.row_pitch_, 512);
+#endif
+}
