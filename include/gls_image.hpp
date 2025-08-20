@@ -240,6 +240,9 @@ typedef basic_pixel<rgba_type<float_type>> pixel_float4;
 typedef basic_pixel<luma_type<float_type>> pixel_float;
 typedef basic_pixel<luma_alpha_type<float_type>> pixel_float2;
 typedef basic_pixel<rgb_type<float_type>> pixel_float3;
+typedef basic_pixel<luma_type<bool>> pixel_bool;
+
+
 typedef basic_pixel<rgba_type<float_type>> pixel_float4;
 
 class tiff_metadata;
