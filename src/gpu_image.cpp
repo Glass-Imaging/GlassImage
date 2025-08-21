@@ -72,8 +72,13 @@ GpuImage<T>::GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, GpuImage<T>&
       row_pitch_(other.row_pitch_),  // Has to use the others row pitch
       is_mapped_(other.is_mapped_),
       flags_(other.flags_),
-      buffer_(other.buffer_)
+      buffer_(other.buffer_),
+      is_crop_(true)
 {
+    // Recursive cropping gave me a segfault on buffer level - rather crop from the original again with appropriate
+    // offset.
+    if (other.is_crop_) throw std::runtime_error("Cannot crop from a GpuImage that is already a crop.");
+
     const size_t _x0 = x0.value_or(0);
     const size_t _y0 = y0.value_or(0);
     const size_t _width = width.value_or(other.width_);
@@ -246,15 +251,21 @@ cl::Image2D GpuImage<T>::CreateImage2dFromBuffer(GpuBuffer<T>& buffer, const siz
 
     // Create a sub buffer to set the initial image offset
     cl_int err;
-    cl_buffer_region region{.origin = offset_bytes, .size = height * row_bytes};
+    // cl_buffer_region region{.origin = offset_bytes, .size = height * row_bytes};
+    cl_buffer_region region{.origin = offset_bytes, .size = buffer.size_ - offset};
+    cout << std::format("Creating with offset {} pixels, size {} pixels \n", offset, height * row_bytes);
+
+    std::cout << "Create0" << endl;
     cl::Buffer sub_buffer = buffer.buffer().createSubBuffer(flags, CL_BUFFER_CREATE_TYPE_REGION, &region, &err);
     if (err != CL_SUCCESS) throw std::runtime_error(std::format("Sub buffer creation failed with error code {}.", err));
+    std::cout << "Create1" << endl;
 
     // Create the cl::Image2D from the sub buffer
     cl::Image2D image(gpu_context_->clContext(), gu::GetClFormat<T>(), sub_buffer, width, height, row_bytes, &err);
     if (err != CL_SUCCESS)
         throw std::runtime_error(std::format("cl::Image2D creation from buffer failed with error code {}.", err));
 
+    std::cout << "Create2" << endl;
     return image;
 }
 

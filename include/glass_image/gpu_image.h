@@ -89,5 +89,6 @@ class GpuImage
     std::shared_ptr<gls::OCLContext> gpu_context_;
     GpuBuffer<T> buffer_;
     cl::Image2D image_;
+    const bool is_crop_ = false;
 };
 }  // namespace gls

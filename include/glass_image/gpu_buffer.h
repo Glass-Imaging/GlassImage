@@ -1,5 +1,6 @@
 #pragma once
 
+#include <format>
 #include <functional>
 #include <optional>
 #include <span>
@@ -24,6 +25,7 @@ class GpuBuffer
     GpuBuffer& operator=(GpuBuffer&&) = default;
     ~GpuBuffer() = default;
 
+    // Create new
     GpuBuffer(std::shared_ptr<gls::OCLContext> gpu_context, const size_t size, cl_mem_flags flags = CL_MEM_READ_WRITE)
         : gpu_context_(gpu_context), size_(size), is_mapped_(std::make_shared<std::atomic<bool>>(false))
     {
@@ -31,12 +33,41 @@ class GpuBuffer
         buffer_ = cl::Buffer(gpu_context->clContext(), flags, sizeof(T) * size);
     };
 
+    // Create from CPU span
     GpuBuffer(std::shared_ptr<gls::OCLContext> gpu_context, const std::span<T>& data,
               cl_mem_flags flags = CL_MEM_READ_WRITE)
         : gpu_context_(gpu_context), size_(data.size()), is_mapped_(std::make_shared<std::atomic<bool>>(false))
     {
         buffer_ = cl::Buffer(gpu_context->clContext(), flags | CL_MEM_COPY_HOST_PTR, sizeof(T) * size_, data.data());
     };
+
+    // Crop from another GpuBuffer
+    /// NOTE: I don't know if this works recursively
+    GpuBuffer(GpuBuffer<T>& other, std::optional<size_t> offset = {}, std::optional<size_t> size = {},
+              cl_mem_flags flags = CL_MEM_READ_WRITE)
+        : gpu_context_(other.gpu_context_),
+          size_(size.value_or(other.size_ - offset.value_or(0))),
+          is_mapped_(other.is_mapped_),
+          is_crop_(true)
+    {
+        // Recursive cropping gave me a segfault - rather crop from the original again with appropriate offset.
+        if (other.is_crop_) throw std::runtime_error("Cannot crop from a GpuBuffer that is already a crop.");
+
+        const size_t _offset = offset.value_or(0);
+        const size_t _size = size.value_or(other.size_ - _offset);
+
+        if (_offset > other.size_ || _offset + _size > other.size_)
+            throw std::runtime_error(
+                std::format("Cropping with offset {} and size {} is invalid for source buffer of size {}.", _offset,
+                            _size, other.size_));
+
+        cl_int err;
+        cl_buffer_region region{.origin = _offset * sizeof(T), .size = _size * sizeof(T)};
+        buffer_ = other.buffer_.createSubBuffer(flags, CL_BUFFER_CREATE_TYPE_REGION, &region, &err);
+
+        if (err != CL_SUCCESS)
+            throw std::runtime_error(std::format("Sub buffer creation failed with error code {}.", err));
+    }
 
     /// Warp the cl::Buffer
     GpuBuffer(std::shared_ptr<gls::OCLContext> gpu_context, cl::Buffer buffer)
@@ -55,7 +86,7 @@ class GpuBuffer
     };
 
     std::vector<T> ToVector(std::optional<cl::CommandQueue> queue = std::nullopt,
-                            const std::vector<cl::Event>& events = {})
+                            const std::vector<cl::Event>& events = {}) const
     {
         cl::CommandQueue _queue = queue.value_or(gpu_context_->clCommandQueue());
         std::vector<T> data(size_);
@@ -117,8 +148,11 @@ class GpuBuffer
    private:
     std::shared_ptr<gls::OCLContext> gpu_context_;
     // Shared atomic bool such that multiple GpuBuffer, which wrap the same OpenCL memory, know if it is mapped or not.
+    /// TODO: Potentially is_mapped_ would need to always consider the full buffer, I don't know if two images are
+    /// allowed to be mapped at the same time if they share the same underlying buffer.
     std::shared_ptr<std::atomic<bool>> is_mapped_;
 
     cl::Buffer buffer_;
+    const bool is_crop_ = false;
 };
 }  // namespace gls
