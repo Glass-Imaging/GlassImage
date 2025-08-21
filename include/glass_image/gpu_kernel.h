@@ -2,15 +2,49 @@
 
 #include <cxxabi.h>
 
-#include <optional>
-#include <span>
 #include <string>
-#include <vector>
 
+#include "glass_image/gpu_buffer.h"
+#include "glass_image/gpu_image.h"
+#include "glass_image/gpu_image_3d.h"
 #include "gls_ocl.hpp"
 
 namespace gls
 {
+
+namespace detail
+{
+// Pass-through for native cl types
+inline cl::Buffer GetKernelArg(const cl::Buffer& b) { return b; }
+inline cl::Image2D GetKernelArg(const cl::Image2D& i) { return i; }
+inline cl::Image3D GetKernelArg(const cl::Image3D& i) { return i; }
+
+// Explicit overloads
+template <typename T>
+inline cl::Buffer GetKernelArg(const gls::GpuBuffer<T>& buf)
+{
+    return buf.buffer();
+}
+
+template <typename T>
+inline cl::Image2D GetKernelArg(const gls::GpuImage<T>& img)
+{
+    return img.image();
+}
+
+template <typename T>
+inline cl::Image3D GetKernelArg(const gls::GpuImage3d<T>& img)
+{
+    return img.image();
+}
+
+// Fallback for primitive/native argument types (int, float, structs)
+template <typename T>
+inline std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>, T> GetKernelArg(const T& v)
+{
+    return v;
+}
+}  // namespace detail
 
 /// TODO: Make abstract
 class GpuKernel
@@ -45,24 +79,22 @@ class GpuKernel
     template <typename T>
     void SetArg(const size_t index, T arg)
     {
-        // std::cout << "Setting arg " << index << " with " << typeid(T).name() << std::endl;
         try
         {
+            // kernel_.setArg(index, detail::GetKernelArg(arg)); // Currently gives some weird buffer copy error!
             kernel_.setArg(index, arg);
         }
         catch (cl::Error& e)
         {
-            // Quick GPT code to go from weird C++ type names like "i" for int or "N2cl6BufferE" for cl::Buffer to the
-            // human-readable names. Hope this is stable :)
             int status;
             char* demangled = abi::__cxa_demangle(typeid(T).name(), nullptr, nullptr, &status);
             std::string demangled_str = (status == 0) ? demangled : typeid(T).name();
             free(demangled);
-
             throw std::runtime_error(
                 std::format("Failed setting {} arg {} with type {}.", name_, index, demangled_str));
         }
     }
+
     std::shared_ptr<gls::OCLContext> gpu_context_;
 
    protected:

@@ -18,7 +18,7 @@ class BufferAddKernel : gls::GpuKernel
    public:
     BufferAddKernel(std::shared_ptr<gls::OCLContext> gpu_context) : gls::GpuKernel(gpu_context, "BufferAddKernel") {}
 
-    cl::Event operator()(gls::GpuBuffer<float> buffer, float value,
+    cl::Event operator()(gls::GpuBuffer<float>& buffer, float value,
                          std::optional<cl::CommandQueue> queue = std::nullopt,
                          const std::vector<cl::Event>& events = {})
     {
