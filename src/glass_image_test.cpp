@@ -33,7 +33,7 @@ int main()
         std::make_unique<gls::GpuImage<float>>(gpu_context, input_image);  // Create GPU image from CPU image
 
     // Another, smaller GPU image with same buffer.
-    gls::GpuImage<float> gpu_image2(gpu_context, *gpu_image, 0, 0, 7, 2);
+    // gls::GpuImage<float> gpu_image2(gpu_context, *gpu_image, 0, 0, 7, 2);
 
     // gpu_image.reset();  // Delete the original image and check if the buffer is still intact after.
 

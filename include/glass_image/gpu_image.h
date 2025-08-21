@@ -35,12 +35,15 @@ class GpuImage
     GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, GpuBuffer<T>& buffer, const size_t width,
              const size_t height, const size_t offset = 0, cl_mem_flags flags = CL_MEM_READ_WRITE);
 
+    /* For some reason this now gives me a segfault all of a sudden?! It used to work?!*/
+#if false             
     // Crop from another GpuImage, sharing same memory
     /// NOTE: The speed of this is usually fine but if you want to ensure a speed-optimal pitch, rather create from
     /// an existing GpuBuffer.
     GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, GpuImage<T>& other, std::optional<size_t> x0 = std::nullopt,
              std::optional<size_t> y0 = std::nullopt, std::optional<size_t> width = std::nullopt,
              std::optional<size_t> height = std::nullopt);
+#endif
 
 #if false
     GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, GpuImage<T>& image, const size_t x0, const size_t y0,

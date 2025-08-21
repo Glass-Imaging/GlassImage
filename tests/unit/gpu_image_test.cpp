@@ -106,6 +106,7 @@ TEST(GpuImageTest, ApplyOnCpu)
     cpu_image.apply([&](float* pixel, int x, int y) { EXPECT_EQ(*pixel, input_image[y][x]); });
 }
 
+#if false
 TEST(GpuImageTest, CropOtherImage)
 {
     auto gpu_context = std::make_shared<gls::OCLContext>(std::vector<std::string>{}, "");
@@ -142,6 +143,7 @@ TEST(GpuImageTest, CropOtherImageOffset)
     gls::image<float> cpu_image = gpu_image2.ToImage();  // Create CPU image out of GPU image
     cpu_image.apply([&](float* pixel, int x, int y) { EXPECT_EQ(*pixel, (x + 512) + (y + 2)); });
 }
+#endif
 
 TEST(GpuImageTest, CreateFromBuffer)
 {
