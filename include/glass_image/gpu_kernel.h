@@ -95,6 +95,49 @@ class GpuKernel
         }
     }
 
+    /* We specify 3 specific templates for GpuBuffer, GpuImage, GpuImage3d such that they can be passed in directly. */
+    template <typename T>
+    void SetArg(const size_t index, const GpuBuffer<T>& buffer)
+    {
+        try
+        {
+            kernel_.setArg(index, buffer.buffer());
+        }
+        catch (cl::Error& e)
+        {
+            throw std::runtime_error(
+                std::format("Failed setting {} arg {} with GpuBuffer<{}>.", name_, index, typeid(T).name()));
+        }
+    }
+
+    template <typename T>
+    void SetArg(const size_t index, const GpuImage<T>& image)
+    {
+        try
+        {
+            kernel_.setArg(index, image.image());
+        }
+        catch (cl::Error& e)
+        {
+            throw std::runtime_error(
+                std::format("Failed setting {} arg {} with GpuImage<{}>.", name_, index, typeid(T).name()));
+        }
+    }
+
+    template <typename T>
+    void SetArg(const size_t index, const GpuImage3d<T>& image)
+    {
+        try
+        {
+            kernel_.setArg(index, image.image());
+        }
+        catch (cl::Error& e)
+        {
+            throw std::runtime_error(
+                std::format("Failed setting {} arg {} with GpuImage<{}>.", name_, index, typeid(T).name()));
+        }
+    }
+
     std::shared_ptr<gls::OCLContext> gpu_context_;
 
    protected:

@@ -22,7 +22,7 @@ class BufferAddKernel : gls::GpuKernel
                          std::optional<cl::CommandQueue> queue = std::nullopt,
                          const std::vector<cl::Event>& events = {})
     {
-        SetArgs(buffer.buffer(), value);
+        SetArgs(buffer, value);
         cl::CommandQueue _queue = queue.value_or(gpu_context_->clCommandQueue());
         cl::Event event;
         _queue.enqueueNDRangeKernel(kernel_, {}, {buffer.size_, 1, 1}, {}, &events, &event);
@@ -38,7 +38,7 @@ class ImageAddKernel : gls::GpuKernel
     cl::Event operator()(gls::GpuImage<float> image, float value, std::optional<cl::CommandQueue> queue = std::nullopt,
                          const std::vector<cl::Event>& events = {})
     {
-        SetArgs(image.image(), value, image.image());
+        SetArgs(image, value, image);
         cl::CommandQueue _queue = queue.value_or(gpu_context_->clCommandQueue());
         cl::Event event;
         _queue.enqueueNDRangeKernel(kernel_, {}, {image.width_, image.height_, 1}, {}, &events, &event);

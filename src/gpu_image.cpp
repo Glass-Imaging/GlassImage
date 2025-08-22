@@ -6,7 +6,6 @@
 
 #include "glass_image/gpu_buffer.h"
 #include "glass_image/gpu_utils.h"
-#include "gls_icd_wrapper.h"
 #include "gls_image.hpp"
 
 namespace gu = gls::image_utils;
