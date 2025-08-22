@@ -6,6 +6,7 @@
 
 #include "glass_image/gpu_buffer.h"
 #include "glass_image/gpu_utils.h"
+#include "gls_icd_wrapper.h"
 #include "gls_image.hpp"
 
 namespace gu = gls::image_utils;
@@ -217,6 +218,12 @@ cl::Image2D GpuImage<T>::CreateImage2dFromBuffer(GpuBuffer<T>& buffer, const siz
      * understanding, images have to adhere to the two device-required alignment constraints checked below.
      */
 
+    /* TODO: get parent flags with
+    cl_mem_flags parent_flags;
+clGetMemObjectInfo(buffer_mem, CL_MEM_FLAGS, sizeof(cl_mem_flags), &parent_flags, nullptr);
+cl_mem sub_mem = opencl::clCreateSubBuffer(buffer_mem, parent_flags, CL_BUFFER_CREATE_TYPE_REGION, &region, &err);
+    */
+
     cl::Device device = cl::Device::getDefault();
     cl_uint image_pitch_alignment = device.getInfo<CL_DEVICE_IMAGE_PITCH_ALIGNMENT>();  // In pixels
     // cl_uint image_base_alignment = device.getInfo<CL_DEVICE_IMAGE_BASE_ADDRESS_ALIGNMENT>();  // In pixels, what for?
@@ -246,11 +253,32 @@ cl::Image2D GpuImage<T>::CreateImage2dFromBuffer(GpuBuffer<T>& buffer, const siz
             std::format("Buffer size of {} bytes is too small for offset of {} bytes plus size of {} bytes.",
                         buffer.ByteSize(), offset_bytes, height * row_bytes));
 
-    // Create a sub buffer to set the initial image offset
     cl_int err;
     cl_buffer_region region{.origin = offset_bytes, .size = height * row_bytes};
-    cl::Buffer sub_buffer = buffer.buffer().createSubBuffer(flags, CL_BUFFER_CREATE_TYPE_REGION, &region, &err);
+
+#if false  // In debugging
+    // Create a sub buffer to set the initial image offset
+    /// TODO: Code is WIP, I get a -38 "invalid mem object" error on Android?!
+
+    cl_int buffer_valid = opencl::clGetMemObjectInfo(buffer.buffer()(), CL_MEM_TYPE, 0, nullptr, nullptr);
+    if (buffer_valid != CL_SUCCESS)
+    {
+        throw std::runtime_error("Parent buffer is invalid");
+    }
+
+    cout << "VALS: " << endl;
+    cout << offset_bytes << endl;
+    cout << height << endl;
+    cout << row_bytes << endl;
+
+    cl_mem buffer_mem = buffer.buffer()();
+    cl_mem sub_mem =
+        opencl::clCreateSubBuffer(buffer_mem, CL_MEM_READ_WRITE, CL_BUFFER_CREATE_TYPE_REGION, &region, &err);
     if (err != CL_SUCCESS) throw std::runtime_error(std::format("Sub buffer creation failed with error code {}.", err));
+    cl::Buffer sub_buffer(sub_mem);
+#else
+    cl::Buffer sub_buffer = buffer.buffer().createSubBuffer(flags, CL_BUFFER_CREATE_TYPE_REGION, &region, &err);
+#endif
 
     // Create the cl::Image2D from the sub buffer
     cl::Image2D image(gpu_context_->clContext(), gu::GetClFormat<T>(), sub_buffer, width, height, row_bytes, &err);

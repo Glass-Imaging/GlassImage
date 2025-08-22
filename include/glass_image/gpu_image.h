@@ -36,7 +36,7 @@ class GpuImage
              const size_t height, const size_t offset = 0, cl_mem_flags flags = CL_MEM_READ_WRITE);
 
     /* For some reason this now gives me a segfault all of a sudden?! It used to work?!*/
-#if false             
+#if false
     // Crop from another GpuImage, sharing same memory
     /// NOTE: The speed of this is usually fine but if you want to ensure a speed-optimal pitch, rather create from
     /// an existing GpuBuffer.
