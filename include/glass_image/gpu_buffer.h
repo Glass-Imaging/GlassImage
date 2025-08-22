@@ -9,6 +9,8 @@
 
 #include "gls_ocl.hpp"
 
+using std::cout, std::endl;
+
 namespace gls
 {
 
@@ -61,8 +63,20 @@ class GpuBuffer
                 std::format("Cropping with offset {} and size {} is invalid for source buffer of size {}.", _offset,
                             _size, other.size_));
 
+        // Verify if the offset is legal
+        cl::Device device = cl::Device::getDefault();
+        cl_uint mem_base_alignment = device.getInfo<CL_DEVICE_MEM_BASE_ADDR_ALIGN>();  // In bits!
+        const size_t offset_bytes = _offset * sizeof(T);
+        const size_t mem_base_alignment_bytes = mem_base_alignment / 8;
+
+        if (offset_bytes % mem_base_alignment_bytes)
+            throw std::runtime_error(
+                std::format("Cropping a buffer at {} pixels of type {} is invalid for device-required offset alignment "
+                            "of {} bytes.",
+                            _offset, typeid(T).name(), mem_base_alignment_bytes));
+
         cl_int err;
-        cl_buffer_region region{.origin = _offset * sizeof(T), .size = _size * sizeof(T)};
+        cl_buffer_region region{.origin = _offset * sizeof(T), .size = (other.size_ - _offset) * sizeof(T)};
         buffer_ = other.buffer_.createSubBuffer(flags, CL_BUFFER_CREATE_TYPE_REGION, &region, &err);
 
         if (err != CL_SUCCESS)

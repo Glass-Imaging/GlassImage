@@ -98,154 +98,23 @@ int main()
     auto gpu_context = std::make_shared<gls::OCLContext>(kernel_sources, "", CL_QUEUE_PROFILING_ENABLE);
     gpu_context->loadProgramsFromFullStringSource(kernel_sources, "");
     cl::Device device = cl::Device::getDefault();
+    gls::image<float> cpu_image(16, 4);
 
-    cl_uint pitchAlign = device.getInfo<CL_DEVICE_IMAGE_PITCH_ALIGNMENT>();
-    cl_uint baseAddrAlign = device.getInfo<CL_DEVICE_IMAGE_BASE_ADDRESS_ALIGNMENT>();
+    const size_t width = 16, height = 4, depth = 4;
+    gls::GpuImage3d<float> gpu_image(gpu_context, width, height, depth);
 
-    const size_t width = 4096, height = 3072;
-    const int dist = 21;
-
-    cl::CommandQueue queue = gpu_context->clCommandQueue();
-
+    for (int i = 0; i < depth; i++)
     {
-        cl::Image2D image0(gpu_context->clContext(), CL_MEM_READ_WRITE, cl::ImageFormat(CL_RGBA, CL_FLOAT), width,
-                           height);
-        cl::Image2D image1(gpu_context->clContext(), CL_MEM_READ_WRITE, cl::ImageFormat(CL_RGBA, CL_FLOAT), width,
-                           height);
-        cl::Kernel kernel(gpu_context->clProgram(), "WriteIrregular2d");
-        kernel.setArg(0, image0);
-        kernel.setArg(1, dist);
-        kernel.setArg(2, image1);
-        cl::Event event;
-        queue.enqueueNDRangeKernel(kernel, cl::NullRange, {width, height, 1}, {8, 8, 1}, {}, &event);
-        PrintEvent("base", event);
-
-        std::chrono::steady_clock::time_point t0 = std::chrono::steady_clock::now();
-        size_t row_pitch, slice_pitch;
-        const size_t total_elements = width * height * 4;
-        void* ptr = queue.enqueueMapImage(image0, CL_TRUE, CL_MAP_READ | CL_MAP_WRITE, {0, 0, 0}, {width, height, 1},
-                                          &row_pitch, &slice_pitch);
-        std::span<float> data_span(static_cast<float*>(ptr), total_elements);
-        std::iota(data_span.begin(), data_span.end(), 0.0f);
-        queue.enqueueUnmapMemObject(image0, ptr, {}, &event);
-        event.wait();
-        std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
-        cout << "Ela: " << std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count() << endl << endl;
-
-        FillImage(gpu_context, image0);
+        gls::GpuImage<float> slice = gpu_image[i];
+        cpu_image.apply([&](float* pixel, int x, int y) { *pixel = x + i * y; });
+        slice.CopyFrom(cpu_image).wait();
     }
 
+    for (int i = 0; i < depth; i++)
     {
-        cl::Buffer buffer0(gpu_context->clContext(), CL_MEM_READ_WRITE, width * height * sizeof(float) * 4);
-        cl::Buffer buffer1(gpu_context->clContext(), CL_MEM_READ_WRITE, width * height * sizeof(float) * 4);
-        cl::Image2D image0 =
-            CreateImage2dFromBuffer(gpu_context, buffer0, 0, width * sizeof(float) * 4, width, height,
-                                    sizeof(float) * 4, cl::ImageFormat(CL_RGBA, CL_FLOAT), CL_MEM_READ_WRITE);
-        cl::Image2D image1 =
-            CreateImage2dFromBuffer(gpu_context, buffer1, 0, width * sizeof(float) * 4, width, height,
-                                    sizeof(float) * 4, cl::ImageFormat(CL_RGBA, CL_FLOAT), CL_MEM_READ_WRITE);
-
-        cl::Kernel kernel(gpu_context->clProgram(), "WriteIrregular2d");
-        kernel.setArg(0, image0);
-        kernel.setArg(1, dist);
-        kernel.setArg(2, image1);
-        cl::Event event;
-        queue.enqueueNDRangeKernel(kernel, cl::NullRange, {width, height, 1}, {8, 8, 1}, {}, &event);
-        PrintEvent("buffer-based", event);
-
-        std::chrono::steady_clock::time_point t0 = std::chrono::steady_clock::now();
-        size_t row_pitch, slice_pitch;
-        const size_t total_elements = width * height * 4;
-        void* ptr = queue.enqueueMapImage(image0, CL_TRUE, CL_MAP_READ | CL_MAP_WRITE, {0, 0, 0}, {width, height, 1},
-                                          &row_pitch, &slice_pitch);
-        std::span<float> data_span(static_cast<float*>(ptr), total_elements);
-        std::iota(data_span.begin(), data_span.end(), 0.0f);
-        queue.enqueueUnmapMemObject(image0, ptr, {}, &event);
-        event.wait();
-        std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
-        cout << "Ela: " << std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count() << endl << endl;
-
-        FillImage(gpu_context, image0);
-    }
-
-    {
-        cl::Buffer buffer0(gpu_context->clContext(), CL_MEM_READ_WRITE,
-                           (width + 4096) * (height + 256) * sizeof(float) * 4);
-        cl::Buffer buffer1(gpu_context->clContext(), CL_MEM_READ_WRITE,
-                           (width + 4096) * (height + 256) * sizeof(float) * 4);
-        cl::Image2D image0 =
-            CreateImage2dFromBuffer(gpu_context, buffer0, 128 * sizeof(float) * 4, width * sizeof(float) * 4, width,
-                                    height, sizeof(float) * 4, cl::ImageFormat(CL_RGBA, CL_FLOAT), CL_MEM_READ_WRITE);
-        cl::Image2D image1 =
-            CreateImage2dFromBuffer(gpu_context, buffer1, 128 * sizeof(float) * 4, width * sizeof(float) * 4, width,
-                                    height, sizeof(float) * 4, cl::ImageFormat(CL_RGBA, CL_FLOAT), CL_MEM_READ_WRITE);
-
-        cl::Kernel kernel(gpu_context->clProgram(), "WriteIrregular2d");
-        kernel.setArg(0, image0);
-        kernel.setArg(1, dist);
-        kernel.setArg(2, image1);
-        cl::Event event;
-        queue.enqueueNDRangeKernel(kernel, cl::NullRange, {width, height, 1}, {8, 8, 1}, {}, &event);
-        PrintEvent("buffer-offset", event);
-
-        std::chrono::steady_clock::time_point t0 = std::chrono::steady_clock::now();
-        size_t row_pitch, slice_pitch;
-        const size_t total_elements = width * height * 4;
-        void* ptr = queue.enqueueMapImage(image0, CL_TRUE, CL_MAP_READ | CL_MAP_WRITE, {0, 0, 0}, {width, height, 1},
-                                          &row_pitch, &slice_pitch);
-        std::span<float> data_span(static_cast<float*>(ptr), total_elements);
-        std::iota(data_span.begin(), data_span.end(), 0.0f);
-        queue.enqueueUnmapMemObject(image0, ptr, {}, &event);
-        event.wait();
-        std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
-        cout << "Ela: " << std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count() << endl << endl;
-
-        FillImage(gpu_context, image0);
-    }
-
-    {
-        const size_t width_pixels = width + 4096;
-        const size_t height_pixels = height + 128;
-        // const size_t row_bytes = 4096 * sizeof(float) * 4;  // This is slow
-        const size_t row_bytes = (width + 128) * sizeof(float) * 4;  // This is fast - presumably bc. *not* power
-        // 2?!
-
-        // const size_t width_pixels = width;
-        // const size_t height_pixels = height;
-        // const size_t row_bytes = width * sizeof(float) * 4;  // This is slow
-
-        cl::Buffer buffer0(gpu_context->clContext(), CL_MEM_READ_WRITE,
-                           width_pixels * height_pixels * sizeof(float) * 4);
-        cl::Buffer buffer1(gpu_context->clContext(), CL_MEM_READ_WRITE,
-                           width_pixels * height_pixels * sizeof(float) * 4);
-        cl::Image2D image0 =
-            CreateImage2dFromBuffer(gpu_context, buffer0, 0 * sizeof(float) * 4, row_bytes, width, height,
-                                    sizeof(float) * 4, cl::ImageFormat(CL_RGBA, CL_FLOAT), CL_MEM_READ_WRITE);
-        cl::Image2D image1 =
-            CreateImage2dFromBuffer(gpu_context, buffer1, 0 * sizeof(float) * 4, row_bytes, width, height,
-                                    sizeof(float) * 4, cl::ImageFormat(CL_RGBA, CL_FLOAT), CL_MEM_READ_WRITE);
-
-        cl::Kernel kernel(gpu_context->clProgram(), "WriteIrregular2d");
-        kernel.setArg(0, image0);
-        kernel.setArg(1, dist);
-        kernel.setArg(2, image1);
-        cl::Event event;
-        queue.enqueueNDRangeKernel(kernel, cl::NullRange, {width, height, 1}, {8, 8, 1}, {}, &event);
-        PrintEvent("buffer-offset-stride", event);
-
-        std::chrono::steady_clock::time_point t0 = std::chrono::steady_clock::now();
-        size_t row_pitch, slice_pitch;
-        const size_t total_elements = width * height * 4;
-        void* ptr = queue.enqueueMapImage(image0, CL_TRUE, CL_MAP_READ | CL_MAP_WRITE, {0, 0, 0}, {width, height, 1},
-                                          &row_pitch, &slice_pitch);
-        std::span<float> data_span(static_cast<float*>(ptr), total_elements);
-        std::iota(data_span.begin(), data_span.end(), 0.0f);
-        queue.enqueueUnmapMemObject(image0, ptr, {}, &event);
-        event.wait();
-        std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
-        cout << "Ela: " << std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count() << endl << endl;
-
-        FillImage(gpu_context, image0, 0);
+        gls::GpuImage<float> slice = gpu_image[i];
+        gls::image<float> cpu_image = slice.ToImage();
+        // cpu_image.apply([&](float* pixel, int x, int y) { EXPECT_EQ(*pixel, x + i * y); });
     }
 
     cout << endl << "All done." << endl;

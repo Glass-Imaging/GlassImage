@@ -21,7 +21,7 @@ inline cl::Image3D GetKernelArg(const cl::Image3D& i) { return i; }
 
 // Explicit overloads
 template <typename T>
-inline cl::Buffer GetKernelArg(const gls::GpuBuffer<T>& buf)
+inline cl::Buffer& GetKernelArg(const gls::GpuBuffer<T>& buf)
 {
     return buf.buffer();
 }
@@ -81,7 +81,7 @@ class GpuKernel
     {
         try
         {
-            // kernel_.setArg(index, detail::GetKernelArg(arg)); // Currently gives some weird buffer copy error!
+            // kernel_.setArg(index, detail::GetKernelArg(arg));  // Currently gives some weird buffer copy error!
             kernel_.setArg(index, arg);
         }
         catch (cl::Error& e)

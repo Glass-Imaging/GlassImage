@@ -169,8 +169,12 @@ TEST(GpuImageTest, PaddedPower2)
     const size_t w = 512, h = 4;
     gls::GpuImage<float> gpu_image(gpu_context, w, h);
 
+    // Verify that my power of 2 width is padded to the next pitch alignment
+    cl::Device device = cl::Device::getDefault();
+    cl_uint image_pitch_alignment = device.getInfo<CL_DEVICE_IMAGE_PITCH_ALIGNMENT>();  // In pixels
+
 #if GLASS_IMAGE_PAD_POWER2_IMAGES
-    EXPECT_EQ(gpu_image.row_pitch_, 768);
+    EXPECT_EQ(gpu_image.row_pitch_, w + image_pitch_alignment);
 #else
     EXPECT_EQ(gpu_image.row_pitch_, 512);
 #endif

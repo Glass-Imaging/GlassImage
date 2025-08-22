@@ -24,9 +24,9 @@ GpuImage3d<T>::GpuImage3d(std::shared_ptr<gls::OCLContext> gpu_context, const si
       row_pitch_(gu::GetBestRowPitch<T>(width)),
       slice_pitch_(height * row_pitch_),
       flags_(flags),
-      buffer_(GpuBuffer<T>(gpu_context, row_pitch_ * height_ * width_, flags))
+      buffer_(GpuBuffer<T>(gpu_context, row_pitch_ * height_ * depth_, flags))
 {
-    image_ = CreateImage3dFromBuffer(buffer_, 0, row_pitch_, slice_pitch_, width_, height_, depth_, flags_);
+    // image_ = CreateImage3dFromBuffer(buffer_, 0, row_pitch_, slice_pitch_, width_, height_, depth_, flags_);
 }
 
 template <typename T>
