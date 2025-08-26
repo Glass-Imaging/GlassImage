@@ -20,8 +20,8 @@ class GpuImage3d
     GpuImage3d(std::shared_ptr<gls::OCLContext> gpu_context, GpuBuffer<T>& buffer, const size_t width,
                const size_t height, const size_t depth, cl_mem_flags flags = CL_MEM_READ_WRITE);
 
-    // This constructor produces a segfault, is potentially hard to do reliably
-#if false
+// This constructor produces a segfault, is potentially hard to do reliably
+#if false               
     GpuImage3d(std::shared_ptr<gls::OCLContext> gpu_context, GpuImage3d<T>& other, std::optional<size_t> x0 = {},
                std::optional<size_t> y0 = {}, std::optional<size_t> z0 = {}, std::optional<size_t> width = {},
                std::optional<size_t> height = {}, std::optional<size_t> depth = {});
