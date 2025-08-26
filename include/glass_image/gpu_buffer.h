@@ -158,7 +158,6 @@ class GpuBuffer
     const size_t size_;
     size_t ByteSize() const { return size_ * sizeof(T); };
     cl::Buffer buffer() const { return buffer_; };
-    const bool is_crop_ = false;
 
    private:
     std::shared_ptr<gls::OCLContext> gpu_context_;
@@ -168,5 +167,6 @@ class GpuBuffer
     std::shared_ptr<std::atomic<bool>> is_mapped_;
 
     cl::Buffer buffer_;
+    const bool is_crop_ = false;
 };
 }  // namespace gls
