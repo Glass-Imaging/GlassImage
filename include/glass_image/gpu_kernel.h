@@ -134,7 +134,7 @@ class GpuKernel
         catch (cl::Error& e)
         {
             throw std::runtime_error(
-                std::format("Failed setting {} arg {} with GpuImage<{}>.", name_, index, typeid(T).name()));
+                std::format("Failed setting {} arg {} with GpuImage3d<{}>.", name_, index, typeid(T).name()));
         }
     }
 

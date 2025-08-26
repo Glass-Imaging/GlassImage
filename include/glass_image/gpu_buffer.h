@@ -45,9 +45,9 @@ class GpuBuffer
 
     // Crop from another GpuBuffer
     /// NOTE: I don't know if this works recursively
-    GpuBuffer(GpuBuffer<T>& other, std::optional<size_t> offset = {}, std::optional<size_t> size = {},
-              cl_mem_flags flags = CL_MEM_READ_WRITE)
-        : gpu_context_(other.gpu_context_),
+    GpuBuffer(std::shared_ptr<gls::OCLContext> gpu_context, GpuBuffer<T>& other, std::optional<size_t> offset = {},
+              std::optional<size_t> size = {}, cl_mem_flags flags = CL_MEM_READ_WRITE)
+        : gpu_context_(gpu_context),
           size_(size.value_or(other.size_ - offset.value_or(0))),
           is_mapped_(other.is_mapped_),
           is_crop_(true)
@@ -158,6 +158,7 @@ class GpuBuffer
     const size_t size_;
     size_t ByteSize() const { return size_ * sizeof(T); };
     cl::Buffer buffer() const { return buffer_; };
+    const bool is_crop_ = false;
 
    private:
     std::shared_ptr<gls::OCLContext> gpu_context_;
@@ -167,6 +168,5 @@ class GpuBuffer
     std::shared_ptr<std::atomic<bool>> is_mapped_;
 
     cl::Buffer buffer_;
-    const bool is_crop_ = false;
 };
 }  // namespace gls

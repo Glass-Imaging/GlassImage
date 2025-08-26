@@ -85,7 +85,7 @@ TEST(GpuBufferTest, CropOtherBuffer)
     gls::GpuBuffer<float> buffer(gpu_context, span<float>(data.data(), data.size()));
 
     // Crop from original
-    gls::GpuBuffer<float> gpu_crop0(buffer, 1024, 1024);
+    gls::GpuBuffer<float> gpu_crop0(gpu_context, buffer, 1024, 1024);
     EXPECT_EQ(gpu_crop0.size_, 1024);
     vector<float> cpu_crop0 = gpu_crop0.ToVector();
     for (int i = 0; i < cpu_crop0.size(); i++) EXPECT_EQ(cpu_crop0[i], i + 1024);
