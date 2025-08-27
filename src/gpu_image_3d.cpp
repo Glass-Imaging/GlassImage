@@ -212,10 +212,19 @@ cl::Image3D GpuImage3d<T>::CreateImage3dFromBuffer(GpuBuffer<T>& buffer, const s
     return cl::Image3D(image_mem);
 }
 
+template class GpuImage3d<gls::luma_pixel>;
+template class GpuImage3d<gls::luma_pixel_16>;
+template class GpuImage3d<float16_t>;
+template class GpuImage3d<gls::pixel_fp16>;
+template class GpuImage3d<gls::pixel_fp16_2>;
+template class GpuImage3d<gls::pixel_fp16_4>;
+// template class GpuImage3d<gls::pixel_fp16_3>; /// NOTE: We explicitly leave out RGB images because they show faulty
+// behaviour on Android.
 template class GpuImage3d<float>;
 template class GpuImage3d<gls::pixel_fp32>;
 template class GpuImage3d<gls::pixel_fp32_2>;
 template class GpuImage3d<gls::pixel_fp32_4>;
-template class GpuImage3d<gls::luma_pixel_16>;
+// template class GpuImage<gls::pixel_fp32_3>; /// NOTE: We explicitly leave out RGB images because they show faulty
+// behaviour on Android.
 
 }  // namespace gls

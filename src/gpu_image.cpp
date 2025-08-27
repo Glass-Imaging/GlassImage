@@ -287,18 +287,19 @@ cl_mem sub_mem = opencl::clCreateSubBuffer(buffer_mem, parent_flags, CL_BUFFER_C
     return image;
 }
 
-template class GpuImage<float>;
-// template class GpuImage<float16_t>;
-// template class GpuImage<gls::pixel_fp16>;
-// template class GpuImage<gls::pixel_fp16_2>;
+template class GpuImage<gls::luma_pixel>;
+template class GpuImage<gls::luma_pixel_16>;
+template class GpuImage<float16_t>;
+template class GpuImage<gls::pixel_fp16>;
+template class GpuImage<gls::pixel_fp16_2>;
+template class GpuImage<gls::pixel_fp16_4>;
 // template class GpuImage<gls::pixel_fp16_3>; /// NOTE: We explicitly leave out RGB images because they show faulty
 // behaviour on Android.
-// template class GpuImage<gls::pixel_fp16_4>;
+template class GpuImage<float>;
 template class GpuImage<gls::pixel_fp32>;
 template class GpuImage<gls::pixel_fp32_2>;
+template class GpuImage<gls::pixel_fp32_4>;
 // template class GpuImage<gls::pixel_fp32_3>; /// NOTE: We explicitly leave out RGB images because they show faulty
 // behaviour on Android.
-template class GpuImage<gls::pixel_fp32_4>;
-template class GpuImage<gls::luma_pixel_16>;
 
 }  // namespace gls
