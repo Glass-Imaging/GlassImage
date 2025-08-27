@@ -1,4 +1,13 @@
 # GlassImage
+> NOTE: GlassImage was created and maintained by Fabio Riccardi until early 2023. Since then it was been overhauled in concept and details and large parts of this documentation may have gotten out of sync.
+
+# GPU functionality
+TODO
+
+## Testing
+GlassImage can be tested with GTest with tests focusing on the GPU part of it for now.
+
+
 ### A Modern C++ library for image processing with OpenCL -- for Android and Unix-like systems.
 **Fabio Riccardi
 Glass Imaging, Inc.
