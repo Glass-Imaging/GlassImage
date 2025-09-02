@@ -35,6 +35,11 @@ class GpuImage
     GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, GpuBuffer<T>& buffer, const size_t width,
              const size_t height, const size_t offset = 0, cl_mem_flags flags = CL_MEM_READ_WRITE);
 
+    GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, cl::Image2D image);
+
+    /// Check if this GpuImage is backed by a buffer
+    bool is_buffer_based() const { return buffer_.has_value(); }
+
     /* For some reason this now gives me a segfault all of a sudden?! It used to work?!*/
 #if false
     // Crop from another GpuImage, sharing same memory
@@ -90,7 +95,7 @@ class GpuImage
 
     // GPU resources
     std::shared_ptr<gls::OCLContext> gpu_context_;
-    GpuBuffer<T> buffer_;
+    std::optional<GpuBuffer<T>> buffer_;
     cl::Image2D image_;
     const bool is_crop_ = false;
 };

@@ -1,5 +1,6 @@
 #include "glass_image/gpu_image.h"
 
+#include <OpenCL/cl.h>
 #include <gtest/gtest.h>
 
 #include <numeric>
@@ -178,4 +179,22 @@ TEST(GpuImageTest, PaddedPower2)
 #else
     EXPECT_EQ(gpu_image.row_pitch_, 512);
 #endif
+}
+
+TEST(GpuImageTest, WrapClImage)
+{
+    // Same as above but crop with an offset
+    auto gpu_context = std::make_shared<gls::OCLContext>(std::vector<std::string>{}, "");
+
+    const size_t w = 256, h = 4;
+    vector<float> data(w * h);
+    std::iota(data.begin(), data.end(), 0.0f);
+
+    cl::Image2D cl_image(gpu_context->clContext(), CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+                         cl::ImageFormat(CL_R, CL_FLOAT), w, h, 0, data.data());
+
+    gls::GpuImage<float> gpu_image(gpu_context, cl_image);
+    gls::image<float> cpu_image = gpu_image.ToImage();
+
+    cpu_image.apply([&](float* pixel, int x, int y) { EXPECT_EQ(*pixel, y * w + x); });
 }

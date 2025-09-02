@@ -26,7 +26,7 @@ GpuImage<T>::GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, const size_t
       flags_(flags),
       buffer_(GpuBuffer<T>(gpu_context, row_pitch_ * height_, flags))
 {
-    image_ = CreateImage2dFromBuffer(buffer_, 0, row_pitch_, width_, height_, flags);
+    image_ = CreateImage2dFromBuffer(buffer_.value(), 0, row_pitch_, width_, height_, flags);
 }
 
 template <typename T>
@@ -39,7 +39,7 @@ GpuImage<T>::GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, const gls::i
       flags_(flags),
       buffer_(GpuBuffer<T>(gpu_context, row_pitch_ * height_, flags))
 {
-    image_ = CreateImage2dFromBuffer(buffer_, 0, row_pitch_, width_, height_, flags_);
+    image_ = CreateImage2dFromBuffer(buffer_.value(), 0, row_pitch_, width_, height_, flags_);
     CopyFrom(image).wait();
 }
 
@@ -60,7 +60,7 @@ GpuImage<T>::GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, GpuBuffer<T>
                         "of {} pixels.",
                         width_, height_, row_pitch_, buffer.size_, offset));
 
-    image_ = CreateImage2dFromBuffer(buffer, offset, row_pitch_, width_, height_, flags);
+    image_ = CreateImage2dFromBuffer(buffer_.value(), offset, row_pitch_, width_, height_, flags);
 }
 
 #if false
@@ -91,6 +91,26 @@ GpuImage<T>::GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, GpuImage<T>&
     image_ = CreateImage2dFromBuffer(buffer_, offset, row_pitch_, _width, _height, flags_);
 }
 #endif
+
+template <typename T>
+GpuImage<T>::GpuImage(std::shared_ptr<gls::OCLContext> gpu_context, cl::Image2D image)
+    : gpu_context_(gpu_context),
+      width_(image.getImageInfo<CL_IMAGE_WIDTH>()),
+      height_(image.getImageInfo<CL_IMAGE_HEIGHT>()),
+      row_pitch_(image.getImageInfo<CL_IMAGE_ROW_PITCH>() / sizeof(T)),
+      is_mapped_(std::make_shared<std::atomic<bool>>(false)),
+      flags_(image.getInfo<CL_MEM_FLAGS>()),
+      image_(image)
+{
+    const cl_image_format format = image.getImageInfo<CL_IMAGE_FORMAT>();
+    const cl::ImageFormat target_format = gu::GetClFormat<T>();
+    if (format.image_channel_order != target_format.image_channel_order ||
+        format.image_channel_data_type != target_format.image_channel_data_type)
+        throw std::runtime_error(std::format("GpuImage<{}> expects to wrap a cl::Image2D of {}/{} but got {}/{}.",
+                                             typeid(T).name(), target_format.image_channel_order,
+                                             target_format.image_channel_data_type, format.image_channel_order,
+                                             format.image_channel_data_type));
+}
 
 template <typename T>
 gls::image<T> GpuImage<T>::ToImage(std::optional<cl::CommandQueue> queue, const std::vector<cl::Event>& events)
